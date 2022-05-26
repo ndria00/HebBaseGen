@@ -27,11 +27,11 @@ int main(int argc, char *argv[])
 	antlr4::CommonTokenStream tokens(&lexer);
 	ASPCore2Parser parser (&tokens);
 	antlr4::tree::ParseTree *tree = parser.program();
-	//std::cout << tree->toStringTree() <<std::endl;
+	std::cout << tree->toStringTree() <<std::endl;
 	Program program;
-	Builder builder;
+	//Builder builder;
 	std::cout<<"Calling builder\n";
-	builder.buildProgram(parser.program(), program);
+	//builder.buildProgram(parser.program(), program);
 	for(Rule r: program.getRules()){
 		r.print();
 	}

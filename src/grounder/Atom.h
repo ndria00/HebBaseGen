@@ -3,19 +3,22 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include "Term.h"
 class Atom{
     private:
         std::string identifier;
-        std::vector<std::string> terms;
- 
+        std::vector<Term*> terms;
+        bool negative;
     public:
         Atom();
-        Atom(std::string, std::vector<std::string>);
+        Atom(std::string, std::vector<Term*>&);
         std::string getIdentifier()const;
-        std::vector<std::string> getTerms()const;
+        const std::vector<Term*>& getTerms()const;
         void setIdentifier(std::string);
-        void setTerms (std::vector<std::string>);
+        void setTerms (std::vector<Term*>);
         void print()const;
+        bool isNegative()const;
+        void setNegative(bool);
 };
 
 #endif

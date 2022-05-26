@@ -1,6 +1,6 @@
 #ifndef PROGRAM_H_
 #define PROGRAM_H_
-#include "Rule.h"
+#include "grounder/Rule.h"
 
 class Program{
     private:

@@ -3,7 +3,7 @@
 Builder::Builder(){
 
 }
-
+/*
 void Builder::buildAtom(ASPCore2Parser::Classic_literalContext* lit, Atom& a){
 	std::cout<<"Building atom"<<std::endl;
 	a.setIdentifier(lit->atom()->identifier()->getText());
@@ -64,3 +64,4 @@ void Builder::buildProgram(ASPCore2Parser::ProgramContext* programContext, Progr
 		buildRule(ruleContext,program);
 	}
 }
+*/

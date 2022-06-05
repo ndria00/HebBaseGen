@@ -21,6 +21,14 @@ void Atom::setTerms (std::vector<Term*> terms){
     this->terms = terms;
 }
 
+void Atom::addTerm(Term* term){
+    terms.push_back(term);
+}
+
+void Atom::clear(){
+    terms.clear();
+}
+
 void Atom::print()const{
     std::cout<<""<<this->identifier<<"(";
     for(Term* term : this->terms) {

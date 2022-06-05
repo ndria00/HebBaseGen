@@ -12,6 +12,7 @@ void print(){
 static std::once_flag printFlag;
 int main(int argc, char *argv[])
 {
+	/*
 	//std::cout << "Parsing " << argv[1]<<std::endl;
 	std::string myInput;
 	std::cout<<"Inserire input di cui fare il parsing: ";
@@ -36,4 +37,18 @@ int main(int argc, char *argv[])
 		r.print();
 	}
 	std::cout<<"Builder finished\n";
+	*/
+	std::string myString = "WE";
+	Term t;
+	t.setValue(myString);
+	Atom a;
+	a.addTerm(&t);
+	Rule rule;
+	rule.addAtomInHead(&a);
+
+	//delete rule;
+	//delete a;
+	//delete t;
+	//rule.clearRule();
+
 }

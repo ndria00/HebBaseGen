@@ -10,12 +10,16 @@ class Rule{
    
     public:
         Rule();
-        Rule(Head, Body);
+        Rule(Head&, Body&);
         Head getHead()const;
         Body getBody()const;
+        void addAtomInHead(Atom*);
+        void addAtomInBody(Atom*);
         void setHead(Head);
         void setBody(Body);
         void print()const;
+        void clearRule();
+        virtual ~Rule();
 };
 
 #endif

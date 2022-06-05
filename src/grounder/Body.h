@@ -10,7 +10,9 @@ class Body{
         Body();
         Body(std::vector<Atom*>&);
         const std::vector<Atom*>& getConjunction()const;
+        void addAtom(Atom*);
         void setConjunction(std::vector<Atom*>&);
+        void clear();
         void print()const;
 };
 

@@ -5,6 +5,8 @@
 #include "grounder/Atom.h"
 #include "grounder/Head.h"
 #include "grounder/Rule.h"
+#include "grounder/Term.h"
+#include "grounder/StringConstantTerm.h"
 #include "Program.h"
 
 class Builder{

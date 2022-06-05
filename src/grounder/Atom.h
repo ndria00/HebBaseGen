@@ -16,9 +16,11 @@ class Atom{
         const std::vector<Term*>& getTerms()const;
         void setIdentifier(std::string);
         void setTerms (std::vector<Term*>);
+        void addTerm(Term*);
         void print()const;
         bool isNegative()const;
         void setNegative(bool);
+        void clear();
 };
 
 #endif

@@ -1,17 +1,17 @@
 #ifndef HEAD_H_
 #define HEAD_H_
 
-#include "Atom.h"
+#include "Literal.h"
 class Head{
     private:
-        std::vector<Atom*> disjunction;
+        std::vector<Literal*> disjunction;
     
     public:
         Head();
-        Head(std::vector<Atom*>&);
-        const std::vector<Atom*>& getDisjunction()const;
-        void setDisjunction(std::vector<Atom*>&);
-        void addAtom(Atom*);
+        Head(std::vector<Literal*>&);
+        const std::vector<Literal*>& getDisjunction()const;
+        void setDisjunction(std::vector<Literal*>&);
+        void addAtom(Literal*);
         void clear();
         void print()const;
 };

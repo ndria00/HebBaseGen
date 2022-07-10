@@ -4,18 +4,18 @@ Head::Head(){
 
 }
 
-Head:: Head(std::vector<Atom*>& disjunction){
+Head:: Head(std::vector<Literal*>& disjunction){
     this->disjunction = disjunction;
 }
 
-void Head::addAtom(Atom* a){
+void Head::addAtom(Literal* a){
     disjunction.push_back(a);
 }
 
-const std::vector<Atom*>& Head::getDisjunction()const{
+const std::vector<Literal*>& Head::getDisjunction()const{
     return this->disjunction;
 }
-void Head::setDisjunction(std::vector<Atom*>& disjunction){
+void Head::setDisjunction(std::vector<Literal*>& disjunction){
     this->disjunction = disjunction;
 }
 
@@ -25,9 +25,10 @@ void Head::clear(){
 
 void Head::print()const{
     //std::cout<<"{";
-    for(Atom* a : this->disjunction){
-        a->print();
-        std::cout<<" ";
+    for(unsigned i = 0; i< disjunction.size(); ++i){
+        disjunction.at(i)->print();
+        if(i != disjunction.size() -1)
+            std::cout<<" | ";
     }
     //std::cout<<"}";
 }

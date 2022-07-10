@@ -1,13 +1,5 @@
 #include "Rule.h"
 
-Rule::Rule(){
-
-}
-
-Rule::Rule(Head& head, Body& body){
-    this->head = head;
-    this->body = body;
-}
 
 Head Rule::getHead()const{
     return this->head;
@@ -16,12 +8,16 @@ Body Rule::getBody()const{
     return this->body;
 }
 
-void Rule::addAtomInHead(Atom* a){
+void Rule::addAtomInHead(Literal* a){
     head.addAtom(a);
 }
 
-void Rule::addAtomInBody(Atom* a){
+void Rule::addAtomInBody(Literal* a){
     body.addAtom(a);
+}
+
+void Rule::addAggregateInBody(Aggregate* a){
+    body.addAggregate(a);
 }
 
 void Rule::setHead(Head head){
@@ -33,14 +29,14 @@ void Rule::setBody(Body body){
 
 void Rule::print()const{
     this->head.print();
-    this->body.print();
+    if(body.getConjunction().size() > 0 || body.getAggregates().size() > 0){
+        std::cout<<" :- ";
+        this->body.print();
+    }
+    std::cout<<".";
 }
 
 void Rule::clearRule(){
     head.clear();
     body.clear();
-}
-
-Rule::~Rule(){
-
 }

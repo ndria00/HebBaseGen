@@ -1,17 +1,19 @@
 #ifndef BODY_H_
 #define BODY_H_
-#include "Atom.h"
+#include "Literal.h"
+#include "Aggregate.h"
 
 class Body{
     private: 
-        std::vector<Atom*> conjunction;
+        std::vector<Literal*> conjunction;
+        std::vector<Aggregate*> aggregates;
     
     public:
-        Body();
-        Body(std::vector<Atom*>&);
-        const std::vector<Atom*>& getConjunction()const;
-        void addAtom(Atom*);
-        void setConjunction(std::vector<Atom*>&);
+        const std::vector<Literal*>& getConjunction()const;
+        const std::vector<Aggregate*>& getAggregates()const;
+        void addAggregate(Aggregate*);
+        void addAtom(Literal*);
+        void setConjunction(std::vector<Literal*>&);
         void clear();
         void print()const;
 };

@@ -4,14 +4,14 @@
 #include <vector>
 #include <iostream>
 #include "Term.h"
-class Atom{
+class Literal{
     private:
         std::string identifier;
         std::vector<Term*> terms;
         bool negative;
     public:
-        Atom();
-        Atom(std::string, std::vector<Term*>&);
+        Literal();
+        Literal(std::string, std::vector<Term*>&);
         std::string getIdentifier()const;
         const std::vector<Term*>& getTerms()const;
         void setIdentifier(std::string);

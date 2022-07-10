@@ -1,5 +1,9 @@
 #include "WeakConstraint.h"
 
+WeakConstraint::WeakConstraint(): Rule(){
+
+}
+
 int WeakConstraint::getLevelPayed()const{
     return this->levelPayed;
 }

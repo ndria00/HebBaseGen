@@ -1,13 +1,13 @@
-#include "Atom.h"
+#include "Literal.h"
 
 class Query{
     private:
-       Atom atom;
+       Literal atom;
     
     public:
         Query();
-        Query(Atom);
-        Atom getAtom()const;
-        setAtom(Atom);
+        Query(Literal);
+        Literal getAtom()const;
+        setAtom(Literal);
 
 };

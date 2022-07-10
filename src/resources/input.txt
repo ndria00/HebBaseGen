@@ -1,4 +1,6 @@
-a(X) :- b(X), c(Y, X).
-b(1).
+a(X) | b(X) :- not f(X), c(Y, X), Z>#count{X, Y: a(X)}>=K.
+:-f(X), a(X).
+b(abcd).
 a(3).
 c(1,1).
+f(4).

@@ -3,23 +3,22 @@
 
 #include "Head.h"
 #include "Body.h"
+#include "Aggregate.h"
 class Rule{
     private: 
         Head head;
         Body body;
    
     public:
-        Rule();
-        Rule(Head&, Body&);
         Head getHead()const;
         Body getBody()const;
-        void addAtomInHead(Atom*);
-        void addAtomInBody(Atom*);
+        void addAtomInHead(Literal*);
+        void addAtomInBody(Literal*);
+        void addAggregateInBody(Aggregate*);
         void setHead(Head);
         void setBody(Body);
         void print()const;
         void clearRule();
-        virtual ~Rule();
 };
 
 #endif

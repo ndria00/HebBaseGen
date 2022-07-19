@@ -4,13 +4,13 @@
 
 class Program{
     private:
-        std::vector<Rule> rules;
+        std::vector<Rule*> rules;
     
     public:
         Program();
-        Program(std::vector<Rule>);
-        std::vector<Rule> getRules()const;
-        void setRules(std::vector<Rule>);
+        const std::vector<Rule*>& getRules()const;
+        void setRules(std::vector<Rule*>&);
+        void addRule(Rule*);
         void print()const;
 };
 

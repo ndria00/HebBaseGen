@@ -2,7 +2,9 @@
 #include <iostream>
 
 Term::Term(){
+    value = "";
 }
+
 Term::Term(std::string& value){
     this->value = value;
 }
@@ -14,6 +16,10 @@ void Term::setValue(std::string& value){
     this->value = value;
 }
 
-void Term::print(){
+void Term::print()const{
     std::cout<<this->value;
+}
+
+Term::~Term(){
+
 }

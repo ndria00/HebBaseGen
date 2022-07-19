@@ -5,20 +5,22 @@
 #include "Body.h"
 #include "Aggregate.h"
 class Rule{
-    private: 
+    private:
+        //TODO  
         Head head;
         Body body;
    
     public:
-        Head getHead()const;
-        Body getBody()const;
+        Rule();
+        const Head& getHead()const;
+        const Body& getBody()const;
         void addAtomInHead(Literal*);
         void addAtomInBody(Literal*);
+        void addBuiltInInBody(BuiltInTerm*);
         void addAggregateInBody(Aggregate*);
-        void setHead(Head);
-        void setBody(Body);
+        void setHead(Head&);
+        void setBody(Body&);
         void print()const;
-        void clearRule();
 };
 
 #endif

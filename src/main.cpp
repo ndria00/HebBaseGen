@@ -34,13 +34,17 @@ int main(int argc, char *argv[]){
 	ASPCore2Parser parser (&tokens);
 	antlr4::tree::ParseTree *tree = parser.program();
 
-	Builder builder;
+	Program* program =  new Program();
+	Builder* builder =  new Builder(program);
 	ASPCore2ProgramListener listener(builder);
 	std::cout<<"Calling builder\n";
 	antlr4::tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
 	
 	std::cout<<"Builder finished\n";
-	listener.getBuilder().printProgram();
-	listener.getBuilder().clearMemory();
+	listener.getBuilder()->printProgram();
+	
+	listener.getBuilder()->clearMemory();
+	delete program;
+	delete builder;
 
 }

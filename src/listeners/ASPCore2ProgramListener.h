@@ -3,7 +3,7 @@
 
 class ASPCore2ProgramListener : public ASPCore2BaseListener{
     public:
-        ASPCore2ProgramListener(Builder&);
+        ASPCore2ProgramListener(Builder*);
         
         void enterProgram(ASPCore2Parser::ProgramContext * /*ctx*/) override;
         void exitProgram(ASPCore2Parser::ProgramContext * /*ctx*/) override;
@@ -42,8 +42,25 @@ class ASPCore2ProgramListener : public ASPCore2BaseListener{
         void enterBasic_term(ASPCore2Parser::Basic_termContext * /*ctx*/) override;
         void exitBasic_term(ASPCore2Parser::Basic_termContext * /*ctx*/) override;
 
-        Builder getBuilder();
-        void setBuilder(Builder& );
+        void enterCompareop(ASPCore2Parser::CompareopContext * /*ctx*/) override;
+
+        void visitTerminal(antlr4::tree::TerminalNode * /*node*/) override;
+        
+        void enterExpr(ASPCore2Parser::ExprContext * /*ctx*/) override;
+        void enterFactor(ASPCore2Parser::FactorContext * /*ctx*/) override;
+
+        void exitTerm_(ASPCore2Parser::Term_Context * /*ctx*/) override;
+        void exitTerm__(ASPCore2Parser::Term__Context * /*ctx*/) override;
+        void exitTerm(ASPCore2Parser::TermContext * /*ctx*/) override;
+        
+        void exitExpr(ASPCore2Parser::ExprContext * /*ctx*/) override;
+        void exitFactor(ASPCore2Parser::FactorContext * /*ctx*/) override;
+        
+        void enterBuiltin_atom(ASPCore2Parser::Builtin_atomContext * /*ctx*/) override;
+        void enterBinop(ASPCore2Parser::BinopContext * /*ctx*/) override;
+        void exitBuiltin_atom(ASPCore2Parser::Builtin_atomContext * /*ctx*/) override;
+        Builder* getBuilder();
+        void setBuilder(Builder*);
     private:
-        Builder builder;
+        Builder* builder;
 };

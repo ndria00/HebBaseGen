@@ -1,11 +1,7 @@
 #include "Head.h"
 
 Head::Head(){
-
-}
-
-Head:: Head(std::vector<Literal*>& disjunction){
-    this->disjunction = disjunction;
+        disjunction = std::vector<Literal*>();
 }
 
 void Head::addAtom(Literal* a){
@@ -17,10 +13,6 @@ const std::vector<Literal*>& Head::getDisjunction()const{
 }
 void Head::setDisjunction(std::vector<Literal*>& disjunction){
     this->disjunction = disjunction;
-}
-
-void Head::clear(){
-    this->disjunction.clear();
 }
 
 void Head::print()const{

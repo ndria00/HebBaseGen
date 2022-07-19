@@ -1,10 +1,14 @@
 #include "Rule.h"
 
+Rule::Rule(){
+    head = Head();
+    body = Body();
+}
 
-Head Rule::getHead()const{
+const Head& Rule::getHead()const{
     return this->head;
 }
-Body Rule::getBody()const{
+const Body& Rule::getBody()const{
     return this->body;
 }
 
@@ -20,10 +24,14 @@ void Rule::addAggregateInBody(Aggregate* a){
     body.addAggregate(a);
 }
 
-void Rule::setHead(Head head){
+void Rule::addBuiltInInBody(BuiltInTerm* b){
+    body.addBuiltIn(b);
+}
+
+void Rule::setHead(Head& head){
     this->head = head;
 }
-void Rule::setBody(Body body){
+void Rule::setBody(Body& body){
     this->body = body;
 }
 
@@ -34,9 +42,4 @@ void Rule::print()const{
         this->body.print();
     }
     std::cout<<".";
-}
-
-void Rule::clearRule(){
-    head.clear();
-    body.clear();
 }

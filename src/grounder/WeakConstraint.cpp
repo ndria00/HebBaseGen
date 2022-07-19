@@ -1,7 +1,6 @@
 #include "WeakConstraint.h"
 
-WeakConstraint::WeakConstraint(): Rule(){
-
+WeakConstraint::WeakConstraint(){
 }
 
 int WeakConstraint::getLevelPayed()const{

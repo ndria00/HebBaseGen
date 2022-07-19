@@ -1,5 +1,11 @@
 #include "Body.h"
 
+Body::Body(){
+    aggregates = std::vector<Aggregate*>();
+    conjunction = std::vector<Literal*>();
+    builtInTerms = std::vector<BuiltInTerm*>();
+}
+
 const std::vector<Literal*>& Body::getConjunction()const{
     return this->conjunction;
 }
@@ -11,8 +17,8 @@ void Body::addAtom(Literal* a){
     conjunction.push_back(a);
 }
 
-void Body::clear(){
-    this->conjunction.clear();
+void Body::addBuiltIn(BuiltInTerm* builtIn){
+    builtInTerms.push_back(builtIn);
 }
 
 void Body::print()const{
@@ -26,6 +32,14 @@ void Body::print()const{
         for(unsigned i = 0; i< aggregates.size(); ++i){
             aggregates.at(i)->print();
             if(i != aggregates.size() -1)
+                std::cout<<", ";
+        }
+    }
+    if(builtInTerms.size() > 0){
+        std::cout<<", ";
+        for(unsigned i = 0; i< builtInTerms.size(); ++i){
+            builtInTerms.at(i)->print();
+            if(i != builtInTerms.size() -1)
                 std::cout<<", ";
         }
     }

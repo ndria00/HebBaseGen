@@ -1,27 +1,29 @@
 #include "Literal.h"
 
 Literal::Literal(){
+    terms = std::vector<TermBase*>();
+    identifier = "";
     negative = false;
 }
 
-Literal::Literal(std::string identifier, std::vector<Term*>& terms){
+Literal::Literal(std::string identifier, std::vector<TermBase*>& terms){
     this->identifier = identifier;
     this->terms = terms;
 }
 std::string Literal::getIdentifier()const{
     return this->identifier;
 }
-const std::vector<Term*>& Literal::getTerms()const{
+const std::vector<TermBase*>& Literal::getTerms()const{
     return this->terms;
 }
 void Literal::setIdentifier(std::string identifier){
     this->identifier = identifier;
 }
-void Literal::setTerms (std::vector<Term*> terms){
+void Literal::setTerms (std::vector<TermBase*>& terms){
     this->terms = terms;
 }
 
-void Literal::addTerm(Term* term){
+void Literal::addTerm(TermBase* term){
     terms.push_back(term);
 }
 

@@ -1,10 +1,21 @@
 #include "Aggregate.h"
 
-void Aggregate::addTerm(Term* t){
+Aggregate::Aggregate(){
+    leftTerm = nullptr;
+    rightTerm = nullptr;
+    symbolicSet = std::vector<TermBase*>();
+    localLiterals = std::vector<Literal*>();
+    type = "";
+}
+
+Aggregate::Aggregate(const Aggregate& a){
+}
+
+void Aggregate::addTerm(TermBase* t){
     symbolicSet.push_back(t);
 }
 
-std::vector<Term*>& Aggregate::getSymbolicTerms(){
+std::vector<TermBase*>& Aggregate::getSymbolicTerms(){
     return symbolicSet;
 }
 
@@ -30,9 +41,10 @@ void Aggregate::print()const{
         std::cout<<leftOperator;
     }
     std::cout<<type<<"{";
-    for(Term* term : symbolicSet){
-        term->print();
-        std::cout<<", ";
+    for(unsigned i = 0; i< symbolicSet.size(); ++i){
+        symbolicSet.at(i)->print();
+        if(i != symbolicSet.size() -1 )
+            std::cout<<", ";
     }
     std::cout<<" : ";
     for(Literal* literal : localLiterals){
@@ -46,19 +58,19 @@ void Aggregate::print()const{
     }
 }
 
-void Aggregate::setLeftTerm(Term* t){
+void Aggregate::setLeftTerm(TermBase* t){
     leftTerm = t;
 }
 
-Term* Aggregate::getLeftTerm()const{
+TermBase* Aggregate::getLeftTerm()const{
     return leftTerm;
 }
 
-void Aggregate::setRightTerm(Term* t){
+void Aggregate::setRightTerm(TermBase* t){
     rightTerm = t;
 }
 
-Term* Aggregate::getRightTerm()const{
+TermBase* Aggregate::getRightTerm()const{
     return rightTerm;
 }
 void Aggregate::setLeftOperator(std::string& leftOp){

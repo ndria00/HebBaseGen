@@ -14,6 +14,7 @@ Builder::Builder(Program* program){
 	currentFactor = nullptr;
     currentExpression = nullptr;
 	currentBuiltInTerm = nullptr;
+	currentFuncTerm = nullptr;
     expressionNesting = std::vector<antlr4::ParserRuleContext*>();
 	
 	allRules = std::vector<Rule*>();
@@ -50,6 +51,11 @@ void Builder::addCurrentAggregate(){
 	currentAggregate = nullptr;
 }
 
+void Builder::addCurrentBuiltIn(){
+	allBuiltIn.push_back(currentBuiltInTerm);
+	currentBuiltInTerm = nullptr;
+}
+
 Rule* Builder::getCurrentRule(){
 	return currentRule;
 }
@@ -73,7 +79,15 @@ void Builder::buildClassicLiteral(ASPCore2Parser::Classic_literalContext* classi
 	if(buildingNegativeLiteral == true)
 		currentAtom->setNegative(true);
 	buildingNegativeLiteral = false;
-
+	if(currentAggregate != nullptr){
+		currentAggregate->addLiteral(currentAtom);
+	}
+	else if(buildingHead){
+		currentRule->addAtomInHead(currentAtom);
+	}
+	else{
+		currentRule->addAtomInBody(currentAtom);
+	}
 }
 
 void Builder::buildHead(ASPCore2Parser::HeadContext* headContext){
@@ -104,16 +118,29 @@ void Builder::buildTerm(ASPCore2Parser::TermContext* term){
 	if(term->identifier() != NULL && term->children.size() == 1){
 		std::string myString = term->getText(); 
 		currentTerm = new Term(myString);
-		addCurrentTerm();
-		if(currentAtom != nullptr)
+		if(term->getStart()->getType() == ASPCore2Parser::VARIABLE){
+			currentTerm->setVariable(true);
+		}
+		if(currentAtom != nullptr){
 			currentAtom->addTerm(currentTerm);
+			addCurrentTerm();
+		}
 		else if(currentBuiltInTerm != nullptr){
 			if(currentExpression == nullptr){
 				currentExpression = new SimpleFactor(currentTerm);
 				currentBuiltInTerm->addExpression(currentExpression);
 				allExpressions.push_back(currentExpression);
 				currentExpression = nullptr;
+				addCurrentTerm();
 			}
+		}
+		else if(buildingLeftWardAggregate){
+			currentAggregate->setLeftTerm(currentTerm);
+			addCurrentTerm();
+		}
+		else if(buildingRightWardAggregate){
+			currentAggregate->setRightTerm(currentTerm);
+			addCurrentTerm();
 		}
 
 	}	
@@ -125,6 +152,9 @@ void Builder::buildTerm_(ASPCore2Parser::Term_Context* term_){
 				currentTerm = new Term(myString);
 				currentAtom->addTerm(currentTerm);
 				addCurrentTerm();
+		}else if(term_->children.size() == 4 && term_->getStop()->getType() == ASPCore2Parser::PARAM_CLOSE){
+			currentFuncTerm = new FunctionalTerm();
+			//TODO
 		}
 		else{
 			currentBuildingTerms.push_back(term_);
@@ -194,6 +224,9 @@ void Builder::buildTerminal(antlr4::tree::TerminalNode * terminal){
 		currentBuildingTerms.pop_back();
 		std::string myString= terminal->getText();
 		currentTerm = new Term(myString);
+		if(terminal->getSymbol()->getType() == ASPCore2Parser::VARIABLE){
+			currentTerm->setVariable(true);
+		}
 		if(currentExpression != nullptr){
 			if(currentFactor != nullptr)
 				currentFactor->addTerm(currentTerm);
@@ -206,6 +239,7 @@ void Builder::buildTerminal(antlr4::tree::TerminalNode * terminal){
 		}
 		else
 			currentAtom->addTerm(currentTerm);
+
 		//std::cout<<"TERM OR TERM__"<<context->getRuleIndex()<<std::endl;
 		addCurrentTerm();
 	}
@@ -293,8 +327,14 @@ void Builder::buildExpression(ASPCore2Parser::ExprContext* expression){
 			//std::cout<<"adding expression to atom"<<std::endl;
 		}
 		else if(currentBuiltInTerm != nullptr){
-			std::cout<<"ADDing expression to built in"<<std::endl;
+			//std::cout<<"ADDing expression to built in"<<std::endl;
 			currentBuiltInTerm->addExpression(currentExpression);
+		}
+		else if(buildingLeftWardAggregate){
+			currentAggregate->setLeftTerm(currentExpression);
+		}
+		else if(buildingRightWardAggregate){
+			currentAggregate->setRightTerm(currentExpression);
 		}
 		//currentExpression->setOperator(op);
 	}
@@ -358,6 +398,12 @@ void Builder::buildFactor(ASPCore2Parser::FactorContext* factor){
 		else if(currentBuiltInTerm != nullptr){
 			currentBuiltInTerm->addExpression(currentExpression);
 		}
+		else if(buildingLeftWardAggregate){
+			currentAggregate->setLeftTerm(currentExpression);
+		}
+		else if(buildingRightWardAggregate){
+			currentAggregate->setRightTerm(currentExpression);
+		}
 	}
 }
 
@@ -418,14 +464,11 @@ void Builder::exitExprFact(){
 }
 
 void Builder::buildBuiltInAtom(ASPCore2Parser::Builtin_atomContext* builtIn){
-	std::cout<<"HELLO, BUILDING BUILT IN"<<std::endl;
 	expressionNesting.push_back(builtIn);
 	currentBuiltInTerm = new BuiltInTerm();
-	allBuiltIn.push_back(currentBuiltInTerm);
 	std::string myString = builtIn->binop()->getText();
 	currentBuiltInTerm->setOperator(myString);
 	currentRule->addBuiltInInBody(currentBuiltInTerm);
-
 }
 
 void Builder::exitBinop(){
@@ -435,5 +478,5 @@ void Builder::exitBinop(){
 }
 
 void Builder::exitBuiltIn(){
-	currentBuiltInTerm = nullptr;
+	addCurrentBuiltIn();
 }

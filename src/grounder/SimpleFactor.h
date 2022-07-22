@@ -15,7 +15,6 @@ class SimpleFactor: public ExpressionBase{
         virtual void addExpression(ExpressionBase*) override;
         virtual bool removeExpression(ExpressionBase*) override;
         virtual std::vector<ExpressionBase*>& getChildren() override;
-        virtual const std::string& getAllVariables() override;
         virtual void setOperator(std::string&) override;
         virtual std::string& getOperator() override;
         virtual ExpressionBase* getParent() override;
@@ -23,6 +22,11 @@ class SimpleFactor: public ExpressionBase{
         virtual const std::string& getValue()const override;
         virtual void setValue(std::string&) override;
         virtual void print()const override;
+        virtual bool isVariable()const override;
+        virtual void setVariable(bool ) override;
+        virtual void getAllVariables(std::set<std::string>&) override;
+        virtual void removeSafeVariables(std::set<std::string>&) override;
+        virtual bool isSimpleFactor() override;
         ~SimpleFactor();
 };
 

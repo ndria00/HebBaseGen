@@ -21,6 +21,8 @@ class Literal{
         void print()const;
         bool isNegative()const;
         void setNegative(bool);
+        void getLiteralVariables(std::set<std::string>&)const;
+        void removeSafeLiteralVariables(std::set<std::string>&)const;
         void clear();
 };
 

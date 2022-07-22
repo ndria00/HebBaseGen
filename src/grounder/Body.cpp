@@ -28,7 +28,8 @@ void Body::print()const{
             std::cout<<", ";
     }
     if(aggregates.size() > 0){
-        std::cout<<", ";
+        if(conjunction.size() > 0)
+            std::cout<<", ";
         for(unsigned i = 0; i< aggregates.size(); ++i){
             aggregates.at(i)->print();
             if(i != aggregates.size() -1)
@@ -51,4 +52,22 @@ const std::vector<Aggregate*>& Body::getAggregates()const{
 
 void Body::addAggregate(Aggregate* aggregate){
     aggregates.push_back(aggregate);
+}
+
+void Body::getBodyVariables(std::set<std::string>& variables)const{
+    for(Literal* literal : conjunction){
+        literal->getLiteralVariables(variables);
+    }
+    for(BuiltInTerm* builtIn: builtInTerms){
+        builtIn->getBuiltInVariables(variables);
+    }
+}
+
+void Body::removeBodySafeVariables(std::set<std::string>& variables)const{
+    for(Literal* literal : conjunction){
+        literal->removeSafeLiteralVariables(variables);
+    } 
+    for(BuiltInTerm* builtIn: builtInTerms){
+        builtIn->removeSafeVariablesInBuiltIn(variables);
+    }
 }

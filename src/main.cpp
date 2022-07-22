@@ -5,7 +5,7 @@
 #include "parser/ASPCore2Lexer.h"
 #include "parser/ASPCore2Parser.h"
 #include "listeners/ASPCore2ProgramListener.h"
-#include "Program.h"
+#include "grounder/Program.h"
 
 void print(){
 	std::cout << "Hello world !" << std::endl;
@@ -43,6 +43,13 @@ int main(int argc, char *argv[]){
 	std::cout<<"Builder finished\n";
 	listener.getBuilder()->printProgram();
 	
+	if(program->checkSafety()){
+		std::cout<<"No safety errors found"<<std::endl;
+	}
+	else{
+		std::cout<<"Safety errors detected!"<<std::endl;
+	}
+
 	listener.getBuilder()->clearMemory();
 	delete program;
 	delete builder;

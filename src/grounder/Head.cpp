@@ -15,6 +15,12 @@ void Head::setDisjunction(std::vector<Literal*>& disjunction){
     this->disjunction = disjunction;
 }
 
+void Head::getHeadVariables(std::set<std::string>& variables)const{
+    for(Literal* literal : disjunction){
+            literal->getLiteralVariables(variables);
+    }
+}
+
 void Head::print()const{
     //std::cout<<"{";
     for(unsigned i = 0; i< disjunction.size(); ++i){

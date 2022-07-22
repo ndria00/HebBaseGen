@@ -1,6 +1,6 @@
 #ifndef PROGRAM_H_
 #define PROGRAM_H_
-#include "grounder/Rule.h"
+#include "Rule.h"
 
 class Program{
     private:
@@ -12,6 +12,7 @@ class Program{
         void setRules(std::vector<Rule*>&);
         void addRule(Rule*);
         void print()const;
+        bool checkSafety()const;
 };
 
 #endif

@@ -25,10 +25,6 @@ SimpleFactor::SimpleFactor(TermBase* t){
 
 }
 
-const std::string& SimpleFactor::getAllVariables(){
-    return simpleTerm->getValue();
-}
-
 void SimpleFactor::print()const {
     if(simpleTerm != nullptr)
         simpleTerm->print();
@@ -47,9 +43,31 @@ SimpleFactor::~SimpleFactor(){
 }
 
 const std::string& SimpleFactor::getValue()const{
-
+    simpleTerm->getValue();
 }
 
 void SimpleFactor::setValue(std::string&){
 
+}
+
+bool SimpleFactor::isVariable()const{
+    return simpleTerm->isVariable();
+}
+void SimpleFactor::setVariable(bool ) {
+
+}
+
+void SimpleFactor::getAllVariables(std::set<std::string>& variables){
+    if(simpleTerm->isVariable()){
+        std::string myString = simpleTerm->getValue();
+        variables.insert(myString);
+    }
+}
+
+void SimpleFactor::removeSafeVariables(std::set<std::string>& variables){
+    simpleTerm->removeSafeVariables(variables);
+}
+
+bool SimpleFactor::isSimpleFactor(){
+    return true;
 }

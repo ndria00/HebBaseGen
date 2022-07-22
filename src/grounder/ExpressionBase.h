@@ -9,7 +9,6 @@ class ExpressionBase : public TermBase{
         virtual void addExpression(ExpressionBase*) = 0;
         virtual bool removeExpression(ExpressionBase*) = 0;
         virtual std::vector<ExpressionBase*>& getChildren() = 0;
-        virtual const std::string& getAllVariables() = 0;
         virtual void setOperator(std::string&) = 0;
         virtual std::string& getOperator() = 0;
         virtual ExpressionBase* getParent() = 0;
@@ -17,6 +16,11 @@ class ExpressionBase : public TermBase{
         virtual const std::string& getValue()const = 0;
         virtual void setValue(std::string&) = 0;
         virtual void print()const = 0;
+        virtual bool isVariable()const = 0;
+        virtual void setVariable(bool ) = 0;
+        virtual void getAllVariables(std::set<std::string>&) = 0;
+        virtual void removeSafeVariables(std::set<std::string>&) = 0;
+        virtual bool isSimpleFactor() = 0;
         virtual ~ExpressionBase(){}
 };
 #endif

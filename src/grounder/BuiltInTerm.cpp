@@ -37,3 +37,29 @@ void BuiltInTerm::print()const{
     if(rightExpr != nullptr)
         rightExpr->print();
 }
+
+void BuiltInTerm::getBuiltInVariables(std::set<std::string>& variables){
+    leftExpr->getAllVariables(variables);
+    rightExpr->getAllVariables(variables);
+}
+
+void BuiltInTerm::removeSafeVariablesInBuiltIn(std::set<std::string>& variables){
+    //remove a signle variable only if the built in is an assignment
+    if(myOperator == "=" || myOperator == "=="){
+        SimpleFactor* temp;
+        if(leftExpr->isSimpleFactor()){
+            temp= dynamic_cast<SimpleFactor*>(leftExpr);
+            if(variables.find(temp->getValue()) != variables.end()){
+                variables.erase(temp->getValue());
+                return;
+            }
+        }
+        if(rightExpr->isSimpleFactor()){
+            temp = dynamic_cast<SimpleFactor*>(rightExpr);
+            if(variables.find(temp->getValue()) != variables.end()){
+                variables.erase(temp->getValue());
+                return;
+            }
+        }
+    }
+}

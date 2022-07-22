@@ -19,6 +19,8 @@ class Body{
         void addAtom(Literal*);
         void addBuiltIn(BuiltInTerm*);
         void setConjunction(std::vector<Literal*>&);
+        void getBodyVariables(std::set<std::string>&)const;
+        void removeBodySafeVariables(std::set<std::string>&)const;
         void print()const;
 };
 

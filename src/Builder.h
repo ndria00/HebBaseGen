@@ -12,7 +12,8 @@
 #include "grounder/Expression.h"
 #include "grounder/ExpressionBase.h"
 #include "grounder/BuiltInTerm.h"
-#include "Program.h"
+#include "grounder/Program.h"
+#include "grounder/FunctionalTerm.h"
 #include <vector>
 #include <list>
 
@@ -45,6 +46,7 @@ class Builder{
         void addCurrentTerm();
         void addCurrentRule();
         void addCurrentAggregate();
+        void addCurrentBuiltIn();
         bool isBuildingHead();
         void setBuildingHead(bool);
         bool isBuildingAggregate();
@@ -69,6 +71,7 @@ class Builder{
         SimpleFactor* currentFactor;
         ExpressionBase* currentExpression;
         BuiltInTerm* currentBuiltInTerm;
+        FunctionalTerm* currentFuncTerm;
         std::vector<Rule*> allRules;
         std::vector<Literal*> allAtoms;
         std::vector<TermBase*> allTerms;

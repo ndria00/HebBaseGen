@@ -49,3 +49,17 @@ void Literal::print()const{
     }
     std::cout<<")";
 }
+
+void Literal::getLiteralVariables(std::set<std::string>& variables)const{
+    for(TermBase* term : terms){
+        term->getAllVariables(variables);
+    }
+}
+
+void Literal::removeSafeLiteralVariables(std::set<std::string>& variables)const{
+    if(isNegative())
+        return;
+    for(TermBase* term : terms){
+        term->removeSafeVariables(variables);
+    }
+}

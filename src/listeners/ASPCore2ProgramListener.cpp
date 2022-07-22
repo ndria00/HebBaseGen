@@ -50,15 +50,6 @@ void ASPCore2ProgramListener::enterAtom(ASPCore2Parser::AtomContext * atom){
 }
 
 void ASPCore2ProgramListener::exitAtom(ASPCore2Parser::AtomContext * atom){
-    if(builder->isBuildingHead()){
-        builder->getCurrentRule()->addAtomInHead(builder->getCurrentAtom());
-    }
-    else if(builder->isBuildingAggregate()){
-        builder->getCurrentAggregate()->addLiteral(builder->getCurrentAtom());
-    }
-    else{
-        builder->getCurrentRule()->addAtomInBody(builder->getCurrentAtom());
-    }
     builder->addCurrentAtom();
 }
 
@@ -138,10 +129,7 @@ void ASPCore2ProgramListener::enterCompareop(ASPCore2Parser::CompareopContext * 
 }
 
 void ASPCore2ProgramListener::visitTerminal(antlr4::tree::TerminalNode * terminal){
-    //std::cout<<"VISITING TERMINAL "<<terminal->getTreeType()<<std::endl;
     builder->buildTerminal(terminal);
-    // if(terminal->getSymbol()->getType() == ASPCore2Parser::RuleTerm)
-    //     std::cout<<"VISITING TERMINAL"<<std::endl;
 }
 
 void ASPCore2ProgramListener::enterExpr(ASPCore2Parser::ExprContext * expression){
@@ -167,7 +155,7 @@ void ASPCore2ProgramListener::enterBuiltin_atom(ASPCore2Parser::Builtin_atomCont
 void ASPCore2ProgramListener::enterBinop(ASPCore2Parser::BinopContext * binop){
 }
 void ASPCore2ProgramListener::exitBuiltin_atom(ASPCore2Parser::Builtin_atomContext * builtIn){
-    builder->exitBinop();
+    builder->exitBuiltIn();
 }
 
 Builder* ASPCore2ProgramListener::getBuilder(){

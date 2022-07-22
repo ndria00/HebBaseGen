@@ -46,13 +46,6 @@ void Expression::setOperator(std::string& op){
 std::string& Expression::getOperator(){
     return myOperator;
 }
-        
-const std::string& Expression::getAllVariables(){
-    std::string variables = "";   
-    variables += first->getAllVariables();
-    variables += second->getAllVariables();
-    return variables;
-}
 
 void Expression::print()const{
     std::cout<<"(";
@@ -83,4 +76,33 @@ void Expression::setValue(std::string&){
 
 Expression::~Expression(){
     
+}
+
+bool Expression::isVariable()const{
+    return false;
+}
+void Expression::setVariable(bool ) {
+
+}
+
+void Expression::getAllVariables(std::set<std::string>& variables){
+    if(first != nullptr){
+        first->getAllVariables(variables);
+    }
+    if(second != nullptr){
+        second->getAllVariables(variables);
+    }
+}
+
+void Expression::removeSafeVariables(std::set<std::string>& variables){
+    if(first != nullptr)
+        first->removeSafeVariables(variables);
+    if(second != nullptr)
+        second->removeSafeVariables(variables);
+}
+
+bool Expression::isSimpleFactor(){
+    if(second != nullptr)
+        return false;
+    return first->isSimpleFactor();
 }

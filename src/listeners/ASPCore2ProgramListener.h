@@ -40,7 +40,7 @@ class ASPCore2ProgramListener : public ASPCore2BaseListener{
         void exitNaf_literal(ASPCore2Parser::Naf_literalContext * /*ctx*/) override;
 
         void enterBasic_term(ASPCore2Parser::Basic_termContext * /*ctx*/) override;
-        void exitBasic_term(ASPCore2Parser::Basic_termContext * /*ctx*/) override;
+        void exitBasic_terms(ASPCore2Parser::Basic_termsContext * /*ctx*/) override;
 
         void enterCompareop(ASPCore2Parser::CompareopContext * /*ctx*/) override;
 

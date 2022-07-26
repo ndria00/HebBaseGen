@@ -33,8 +33,10 @@
                     variables.insert(term->getValue());
             }
         }
-        void FunctionalTerm::removeSafeVariables(std::set<std::string>&){
-
+        void FunctionalTerm::removeSafeVariables(std::set<std::string>& variables){
+            for(TermBase* term : terms){
+                term->removeSafeVariables(variables);
+            }
         }
         std::string FunctionalTerm::getFunctionName()const{
             return identifier;

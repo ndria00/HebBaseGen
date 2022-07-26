@@ -1,3 +1,3 @@
 a(X):- b(X), b(Y), not b(Y), X=M, h.
 b(X):- c(X), c(Y), Y=X+2.
-c(X):- 22<#count{X : c(X)}<23+X-Y.
+c(X):- b(X), 22<#count{Y : c(Y)}<23.

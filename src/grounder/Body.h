@@ -9,7 +9,6 @@ class Body{
         std::vector<Literal*> conjunction;
         std::vector<Aggregate*> aggregates;
         std::vector<BuiltInTerm*> builtInTerms;
-
     
     public:
         Body();

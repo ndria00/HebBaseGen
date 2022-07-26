@@ -18,7 +18,7 @@ class Aggregate{
     public:
         Aggregate();
         Aggregate(const Aggregate&);
-        void addTerm(TermBase*);
+        void addToSymbolicSet(TermBase*);
         std::vector<TermBase*>& getSymbolicTerms();
         void addLiteral(Literal*);
         std::vector<Literal*>& getLiterals(); 

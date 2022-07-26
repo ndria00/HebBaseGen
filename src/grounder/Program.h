@@ -13,6 +13,7 @@ class Program{
         void addRule(Rule*);
         void print()const;
         bool checkSafety()const;
+        void mapAllConstants()const;
 };
 
 #endif

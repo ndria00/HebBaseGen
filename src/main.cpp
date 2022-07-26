@@ -6,6 +6,7 @@
 #include "parser/ASPCore2Parser.h"
 #include "listeners/ASPCore2ProgramListener.h"
 #include "grounder/Program.h"
+#include "DataStructures/AuxiliaryMapSmart.h"
 
 void print(){
 	std::cout << "Hello world !" << std::endl;
@@ -50,7 +51,8 @@ int main(int argc, char *argv[]){
 		std::cout<<"Safety errors detected!"<<std::endl;
 	}
 
-	listener.getBuilder()->clearMemory();
+	builder->clearMemory();
+	
 	delete program;
 	delete builder;
 

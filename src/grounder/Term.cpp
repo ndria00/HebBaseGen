@@ -40,6 +40,32 @@ void Term::removeSafeVariables(std::set<std::string>& variables){
         variables.erase(this->value);
 }
 
+//virtual void saveInConstantsManager()const{
+//
+//}
+
 Term::~Term(){
 
 }
+
+// f(1, "a").
+
+// a(X) :- b(X).
+
+
+// groundProgram() {
+
+//     *out << "true_lits_f.insert(tuple(1, ConstantManager.map("a")));"
+
+
+//     for b in true_lits_b {
+//         true_lits_a.insert(b).
+//     }
+
+//     for b in undefs_lits_b {
+//         undefs_lits_a.insert(b).
+//     }
+
+
+
+// }

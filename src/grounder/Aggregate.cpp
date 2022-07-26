@@ -11,7 +11,7 @@ Aggregate::Aggregate(){
 Aggregate::Aggregate(const Aggregate& a){
 }
 
-void Aggregate::addTerm(TermBase* t){
+void Aggregate::addToSymbolicSet(TermBase* t){
     symbolicSet.push_back(t);
 }
 

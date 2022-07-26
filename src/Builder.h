@@ -59,7 +59,7 @@ class Builder{
         void exitExprFact();
         void exitBinop();
         void exitBuiltIn();
-
+        void exitedSymbolicSet();
    
     private:
         Program* program;
@@ -88,9 +88,11 @@ class Builder{
         bool buildingNegativeLiteral = false;
         bool buildingLeftWardAggregate = false;
         bool buildingRightWardAggregate = false;
+        bool buildingAggregateLiterals = false;
 
         std::list<antlr4::ParserRuleContext*> currentBuildingTerms;
         std::vector<antlr4::ParserRuleContext*> expressionNesting;
+        std::vector<antlr4::ParserRuleContext*> functionalTermsNesting;
 };
 
 #endif

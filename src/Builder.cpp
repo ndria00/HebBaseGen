@@ -6,6 +6,7 @@ Builder::Builder(Program* program){
 	buildingNegativeLiteral = false;
     buildingLeftWardAggregate = false;
     buildingRightWardAggregate = false;
+	buildingAggregateLiterals = false;
 
 	currentRule = nullptr;
     currentAtom = nullptr;
@@ -16,6 +17,7 @@ Builder::Builder(Program* program){
 	currentBuiltInTerm = nullptr;
 	currentFuncTerm = nullptr;
     expressionNesting = std::vector<antlr4::ParserRuleContext*>();
+	functionalTermsNesting = std::vector<antlr4::ParserRuleContext*>();
 	
 	allRules = std::vector<Rule*>();
 	allAtoms = std::vector<Literal*>();
@@ -49,6 +51,7 @@ void Builder::addCurrentAggregate(){
 	buildingLeftWardAggregate = false;
 	buildingAggregate = false;
 	currentAggregate = nullptr;
+	buildingAggregateLiterals = false;
 }
 
 void Builder::addCurrentBuiltIn(){
@@ -147,14 +150,23 @@ void Builder::buildTerm(ASPCore2Parser::TermContext* term){
 }
 
 void Builder::buildTerm_(ASPCore2Parser::Term_Context* term_){
+		//N..M
 		if(term_->children.size() == 3 && term_->getStart()->getType() == ASPCore2Parser::NUMBER && currentAtom != nullptr){
 				std::string myString = term_->getText();
 				currentTerm = new Term(myString);
 				currentAtom->addTerm(currentTerm);
 				addCurrentTerm();
 		}else if(term_->children.size() == 4 && term_->getStop()->getType() == ASPCore2Parser::PARAM_CLOSE){
-			currentFuncTerm = new FunctionalTerm();
-			//TODO
+			//functional term
+			FunctionalTerm* temp = new FunctionalTerm();
+			if(currentFuncTerm != nullptr){
+				currentFuncTerm->addTerm(temp);
+			}//functional term is part of symbolic set of the current aggregate
+			else if(buildingAggregate && !buildingAggregateLiterals){
+				currentAggregate->addToSymbolicSet(currentFuncTerm);
+			}else{
+				currentAtom->addTerm(currentFuncTerm);
+			}
 		}
 		else{
 			currentBuildingTerms.push_back(term_);
@@ -203,7 +215,7 @@ void Builder::buildBasicTerm(ASPCore2Parser::Basic_termContext* basicTerm){
 	currentTerm = new Term(myString);
 	
 	if(buildingAggregate)
-		currentAggregate->addTerm(currentTerm);
+		currentAggregate->addToSymbolicSet(currentTerm);
 	addCurrentTerm();
 	
 }
@@ -236,6 +248,10 @@ void Builder::buildTerminal(antlr4::tree::TerminalNode * terminal){
 				allExpressions.push_back(tempFactor);
 			}
 			//currentExpression->addExpression(currentFactor);
+		}
+		else if(currentFuncTerm != nullptr){
+			//TODO
+			//currentFuncTerm->addTerm();
 		}
 		else
 			currentAtom->addTerm(currentTerm);
@@ -479,4 +495,8 @@ void Builder::exitBinop(){
 
 void Builder::exitBuiltIn(){
 	addCurrentBuiltIn();
+}
+
+void Builder::exitedSymbolicSet(){
+	buildingAggregateLiterals = true;
 }

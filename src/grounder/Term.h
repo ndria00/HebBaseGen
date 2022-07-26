@@ -18,6 +18,7 @@ class Term : public TermBase{
         virtual void setVariable(bool) override;
         virtual void getAllVariables(std::set<std::string>&) override;
         virtual void removeSafeVariables(std::set<std::string>&) override;
+        // virtual void saveInConstantsManager()const override;
         ~Term();
 };
 #endif

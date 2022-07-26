@@ -2,11 +2,11 @@
 
 ASPCore2ProgramListener::ASPCore2ProgramListener(Builder* builder): builder{builder}, ASPCore2BaseListener(){}
 
-void ASPCore2ProgramListener::enterProgram(ASPCore2Parser::ProgramContext * program){
+void ASPCore2ProgramListener::enterProgram(ASPCore2Parser::ProgramContext *){
     //std::cout<<"Entered program "<<program->getText() <<std::endl;
 }
 
-void ASPCore2ProgramListener::exitProgram(ASPCore2Parser::ProgramContext * program){
+void ASPCore2ProgramListener::exitProgram(ASPCore2Parser::ProgramContext *){
     //std::cout<<"Exited program "<<program->getText()<<std::endl;
 }
 
@@ -14,25 +14,25 @@ void ASPCore2ProgramListener::enterSimple_rule(ASPCore2Parser::Simple_ruleContex
     builder->buildSimpleRule(simpleRule);
 }
 
-void ASPCore2ProgramListener::exitSimple_rule(ASPCore2Parser::Simple_ruleContext * simpleRule){
+void ASPCore2ProgramListener::exitSimple_rule(ASPCore2Parser::Simple_ruleContext *){
     //std::cout<<"Exited rule "<<std::endl;
     builder->addCurrentRule();
 }
 
-void ASPCore2ProgramListener::enterHead(ASPCore2Parser::HeadContext * head){
+void ASPCore2ProgramListener::enterHead(ASPCore2Parser::HeadContext *){
     //std::cout<<"Entered Head.... disjunction: "<<""<<std::endl;
     builder->setBuildingHead(true);
 }
-void ASPCore2ProgramListener::exitHead(ASPCore2Parser::HeadContext * head){
+void ASPCore2ProgramListener::exitHead(ASPCore2Parser::HeadContext *){
     //std::cout<<"Exited Head "<<head->getText()<<std::endl;
     builder->setBuildingHead(false);
 }
 
-void ASPCore2ProgramListener::enterBody(ASPCore2Parser::BodyContext * body){
+void ASPCore2ProgramListener::enterBody(ASPCore2Parser::BodyContext *){
     //std::cout<<"Entered body "<<body->getText() <<std::endl;
     builder->setBuildingHead(false);
 }
-void ASPCore2ProgramListener::exitBody(ASPCore2Parser::BodyContext * body){
+void ASPCore2ProgramListener::exitBody(ASPCore2Parser::BodyContext *){
     //std::cout<<"Exited body "<<body->getText() <<std::endl;
     builder->setBuildingHead(false);
 }
@@ -42,14 +42,14 @@ void ASPCore2ProgramListener::enterClassic_literal(ASPCore2Parser::Classic_liter
 
 }
 
-void ASPCore2ProgramListener::exitClassic_literal(ASPCore2Parser::Classic_literalContext *literal){
+void ASPCore2ProgramListener::exitClassic_literal(ASPCore2Parser::Classic_literalContext *){
 }
 
 void ASPCore2ProgramListener::enterAtom(ASPCore2Parser::AtomContext * atom){
     builder->buildAtom(atom);
 }
 
-void ASPCore2ProgramListener::exitAtom(ASPCore2Parser::AtomContext * atom){
+void ASPCore2ProgramListener::exitAtom(ASPCore2Parser::AtomContext *){
     builder->addCurrentAtom();
 }
 
@@ -66,17 +66,17 @@ void ASPCore2ProgramListener::enterTerm(ASPCore2Parser::TermContext * term){
     builder->buildTerm(term);
 }
 
-void ASPCore2ProgramListener::exitTerm_(ASPCore2Parser::Term_Context * term_){
+void ASPCore2ProgramListener::exitTerm_(ASPCore2Parser::Term_Context * ){
     // antlr4::ParserRuleContext* context = builder->getParentContext();
     // if(context->getRuleIndex() == ASPCore2Parser::RuleIdentifier)
     //     std::cout<<"Found an identifier"<<std::endl;
 }
 
-void ASPCore2ProgramListener::exitTerm__(ASPCore2Parser::Term__Context * term__){
+void ASPCore2ProgramListener::exitTerm__(ASPCore2Parser::Term__Context *){
     // antlr4::ParserRuleContext* context = builder->getParentContext();
 }
 
-void ASPCore2ProgramListener::exitTerm(ASPCore2Parser::TermContext * term){
+void ASPCore2ProgramListener::exitTerm(ASPCore2Parser::TermContext *){
     // antlr4::ParserRuleContext* context = builder->getParentContext();
 }
 
@@ -86,7 +86,7 @@ void ASPCore2ProgramListener::enterAggregate(ASPCore2Parser::AggregateContext * 
 
 }
 
-void ASPCore2ProgramListener::exitAggregate(ASPCore2Parser::AggregateContext * aggregate){
+void ASPCore2ProgramListener::exitAggregate(ASPCore2Parser::AggregateContext *){
     builder->setBuildingRightWardAggregate(true);
 }
 
@@ -95,7 +95,7 @@ void ASPCore2ProgramListener::enterAggregate_atom(ASPCore2Parser::Aggregate_atom
 
 }
 
-void ASPCore2ProgramListener::exitAggregate_atom(ASPCore2Parser::Aggregate_atomContext * aggregateAtom){
+void ASPCore2ProgramListener::exitAggregate_atom(ASPCore2Parser::Aggregate_atomContext *){
     builder->setBuildingRightWardAggregate(false);
     builder->addCurrentAggregate();
 }
@@ -112,7 +112,7 @@ void ASPCore2ProgramListener::enterNaf_literal(ASPCore2Parser::Naf_literalContex
     builder->buildNafLiteral(nafLiteral);
 }
 
-void ASPCore2ProgramListener::exitNaf_literal(ASPCore2Parser::Naf_literalContext * nafLiteral){
+void ASPCore2ProgramListener::exitNaf_literal(ASPCore2Parser::Naf_literalContext *){
 
 }
 
@@ -120,8 +120,8 @@ void ASPCore2ProgramListener::enterBasic_term(ASPCore2Parser::Basic_termContext 
     builder->buildBasicTerm(basicTerm);
 }
 
-void ASPCore2ProgramListener::exitBasic_term(ASPCore2Parser::Basic_termContext * /*ctx*/){
-
+void ASPCore2ProgramListener::exitBasic_terms(ASPCore2Parser::Basic_termsContext * /*ctx*/){
+    builder->exitedSymbolicSet();
 }
 
 void ASPCore2ProgramListener::enterCompareop(ASPCore2Parser::CompareopContext * compareop){
@@ -140,11 +140,11 @@ void ASPCore2ProgramListener::enterFactor(ASPCore2Parser::FactorContext * factor
     builder->buildFactor(factor);
 }
 
-void ASPCore2ProgramListener::exitExpr(ASPCore2Parser::ExprContext * expression){
+void ASPCore2ProgramListener::exitExpr(ASPCore2Parser::ExprContext *){
     builder->exitExprFact();
 }
 
-void ASPCore2ProgramListener::exitFactor(ASPCore2Parser::FactorContext * factor){
+void ASPCore2ProgramListener::exitFactor(ASPCore2Parser::FactorContext *){
     builder->exitExprFact();
 }
 
@@ -152,9 +152,9 @@ void ASPCore2ProgramListener::enterBuiltin_atom(ASPCore2Parser::Builtin_atomCont
     builder->buildBuiltInAtom(builtIn);
 }
 
-void ASPCore2ProgramListener::enterBinop(ASPCore2Parser::BinopContext * binop){
+void ASPCore2ProgramListener::enterBinop(ASPCore2Parser::BinopContext *){
 }
-void ASPCore2ProgramListener::exitBuiltin_atom(ASPCore2Parser::Builtin_atomContext * builtIn){
+void ASPCore2ProgramListener::exitBuiltin_atom(ASPCore2Parser::Builtin_atomContext *){
     builder->exitBuiltIn();
 }
 

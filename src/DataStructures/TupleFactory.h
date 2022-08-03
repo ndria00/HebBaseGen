@@ -67,7 +67,7 @@ class TupleFactory{
         TupleFactory(/* args */){
             storage.push_back(TupleLight());
             internalIDToTuple.push_back(&storage.back());
-            AggregateSetCmp::factory=this;
+            //AggregateSetCmp::factory=this;
             generated=false;
         }
         

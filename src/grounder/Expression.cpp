@@ -106,3 +106,16 @@ bool Expression::isSimpleFactor(){
         return false;
     return first->isSimpleFactor();
 }
+
+std::string Expression::getRepresentation(){
+    std::string representation = "";
+    representation += "(";
+    if(first != nullptr)
+        representation += first->getRepresentation();
+    std::cout<<myOperator;
+    if(second != nullptr){
+        representation += second->getRepresentation();
+    }
+    representation += ")";
+    return representation;
+}

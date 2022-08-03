@@ -4,6 +4,7 @@ Literal::Literal(){
     terms = std::vector<TermBase*>();
     identifier = "";
     negative = false;
+    id = 0;
 }
 
 Literal::Literal(std::string identifier, std::vector<TermBase*>& terms){
@@ -62,4 +63,53 @@ void Literal::removeSafeLiteralVariables(std::set<std::string>& variables)const{
     for(TermBase* term : terms){
         term->removeSafeVariables(variables);
     }
+}
+
+unsigned Literal::getArity()const{
+    return terms.size();
+}
+
+std::string Literal::getRepresentation(){
+    std::string representation = "";
+    if(negative)
+        representation+="not ";
+    representation += this->identifier;
+    representation += "(";
+    for(unsigned i = 0; i < terms.size(); ++i) {
+        //representation += terms.at(i)->getRepresentation();
+        if(i != terms.size() -1)
+            representation += ", ";
+    }
+    representation += ")";
+    return representation;
+}
+
+bool Literal::operator==(const Literal& o)const{
+    if(identifier != o.getIdentifier()){
+        return false;
+    }
+    if(terms.size() != o.getArity()){
+        return false;
+    }
+
+    for(TermBase *t : terms){
+        for(TermBase* t1: o.getTerms()){
+            if(!(*t == *t1)){
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void Literal::setID(unsigned id){
+    this->id = id;
+}
+unsigned Literal::getID()const{
+    return id;
+}
+
+std::string Literal::getIDAndArity()const{
+    std::string res = identifier +  "_" + std::to_string(terms.size());
+    return res;
 }

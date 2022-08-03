@@ -27,6 +27,7 @@ class Expression : public ExpressionBase{
         virtual void setVariable(bool ) override;
         virtual void getAllVariables(std::set<std::string>&) override;
         virtual void removeSafeVariables(std::set<std::string>&) override;
+        virtual std::string getRepresentation() override;
         virtual bool isSimpleFactor() override;
         ~Expression();
 

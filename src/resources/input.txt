@@ -1,3 +1,5 @@
-a(X):- b(X), b(Y), not b(Y), X=M, h.
-b(X):- c(X), c(Y), Y=X+2.
-c(X):- b(X), 22<#count{Y : c(Y)}<23.
+a(X) :- b(X).
+b(X) :- a(X).
+b(X) :- c(X).
+c(X) :- b(X), l(X, Y).
+h(X) | r(X) :- f(X), g(X), m(Y, X), X != Y.

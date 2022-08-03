@@ -71,3 +71,10 @@ void SimpleFactor::removeSafeVariables(std::set<std::string>& variables){
 bool SimpleFactor::isSimpleFactor(){
     return true;
 }
+
+std::string SimpleFactor::getRepresentation(){
+    std::string representation = "";
+    if(simpleTerm != nullptr)
+        representation += simpleTerm->getRepresentation();
+    return representation;
+}

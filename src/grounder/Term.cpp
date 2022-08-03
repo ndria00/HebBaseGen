@@ -40,12 +40,18 @@ void Term::removeSafeVariables(std::set<std::string>& variables){
         variables.erase(this->value);
 }
 
-//virtual void saveInConstantsManager()const{
-//
-//}
-
 Term::~Term(){
 
+}
+
+std::string Term::getRepresentation(){
+    std::string representation = "";
+    representation += this->value;
+    return representation;
+}
+
+bool Term::operator==(const TermBase& o)const{
+    return o.getValue() == value;
 }
 
 // f(1, "a").

@@ -61,6 +61,8 @@ class Builder{
         void exitBuiltIn();
         void exitedSymbolicSet();
    
+        std::vector<Rule*>& getAllRules();
+    
     private:
         Program* program;
 

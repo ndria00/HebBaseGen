@@ -14,7 +14,8 @@ class TermBase{
         virtual void setVariable(bool) = 0;
         virtual void getAllVariables(std::set<std::string>&) = 0;
         virtual void removeSafeVariables(std::set<std::string>&) = 0;
-        // virtual void saveInConstantsManager()const = 0;
+        virtual std::string getRepresentation() = 0;
+        virtual bool operator==(const TermBase&)const{return false;}
         virtual ~TermBase(){}
 };
 #endif

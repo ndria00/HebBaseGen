@@ -1,12 +1,17 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <unordered_map>
 #include "antlr4-runtime.h"
 #include "parser/ASPCore2Lexer.h"
 #include "parser/ASPCore2Parser.h"
 #include "listeners/ASPCore2ProgramListener.h"
 #include "grounder/Program.h"
 #include "DataStructures/AuxiliaryMapSmart.h"
+#include "DataStructures/TupleFactory.h"
+#include "DataStructures/TupleLight.h"
+#include "DataStructures/ConstantsManager.h"
+#include "DependencyGraph/DependencyGraphHandler.h"
 
 void print(){
 	std::cout << "Hello world !" << std::endl;
@@ -51,6 +56,11 @@ int main(int argc, char *argv[]){
 		std::cout<<"Safety errors detected!"<<std::endl;
 	}
 
+	//Dependency graph computation
+	DependencyGraphHandler::getInstance().createGraph(builder->getAllRules());
+	//std::vector<std::vector<int>> layers = DependencyGraphHandler::getInstance().getProgramLayers();
+	DependencyGraphHandler::getInstance().printProgramLayers();
+	
 	builder->clearMemory();
 	
 	delete program;

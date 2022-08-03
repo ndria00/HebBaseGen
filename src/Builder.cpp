@@ -500,3 +500,7 @@ void Builder::exitBuiltIn(){
 void Builder::exitedSymbolicSet(){
 	buildingAggregateLiterals = true;
 }
+
+std::vector<Rule*>& Builder::getAllRules(){
+	return allRules;
+}

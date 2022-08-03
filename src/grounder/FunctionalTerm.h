@@ -20,6 +20,7 @@ class FunctionalTerm: public TermBase{
         std::string getFunctionName()const;
         const std::vector<TermBase*>& getTerms()const;
         void setFunctionName(std::string);
+        virtual std::string getRepresentation() override;
         ~FunctionalTerm();
 };
 #endif

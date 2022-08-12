@@ -2,7 +2,7 @@
 #define DEPENDENCYGGRAPHHANDLES_H
 
 #include "GraphWithTarjanAlgorithm.h"
-#include "unordered_map"
+#include <unordered_map>
 #include <iostream>
 #include <vector>
 #include "../grounder/Rule.h"
@@ -12,10 +12,9 @@
 class DependencyGraphHandler{
     private:
         GraphWithTarjanAlgorithm depGraph;
-        std::unordered_map<std::string, int> predicateID;
     public:
         static DependencyGraphHandler& getInstance();
-        void createGraph(std::vector<Rule*>&);
+        void createGraph(std::vector<Rule*>&, std::unordered_map<std::string, unsigned>&);
         std::vector<std::vector<int>> getProgramLayers();
         DependencyGraphHandler(const DependencyGraphHandler&) = delete;
         bool operator=(const DependencyGraphHandler&) = delete;

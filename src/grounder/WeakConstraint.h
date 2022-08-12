@@ -1,3 +1,5 @@
+#ifndef WEAKCONSTRAINT_H
+#define WEAKCONSTRAINT_H
 #include "Rule.h"
 
 class WeakConstraint : public Rule{
@@ -13,3 +15,5 @@ class WeakConstraint : public Rule{
         void setWeightTerms(std::vector<Term*>&);
         
 };
+
+#endif /*WEAKCONSTRAINT_H*/

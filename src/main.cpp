@@ -12,7 +12,7 @@
 #include "DataStructures/TupleLight.h"
 #include "DataStructures/ConstantsManager.h"
 #include "DependencyGraph/DependencyGraphHandler.h"
-
+#include "ASP2CPP/CompilationManager.h"
 void print(){
 	std::cout << "Hello world !" << std::endl;
 }
@@ -57,10 +57,17 @@ int main(int argc, char *argv[]){
 	}
 
 	//Dependency graph computation
-	DependencyGraphHandler::getInstance().createGraph(builder->getAllRules());
+	DependencyGraphHandler::getInstance().createGraph(builder->getAllRules(), program->getPredicatesID());
 	//std::vector<std::vector<int>> layers = DependencyGraphHandler::getInstance().getProgramLayers();
 	DependencyGraphHandler::getInstance().printProgramLayers();
 	
+	//generating compiled program
+	CompilationManager compManager = CompilationManager(builder);
+	
+	std::ofstream outfile("../src/ASP2CPP/Executor.cpp");
+	compManager.setOutStream(&outfile);
+	compManager.generateProgram(program);
+	outfile.close();
 	builder->clearMemory();
 	
 	delete program;

@@ -1,5 +1,5 @@
-#ifndef BUILDER_H_
-#define BUILDE_H_
+#ifndef BUILDER_H
+#define BUILDER_H
 
 #include "parser/ASPCore2Parser.h"
 #include "grounder/Literal.h"
@@ -60,8 +60,10 @@ class Builder{
         void exitBinop();
         void exitBuiltIn();
         void exitedSymbolicSet();
-   
+        //getResult()
+        Program* getProgram();
         std::vector<Rule*>& getAllRules();
+        std::vector<Literal*>& getAllLiterals();
     
     private:
         Program* program;
@@ -74,6 +76,7 @@ class Builder{
         ExpressionBase* currentExpression;
         BuiltInTerm* currentBuiltInTerm;
         FunctionalTerm* currentFuncTerm;
+
         std::vector<Rule*> allRules;
         std::vector<Literal*> allAtoms;
         std::vector<TermBase*> allTerms;
@@ -95,6 +98,9 @@ class Builder{
         std::list<antlr4::ParserRuleContext*> currentBuildingTerms;
         std::vector<antlr4::ParserRuleContext*> expressionNesting;
         std::vector<antlr4::ParserRuleContext*> functionalTermsNesting;
+
+        unsigned ruleID;
+        unsigned literalsId;
 };
 
-#endif
+#endif /*BUILDER_H*/

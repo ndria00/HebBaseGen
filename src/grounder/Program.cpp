@@ -1,7 +1,8 @@
 #include "Program.h"
    
 Program::Program(){
-
+    rules = std::vector<Rule*>();
+    //predicateID = std::unordered_set<>();
 }
 
 const std::vector<Rule*>& Program::getRules()const{
@@ -32,4 +33,16 @@ void Program::print()const{
         r->print();
     }
     std::cout<<std::endl;
+}
+
+std::unordered_map<std::string, unsigned>& Program::getPredicatesID(){
+    return predicateID;
+}
+
+bool Program::existsPredicate(std::string repr)const{
+    return predicateID.count(repr) > 0;
+}
+
+void Program::addPredicateWithID(const std::string& predName, unsigned id){
+    predicateID[predName] = id;
 }

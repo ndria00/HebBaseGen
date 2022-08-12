@@ -51,6 +51,20 @@ bool Rule::isSafe()const{
     return variables.size() == 0;
 }
 
+bool Rule::isFact()const{
+    //CHECK
+    //a(1):-b(1). is actually a fact
+    if(body->isEmpty())
+        return false;
+    
+    for(Literal* lit : head->getDisjunction()){
+        if( !lit->isGround()){
+            return false;
+        }
+    }
+    return true;
+}
+
 void Rule::print()const{
     head->print();
     if(body->getConjunction().size() > 0 || body->getAggregates().size() > 0){
@@ -58,6 +72,13 @@ void Rule::print()const{
         body->print();
     }
     std::cout<<".";
+}
+
+void Rule::setID(unsigned id){
+    this->id = id;
+}
+unsigned Rule::getID()const{
+    return id;
 }
 
 Rule::~Rule(){

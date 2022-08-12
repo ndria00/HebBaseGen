@@ -14,7 +14,7 @@ class Literal{
     public:
         Literal();
         Literal(std::string, std::vector<TermBase*>&);
-        std::string getIdentifier()const;
+        const std::string& getIdentifier()const;
         const std::vector<TermBase*>& getTerms()const;
         void setIdentifier(std::string);
         void setID(unsigned);
@@ -28,6 +28,7 @@ class Literal{
         void getLiteralVariables(std::set<std::string>&)const;
         void removeSafeLiteralVariables(std::set<std::string>&)const;
         void clear();
+        bool isGround();
         std::string getRepresentation();
         std::string getIDAndArity()const;
         bool operator==(const Literal& )const;

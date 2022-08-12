@@ -11,7 +11,7 @@ Literal::Literal(std::string identifier, std::vector<TermBase*>& terms){
     this->identifier = identifier;
     this->terms = terms;
 }
-std::string Literal::getIdentifier()const{
+const std::string& Literal::getIdentifier()const{
     return this->identifier;
 }
 const std::vector<TermBase*>& Literal::getTerms()const{
@@ -99,6 +99,13 @@ bool Literal::operator==(const Literal& o)const{
             }
         }
     }
+    return true;
+}
+
+bool Literal::isGround(){
+    for(TermBase* t : terms)
+        if(t->isVariable())
+            return false;
     return true;
 }
 

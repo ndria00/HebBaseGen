@@ -71,3 +71,7 @@ void Body::removeBodySafeVariables(std::set<std::string>& variables)const{
         builtIn->removeSafeVariablesInBuiltIn(variables);
     }
 }
+
+bool Body::isEmpty(){
+    return conjunction.size() == 0 && aggregates.size() == 0 && builtInTerms.size() == 0;
+}

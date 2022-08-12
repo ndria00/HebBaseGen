@@ -28,10 +28,18 @@ Builder::Builder(Program* program){
 	this->program = program;
 
 	currentBuildingTerms = std::list<antlr4::ParserRuleContext*>();
+	ruleID = 0;
+	literalsId = 0;
 }
 
 void Builder::addCurrentAtom(){
 	allAtoms.push_back(currentAtom);
+	if(!program->existsPredicate(currentAtom->getIDAndArity())){
+		currentAtom->setID(literalsId);
+		//predicateID[lit->getIDAndArity()] = literalsId;
+		program->addPredicateWithID(currentAtom->getIdentifier(), literalsId);
+		++literalsId;
+	}
 	currentAtom = nullptr;
 }
 void Builder::addCurrentTerm(){
@@ -40,6 +48,8 @@ void Builder::addCurrentTerm(){
 }
 
 void Builder::addCurrentRule(){
+	currentRule->setID(ruleID);
+	ruleID++;
 	allRules.push_back(currentRule);
 	program->addRule(currentRule);
 	currentRule = nullptr;
@@ -97,7 +107,7 @@ void Builder::buildHead(ASPCore2Parser::HeadContext* headContext){
 }
 
 void Builder::buildSimpleRule(ASPCore2Parser::Simple_ruleContext* simpleRule){
-		if(simpleRule->getStart()->getType() == ASPCore2Parser::WCONS){
+	if(simpleRule->getStart()->getType() == ASPCore2Parser::WCONS){
 		currentRule = new WeakConstraint();
 	}
 	else{
@@ -108,14 +118,6 @@ void Builder::buildSimpleRule(ASPCore2Parser::Simple_ruleContext* simpleRule){
 void Builder::buildRule(ASPCore2Parser::RuleContext* ruleContext){
 		//currentRule = new Rule();
 }
-
-// void Builder::buildProgram(ASPCore2Parser::ProgramContext* programContext, Program& program){
-// 	std::cout<<"Building program"<<std::endl;
-// 	for(auto& ruleContext : programContext->rule_()){
-// 		std::cout<<"Found something"<<std::endl;
-// 		buildRule(ruleContext,program);
-// 	}
-// }
 
 void Builder::buildTerm(ASPCore2Parser::TermContext* term){
 	if(term->identifier() != NULL && term->children.size() == 1){
@@ -503,4 +505,12 @@ void Builder::exitedSymbolicSet(){
 
 std::vector<Rule*>& Builder::getAllRules(){
 	return allRules;
+}
+
+Program* Builder::getProgram(){
+	return program;
+}
+
+std::vector<Literal*>& Builder::getAllLiterals(){
+	return allAtoms;
 }

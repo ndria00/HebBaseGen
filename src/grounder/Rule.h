@@ -10,6 +10,7 @@ class Rule{
         Head* head;
         Body* body;
         bool safe;
+        unsigned id;
    
     public:
         Rule();
@@ -23,7 +24,10 @@ class Rule{
         void setBody(Body*);
         void print()const;
         bool isSafe()const;
+        bool isFact()const;
         void setSafetyStatus(bool);
+        void setID(unsigned);
+        unsigned getID()const;
         ~Rule();
 };
 

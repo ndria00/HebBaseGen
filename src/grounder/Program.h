@@ -1,10 +1,11 @@
 #ifndef PROGRAM_H_
 #define PROGRAM_H_
 #include "Rule.h"
-
+#include <unordered_map>
 class Program{
     private:
         std::vector<Rule*> rules;
+        std::unordered_map<std::string, unsigned> predicateID;
     
     public:
         Program();
@@ -14,6 +15,9 @@ class Program{
         void print()const;
         bool checkSafety()const;
         void mapAllConstants()const;
+        bool existsPredicate(std::string)const;
+        void addPredicateWithID(const std::string&, unsigned);
+        std::unordered_map<std::string, unsigned>& getPredicatesID();
 };
 
-#endif
+#endif /*PROGRAM_H_*/

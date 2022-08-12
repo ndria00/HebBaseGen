@@ -1,7 +1,6 @@
 #include "DependencyGraphHandler.h"
 
 DependencyGraphHandler::DependencyGraphHandler(){
-    predicateID = {};
     depGraph = GraphWithTarjanAlgorithm();
 }
 
@@ -10,19 +9,19 @@ DependencyGraphHandler& DependencyGraphHandler::getInstance(){
     return instance; 
 }
 
-void DependencyGraphHandler::createGraph(std::vector<Rule*>& allRules){
-	unsigned literalsId = 0;
-	//set ids
-	for(Rule* r : allRules){
-		for(Literal* lit : r->getHead()->getDisjunction()){
-			if(predicateID.find(lit->getIDAndArity()) == predicateID.end()){
-				lit->setID(literalsId);
-				predicateID[lit->getIDAndArity()] = literalsId;
-				depGraph.addNode(literalsId);
-				++literalsId;
-			}
-		}
-	}
+void DependencyGraphHandler::createGraph(std::vector<Rule*>& allRules, std::unordered_map<std::string, unsigned>& predicateID){
+	// unsigned literalsId = 0;
+	// //set ids
+	// for(Rule* r : allRules){
+	// 	for(Literal* lit : r->getHead()->getDisjunction()){
+	// 		if(predicateID.find(lit->getIDAndArity()) == predicateID.end()){
+	// 			lit->setID(literalsId);
+	// 			predicateID[lit->getIDAndArity()] = literalsId;
+	// 			depGraph.addNode(literalsId);
+	// 			++literalsId;
+	// 		}
+	// 	}
+	// }
 	
 	for(Rule* r : allRules){
 		for(Literal* lit : r->getBody()->getConjunction()){

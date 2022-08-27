@@ -11,7 +11,7 @@ class Head{
         const std::vector<Literal*>& getDisjunction()const;
         void setDisjunction(std::vector<Literal*>&);
         void addAtom(Literal*);
-        void getHeadVariables(std::set<std::string>&)const;
+        void getHeadVariables(std::unordered_set<std::string>&)const;
         void print()const;
 };
 

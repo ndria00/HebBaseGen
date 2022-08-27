@@ -27,13 +27,13 @@ bool FunctionalTerm::isVariable()const{
 void FunctionalTerm::setVariable(bool){
 
 }
-void FunctionalTerm::getAllVariables(std::set<std::string>& variables){
+void FunctionalTerm::getAllVariables(std::unordered_set<std::string>& variables){
     for(TermBase* term : terms){
         if(term->isVariable())
             variables.insert(term->getValue());
     }
 }
-void FunctionalTerm::removeSafeVariables(std::set<std::string>& variables){
+void FunctionalTerm::removeSafeVariables(std::unordered_set<std::string>& variables){
     for(TermBase* term : terms){
         term->removeSafeVariables(variables);
     }

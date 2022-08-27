@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include <set>
+#include <unordered_set>
 class TermBase{
         
     public:
@@ -12,8 +12,8 @@ class TermBase{
         virtual void print() const= 0;
         virtual bool isVariable()const = 0;
         virtual void setVariable(bool) = 0;
-        virtual void getAllVariables(std::set<std::string>&) = 0;
-        virtual void removeSafeVariables(std::set<std::string>&) = 0;
+        virtual void getAllVariables(std::unordered_set<std::string>&) = 0;
+        virtual void removeSafeVariables(std::unordered_set<std::string>&) = 0;
         virtual std::string getRepresentation() = 0;
         virtual bool operator==(const TermBase&)const{return false;}
         virtual ~TermBase(){}

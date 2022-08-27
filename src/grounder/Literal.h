@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <unordered_set>
 #include "TermBase.h"
 #include "ExpressionBase.h"
 class Literal{
@@ -20,18 +21,22 @@ class Literal{
         void setID(unsigned);
         unsigned getID()const;
         void setTerms (std::vector<TermBase*>&);
+        const std::string& getTermAt(unsigned )const;
         void addTerm(TermBase*);
         unsigned getArity()const;
         void print()const;
         bool isNegative()const;
         void setNegative(bool);
-        void getLiteralVariables(std::set<std::string>&)const;
-        void removeSafeLiteralVariables(std::set<std::string>&)const;
+        void getLiteralVariables(std::unordered_set<std::string>&)const;
+        void addVariablesToSet(std::unordered_set<std::string>&)const;
+        void removeSafeLiteralVariables(std::unordered_set<std::string>&)const;
         void clear();
         bool isGround();
         std::string getRepresentation();
         std::string getIDAndArity()const;
         bool operator==(const Literal& )const;
+
+        bool isBound(const std::unordered_set<std::string>&)const;
 };
 
 #endif

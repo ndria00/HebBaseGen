@@ -54,7 +54,7 @@ void Body::addAggregate(Aggregate* aggregate){
     aggregates.push_back(aggregate);
 }
 
-void Body::getBodyVariables(std::set<std::string>& variables)const{
+void Body::getBodyVariables(std::unordered_set<std::string>& variables)const{
     for(Literal* literal : conjunction){
         literal->getLiteralVariables(variables);
     }
@@ -63,7 +63,7 @@ void Body::getBodyVariables(std::set<std::string>& variables)const{
     }
 }
 
-void Body::removeBodySafeVariables(std::set<std::string>& variables)const{
+void Body::removeBodySafeVariables(std::unordered_set<std::string>& variables)const{
     for(Literal* literal : conjunction){
         literal->removeSafeLiteralVariables(variables);
     } 

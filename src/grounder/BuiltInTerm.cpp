@@ -38,12 +38,12 @@ void BuiltInTerm::print()const{
         rightExpr->print();
 }
 
-void BuiltInTerm::getBuiltInVariables(std::set<std::string>& variables){
+void BuiltInTerm::getBuiltInVariables(std::unordered_set<std::string>& variables){
     leftExpr->getAllVariables(variables);
     rightExpr->getAllVariables(variables);
 }
 
-void BuiltInTerm::removeSafeVariablesInBuiltIn(std::set<std::string>& variables){
+void BuiltInTerm::removeSafeVariablesInBuiltIn(std::unordered_set<std::string>& variables){
     //remove a signle variable only if the built in is an assignment
     if(myOperator == "=" || myOperator == "=="){
         SimpleFactor* temp;

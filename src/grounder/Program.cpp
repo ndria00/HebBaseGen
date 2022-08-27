@@ -43,6 +43,10 @@ bool Program::existsPredicate(std::string repr)const{
     return predicateID.count(repr) > 0;
 }
 
-void Program::addPredicateWithID(const std::string& predName, unsigned id){
-    predicateID[predName] = id;
+bool Program::addPredicateWithID(const std::string& predName, unsigned id){
+    if(predicateID.count(predName) == 0){
+        predicateID[predName] = id;
+        return true;
+    }
+    return false;
 }

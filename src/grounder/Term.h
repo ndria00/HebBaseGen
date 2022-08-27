@@ -16,8 +16,8 @@ class Term : public TermBase{
         virtual void print()const override;
         virtual bool isVariable()const override;
         virtual void setVariable(bool) override;
-        virtual void getAllVariables(std::set<std::string>&) override;
-        virtual void removeSafeVariables(std::set<std::string>&) override;
+        virtual void getAllVariables(std::unordered_set<std::string>&) override;
+        virtual void removeSafeVariables(std::unordered_set<std::string>&) override;
         virtual std::string getRepresentation() override;
         virtual bool operator==(const TermBase&)const override;
 

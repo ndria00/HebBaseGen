@@ -19,8 +19,8 @@ class BuiltInTerm{
         void addExpression(ExpressionBase*);
         void addLeftExpression(ExpressionBase*);
         void addRightExpression(ExpressionBase*);
-        void getBuiltInVariables(std::set<std::string>& );
-        void removeSafeVariablesInBuiltIn(std::set<std::string>&);
+        void getBuiltInVariables(std::unordered_set<std::string>& );
+        void removeSafeVariablesInBuiltIn(std::unordered_set<std::string>&);
         void print()const;
 };
 #endif

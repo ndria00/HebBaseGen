@@ -30,12 +30,12 @@ void Term::setVariable(bool variable){
     this->variable = variable;
 }
 
-void Term::getAllVariables(std::set<std::string>& variables){
+void Term::getAllVariables(std::unordered_set<std::string>& variables){
     if(isVariable())
         variables.insert(value);
 }
 
-void Term::removeSafeVariables(std::set<std::string>& variables){
+void Term::removeSafeVariables(std::unordered_set<std::string>& variables){
     if(isVariable())
         variables.erase(this->value);
 }

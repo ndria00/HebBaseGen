@@ -18,8 +18,8 @@ class ExpressionBase : public TermBase{
         virtual void print()const = 0;
         virtual bool isVariable()const = 0;
         virtual void setVariable(bool ) = 0;
-        virtual void getAllVariables(std::set<std::string>&) = 0;
-        virtual void removeSafeVariables(std::set<std::string>&) = 0;
+        virtual void getAllVariables(std::unordered_set<std::string>&) = 0;
+        virtual void removeSafeVariables(std::unordered_set<std::string>&) = 0;
         virtual std::string getRepresentation() = 0;
         virtual bool isSimpleFactor() = 0;
         virtual ~ExpressionBase(){}

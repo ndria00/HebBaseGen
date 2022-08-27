@@ -16,7 +16,7 @@ class Program{
         bool checkSafety()const;
         void mapAllConstants()const;
         bool existsPredicate(std::string)const;
-        void addPredicateWithID(const std::string&, unsigned);
+        bool addPredicateWithID(const std::string&, unsigned);
         std::unordered_map<std::string, unsigned>& getPredicatesID();
 };
 

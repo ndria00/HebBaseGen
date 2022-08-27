@@ -85,7 +85,7 @@ void Expression::setVariable(bool ) {
 
 }
 
-void Expression::getAllVariables(std::set<std::string>& variables){
+void Expression::getAllVariables(std::unordered_set<std::string>& variables){
     if(first != nullptr){
         first->getAllVariables(variables);
     }
@@ -94,7 +94,7 @@ void Expression::getAllVariables(std::set<std::string>& variables){
     }
 }
 
-void Expression::removeSafeVariables(std::set<std::string>& variables){
+void Expression::removeSafeVariables(std::unordered_set<std::string>& variables){
     if(first != nullptr)
         first->removeSafeVariables(variables);
     if(second != nullptr)

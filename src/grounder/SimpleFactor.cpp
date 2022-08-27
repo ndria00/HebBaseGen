@@ -57,14 +57,14 @@ void SimpleFactor::setVariable(bool ) {
 
 }
 
-void SimpleFactor::getAllVariables(std::set<std::string>& variables){
+void SimpleFactor::getAllVariables(std::unordered_set<std::string>& variables){
     if(simpleTerm->isVariable()){
         std::string myString = simpleTerm->getValue();
         variables.insert(myString);
     }
 }
 
-void SimpleFactor::removeSafeVariables(std::set<std::string>& variables){
+void SimpleFactor::removeSafeVariables(std::unordered_set<std::string>& variables){
     simpleTerm->removeSafeVariables(variables);
 }
 

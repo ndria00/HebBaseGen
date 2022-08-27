@@ -28,6 +28,10 @@ void Literal::addTerm(TermBase* term){
     terms.push_back(term);
 }
 
+const std::string& Literal::getTermAt(unsigned i)const{
+    return terms.at(i)->getValue();
+}
+
 void Literal::clear(){
     terms.clear();
 }
@@ -51,13 +55,13 @@ void Literal::print()const{
     std::cout<<")";
 }
 
-void Literal::getLiteralVariables(std::set<std::string>& variables)const{
+void Literal::getLiteralVariables(std::unordered_set<std::string>& variables)const{
     for(TermBase* term : terms){
         term->getAllVariables(variables);
     }
 }
 
-void Literal::removeSafeLiteralVariables(std::set<std::string>& variables)const{
+void Literal::removeSafeLiteralVariables(std::unordered_set<std::string>& variables)const{
     if(isNegative())
         return;
     for(TermBase* term : terms){
@@ -119,4 +123,17 @@ unsigned Literal::getID()const{
 std::string Literal::getIDAndArity()const{
     std::string res = identifier +  "_" + std::to_string(terms.size());
     return res;
+}
+
+bool Literal::isBound(const std::unordered_set<std::string>& boundTerms)const{
+    for(unsigned i = 0; i < getArity(); ++i){
+        if(terms[i]->isVariable() && !boundTerms.count(getTermAt(i))){
+            return false;
+        }
+    }
+    return true;
+}
+
+void Literal::addVariablesToSet(std::unordered_set<std::string>& boundVariables)const{
+    getLiteralVariables(boundVariables);
 }

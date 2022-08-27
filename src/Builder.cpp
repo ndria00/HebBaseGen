@@ -37,8 +37,8 @@ void Builder::addCurrentAtom(){
 	if(!program->existsPredicate(currentAtom->getIDAndArity())){
 		currentAtom->setID(literalsId);
 		//predicateID[lit->getIDAndArity()] = literalsId;
-		program->addPredicateWithID(currentAtom->getIdentifier(), literalsId);
-		++literalsId;
+		if(program->addPredicateWithID(currentAtom->getIdentifier(), literalsId))
+			++literalsId;
 	}
 	currentAtom = nullptr;
 }

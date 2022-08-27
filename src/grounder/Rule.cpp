@@ -42,7 +42,7 @@ void Rule::setSafetyStatus(bool safe){
 
 bool Rule::isSafe()const{
     //TODO (ANON_VAR in negative literals)
-    std::set<std::string> variables = std::set<std::string>();
+    std::unordered_set<std::string> variables = std::unordered_set<std::string>();
     head->getHeadVariables(variables);
     body->getBodyVariables(variables);
     //std::cout<<"Number of variables for rule: "<<variables.size()<<std::endl;

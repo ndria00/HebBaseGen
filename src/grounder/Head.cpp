@@ -15,7 +15,7 @@ void Head::setDisjunction(std::vector<Literal*>& disjunction){
     this->disjunction = disjunction;
 }
 
-void Head::getHeadVariables(std::set<std::string>& variables)const{
+void Head::getHeadVariables(std::unordered_set<std::string>& variables)const{
     for(Literal* literal : disjunction){
             literal->getLiteralVariables(variables);
     }

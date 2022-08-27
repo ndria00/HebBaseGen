@@ -7,13 +7,14 @@ class Indentation{
         int steps;
     public:    
     Indentation();
-    Indentation(Indentation&);
+    Indentation(int);
+    Indentation(const Indentation&);
     //prefix
     Indentation& operator++();
     Indentation& operator--();
     //postfix
-    Indentation& operator++(int);
-    Indentation& operator--(int);
+    Indentation operator++(int);
+    Indentation operator--(int);
     friend std::ostream& operator<<(std::ostream&, const Indentation&);
 };
 

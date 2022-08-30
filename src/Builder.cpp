@@ -25,6 +25,7 @@ Builder::Builder(Program* program){
 	allAggregates = std::vector<Aggregate*>();
 	allExpressions = std::vector<ExpressionBase*>();
 	allBuiltIn = std::vector<BuiltInTerm*>();
+	allFacts = std::vector<std::pair<Literal*, bool>>();
 	this->program = program;
 
 	currentBuildingTerms = std::list<antlr4::ParserRuleContext*>();
@@ -52,6 +53,15 @@ void Builder::addCurrentRule(){
 	ruleID++;
 	allRules.push_back(currentRule);
 	program->addRule(currentRule);
+	if(currentRule->isFact()){
+		bool isDisjunctive = false;
+		if(currentRule->getHead()->getDisjunction().size() > 1)
+			isDisjunctive = true;
+
+		for(Literal* lit : currentRule->getHead()->getDisjunction()){
+			allFacts.push_back(std::make_pair(lit, isDisjunctive));
+		}
+	}
 	currentRule = nullptr;
 }
 
@@ -514,3 +524,7 @@ Program* Builder::getProgram(){
 std::vector<Literal*>& Builder::getAllLiterals(){
 	return allAtoms;
 }
+
+ std::vector<std::pair<Literal*, bool>>& Builder::getAllFacts(){
+	 return allFacts;
+ }

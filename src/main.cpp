@@ -13,16 +13,44 @@
 #include "DataStructures/ConstantsManager.h"
 #include "DependencyGraph/DependencyGraphHandler.h"
 #include "ASP2CPP/CompilationManager.h"
+#include "ASP2CPP/Executor.h"
+
 void print(){
 	std::cout << "Hello world !" << std::endl;
 }
 static std::once_flag printFlag;
 
+enum ExecutionMode{COMPILER = 0, GENERATOR = 1};
+
 int main(int argc, char *argv[]){
+	ExecutionMode MODE = COMPILER;
 	
+	if(argc > 1){
+		std::string option1 = argv[1];
+		if(option1 == "compile"){
+			std::cout<<"Compiling program..."<<std::endl;
+			MODE = COMPILER;
+		}
+		else if(option1 == "generate"){
+			std::cout<<"reading facts and generating base..."<<std::endl;
+			MODE = GENERATOR;
+		}
+		else{
+			std::cout<<"Option not supported\n";
+			return 0;
+		}
+	}
+
 	std::ifstream myFile;
 	std::string myInput = "";
-	myFile.open("../src/resources/input.txt");
+	if(MODE == COMPILER){
+		myFile.open("../src/resources/input.txt");
+	}
+	else if(MODE == GENERATOR){
+		myFile.open("../src/resources/facts.txt");
+	}
+
+	
 	if(myFile.is_open()){
 		std::string line;
 		while(getline(myFile, line)){
@@ -43,31 +71,53 @@ int main(int argc, char *argv[]){
 	Program* program =  new Program();
 	Builder* builder =  new Builder(program);
 	ASPCore2ProgramListener listener(builder);
-	std::cout<<"Calling builder\n";
-	antlr4::tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
-	
-	std::cout<<"Builder finished\n";
-	listener.getBuilder()->printProgram();
-	
-	if(program->checkSafety()){
-		std::cout<<"No safety errors found"<<std::endl;
+	if(MODE == COMPILER){
+		std::cout<<"Building program\n";
 	}
-	else{
-		std::cout<<"Safety errors detected!"<<std::endl;
+	else if (MODE == GENERATOR){
+		std::cout<<"Building facts\n";
 	}
 
-	//Dependency graph computation
-	DependencyGraphHandler::getInstance().createGraph(builder->getAllRules(), program->getPredicatesID());
-	//std::vector<std::vector<int>> layers = DependencyGraphHandler::getInstance().getProgramLayers();
-	DependencyGraphHandler::getInstance().printProgramLayers();
+	antlr4::tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
+	std::cout<<"Builder finished\n";
+	if(MODE == COMPILER){
+		listener.getBuilder()->printProgram();
+		
+		if(program->checkSafety()){
+			std::cout<<"No safety errors found"<<std::endl;
+		}
+		else{
+			std::cout<<"Safety errors detected!"<<std::endl;
+			return 0;
+		}
+
+		//Dependency graph computation
+		DependencyGraphHandler::getInstance().createGraph(builder->getAllRules(), program->getPredicatesID());
+		//std::vector<std::vector<int>> layers = DependencyGraphHandler::getInstance().getProgramLayers();
+		DependencyGraphHandler::getInstance().printProgramLayers();
+		
+		//generating compiled program
+		CompilationManager compManager = CompilationManager(builder);
+		
+		std::ofstream outfile("../src/ASP2CPP/Executor.cpp");
+		compManager.setOutStream(&outfile);
+		compManager.generateProgram(program);
+		outfile.close();
+	}
+	else if(MODE == GENERATOR){
+		std::cout<<"Generating base...TODO\n";
+		Executor executor;
+		executor.init();
+		std::vector<std::pair<Literal*, bool>> facts = builder->getAllFacts();
+		for(unsigned i = 0; i < facts.size(); ++i){
+			executor.insertFactIntoFactory(*facts[i].first, facts[i].second);
+			facts[i].first->print();
+			std::cout<<". ";
+		}
+		executor.executeProgram();
+		std::cout<<std::endl;
+	}
 	
-	//generating compiled program
-	CompilationManager compManager = CompilationManager(builder);
-	
-	std::ofstream outfile("../src/ASP2CPP/Executor.cpp");
-	compManager.setOutStream(&outfile);
-	compManager.generateProgram(program);
-	outfile.close();
 	builder->clearMemory();
 	
 	delete program;

@@ -54,7 +54,7 @@ bool Rule::isSafe()const{
 bool Rule::isFact()const{
     //CHECK
     //a(1):-b(1). is actually a fact
-    if(body->isEmpty())
+    if(!body->isEmpty())
         return false;
     
     for(Literal* lit : head->getDisjunction()){

@@ -48,14 +48,14 @@ std::string& Expression::getOperator(){
 }
 
 void Expression::print()const{
-    std::cout<<"(";
+    //std::cout<<"(";
     if(first != nullptr)
         first->print();
     std::cout<<myOperator;
     if(second != nullptr){
         second->print();
     }
-    std::cout<<")";
+    //std::cout<<")";
 }
 
 ExpressionBase* Expression::getParent(){
@@ -109,13 +109,13 @@ bool Expression::isSimpleFactor(){
 
 std::string Expression::getRepresentation(){
     std::string representation = "";
-    representation += "(";
+    //representation += "(";
     if(first != nullptr)
         representation += first->getRepresentation();
     std::cout<<myOperator;
     if(second != nullptr){
         representation += second->getRepresentation();
     }
-    representation += ")";
+    //representation += ")";
     return representation;
 }

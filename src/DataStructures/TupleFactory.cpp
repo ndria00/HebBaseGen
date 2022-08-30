@@ -15,6 +15,5 @@
  *  limitations under the License.
  *
  */
-//#include "TupleFactory.h"
-
-//TupleLight TupleFactory::bufferTuple;
+#include "TupleFactory.h"
+TupleLight TupleFactory::bufferTuple;

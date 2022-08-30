@@ -48,6 +48,7 @@ void CompilationManager::generateProgram(Program* program){
     *out << indentation++ << "void Executor::init(){\n";
     for(auto lit : program->getPredicatesID()){
         *out << indentation << "Executor::predicateIds.push_back(\"" << lit.first << "\");\n";
+        *out << indentation << "predicateToID.insert({\"" << lit.first << "\", _" << lit.first<< "});\n";
         *out << indentation <<"factory.addPredicate();\n";
     }
     *out << --indentation << "}\n";
@@ -68,12 +69,35 @@ void CompilationManager::generateProgram(Program* program){
             }
         *out << --indentation <<"}\n";
     }
+    
+    //insert parsered facts into factory
+    *out << indentation++ << "void Executor::insertFactIntoFactory(const Literal& lit, bool disjunctiveFact){\n";
+    //*out << indentation++ << "for(Rule* r : p.){\n";
+    //assuming that we only have a fact if the body of the rule is empty
+    //check the case in which the body is ground and made of facts
+    //*out << indentation++ << "if(r->getBody()->isEmpty()){\n";
+    //*out << indentation++ << "for(Literal* lit : r->getConjunction()){\n";
+    *out << indentation << "vector<int> terms;\n";
+    *out << indentation++ << "for(TermBase* term : lit.getTerms()){\n";
+    *out << indentation++ << "if(!term->isVariable()){\n";
+    *out << indentation << "int mappedValue = ConstantsManager::getInstance().mapConstant(term->getRepresentation());\n";
+    *out << indentation << "terms.push_back(mappedValue);\n";
+    *out << --indentation << "}\n";
+    *out << --indentation << "}\n";
+    *out << indentation << "Tuple* t = factory.addNewInternalTuple(terms, predicateToID[lit.getIdentifier()]);\n";
+    *out << indentation << "const auto& insertResult = t->setStatus(TruthStatus::True);\n";
+    *out << indentation << "insertTrue(insertResult);\n";
+    //*out << --indentation << "}\n";
+    *out << --indentation << "}\n";
 
-    *out << indentation++ << "void executeProgram(){\n";
+
+    *out << indentation++ << "void Executor::executeProgram(){\n";
     //addFacts();
     *out << indentation <<"//TODO\n";
     for(Rule* r: program->getRules()){
+        *out << indentation++ << "{\n";
         compileRule(r);
+        *out << --indentation << "}\n";
     }
     *out << --indentation<<"}\n";
 }
@@ -170,7 +194,7 @@ void CompilationManager::compileRule(Rule* rule){
             std::unordered_set<std::string> declaredVariables;
             for(unsigned t = 0; t < lit->getArity(); ++t){
                 if(lit->getTerms().at(t)->isVariable()  && !boundVariables.count(lit->getTermAt(t)) && ! declaredVariables.count(lit->getTermAt(t))){
-                    *out << indentation <<" int " << lit->getTermAt(t)<< " = (*tuple" << i <<")[" << t <<"];\n"; 
+                    *out << indentation <<"int " << lit->getTermAt(t)<< " = (*tuple" << i <<")[" << t <<"];\n"; 
                     declaredVariables.insert(lit->getTermAt(t));
                 }
             }
@@ -181,7 +205,36 @@ void CompilationManager::compileRule(Rule* rule){
         if(i == body->getConjunction().size() - 1){
             *out<< indentation <<"//Rule is firing \n";
             // add all literals in the head to the factory
-            
+            if(rule->getHead()->getDisjunction().size() > 1)
+                *out << indentation << "bool insertAsUndef = true;\n";
+            else
+                *out << indentation << "bool insertAsUndef = false;\n";
+
+            *out << indentation << "vector<int> terms;\n";
+            //*out << indentation << "Tuple* t;\n";
+            //*out << indentation << "const auto& insertResult;\n";
+            *out << indentation << "std::string representation = \"\";\n";
+            for(Literal* lit : rule->getHead()->getDisjunction()){
+                *out << indentation << "representation += \"" << lit->getIdentifier() << "\";\n";
+                *out << indentation << "representation += \"(\";\n";
+                for(TermBase* t : lit->getTerms()){
+                    //*out << indentation << "ConstantsManager::getInstance().mapConstant()";
+                    *out << indentation << "terms.push_back(" << t->getRepresentation() <<");\n";
+                    *out << indentation << "representation += ConstantsManager::getInstance().unmapConstant(" << t->getRepresentation() << ");\n";
+                    *out << indentation << "representation += \",\";\n";
+                }
+                *out << indentation << "representation +=\").\";\n";
+                *out << indentation << "Tuple* t = factory.addNewInternalTuple(terms, predicateToID[\"" << lit->getIdentifier() << "\"]);\n";
+                *out << indentation << "const auto& insertResult = t->setStatus(TruthStatus::True);\n";
+                *out << indentation++ <<"if(insertAsUndef){\n";
+                *out << indentation << "insertUndef(insertResult);\n";
+                *out << --indentation <<"}\n";
+                *out << indentation++ << "else{\n";
+                *out << indentation << "insertTrue(insertResult);\n";
+                *out << indentation << "std::cout<< representation + \" \";\n";
+                *out << --indentation <<"}\n";
+            }
+
         }
         
     }

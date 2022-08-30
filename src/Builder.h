@@ -64,6 +64,7 @@ class Builder{
         Program* getProgram();
         std::vector<Rule*>& getAllRules();
         std::vector<Literal*>& getAllLiterals();
+        std::vector<std::pair<Literal*, bool>>& getAllFacts();
     
     private:
         Program* program;
@@ -83,7 +84,7 @@ class Builder{
         std::vector<Aggregate*> allAggregates;
         std::vector<ExpressionBase*> allExpressions;
         std::vector<BuiltInTerm*> allBuiltIn;
-        
+        std::vector<std::pair<Literal*, bool>> allFacts;
         //state variables used to make the builder
         //behave in different ways with the same
         //contexts passed, basing on what is being built

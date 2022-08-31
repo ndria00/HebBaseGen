@@ -1,2 +1,2 @@
-c(X, Y):-d(X), h(Y).
-a(X):-b(X).
+a(X, Y) | b(X) :- c(X, Y).
+d(Y, Z) :- a(Y, Z).

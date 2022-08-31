@@ -45,6 +45,7 @@ void CompilationManager::generateProgram(Program* program){
     }
 
     //init function
+    *out << indentation << "void printGeneratedFromRule(vector<std::pair<std::string, vector<std::pair<std::string, int>>>>& );\n\n";
     *out << indentation++ << "void Executor::init(){\n";
     for(auto lit : program->getPredicatesID()){
         *out << indentation << "Executor::predicateIds.push_back(\"" << lit.first << "\");\n";
@@ -100,6 +101,29 @@ void CompilationManager::generateProgram(Program* program){
         *out << --indentation << "}\n";
     }
     *out << --indentation<<"}\n";
+    //print rule
+    *out << indentation++ << "void printGeneratedFromRule(vector<std::pair<std::string, vector<std::pair<std::string, int>>>>& literalsVariables){\n";
+    //for each literal
+    *out << indentation++ << "for(unsigned i  = 0; i < literalsVariables.size(); ++i){\n";
+    *out << indentation << "std::cout<<literalsVariables[i].first;\n";
+    *out << indentation++ << "for(unsigned j = 0; j < literalsVariables[i].second.size(); ++j){\n";
+    *out << indentation++ << "if(j== 0 && literalsVariables[i].second.size() > 0){\n";
+    *out << indentation << "std::cout<< \"(\";\n";
+    *out << --indentation << "}\n";
+    *out << indentation <<"std::cout << ConstantsManager::getInstance().unmapConstant(literalsVariables[i].second[j].second);\n";
+    *out << indentation++ << "if(literalsVariables[i].second.size() > 1 && j < literalsVariables[i].second.size() - 1){\n";
+    *out << indentation << "std::cout << \",\";\n";
+    *out << --indentation << "}\n";
+    *out << indentation++ << "if(j == literalsVariables[i].second.size() - 1 && literalsVariables[i].second.size() > 0){\n";
+    *out << indentation << "std::cout << \")\";\n";
+    *out << --indentation <<"}\n";
+    *out << --indentation << "}\n";
+    *out << indentation++ << "if(literalsVariables.size() > 1 && i < literalsVariables.size() - 1){\n";
+    *out << indentation << "std::cout << \"|\";\n";
+    *out << --indentation << "}\n";
+    *out << --indentation << "}\n";
+    *out << indentation << "std::cout<<\". \";\n";
+    *out << --indentation << "}\n";
 }
 
 void CompilationManager::setOutStream(std::ostream* outputFile){
@@ -172,20 +196,22 @@ void CompilationManager::compileRule(Rule* rule){
             *out << indentation << "tuples = &p" << mapVariableName << ".getValuesVec({";
             printLiteralTuple(lit, boundVariables);
             *out << "});\n";
-            *out << indentation << "const std::vector<int>* tuplesU = &EMPTY_TUPLES_VEC;\n";
-            *out << indentation << "const Tuple* tupleU = NULL;\n";
+            *out << indentation << "const std::vector<int>* tuplesU = &u" << mapVariableName << ".getValuesVec({";
+            printLiteralTuple(lit, boundVariables);
+            *out << "});\n";
+            // *out << indentation << "const Tuple* tupleU = NULL;\n";
                             
             *out << indentation++ << "for(unsigned i = 0; i < tuples->size() + tuplesU->size(); i++){\n";
             *out << indentation << "const Tuple * tuple" << i << " = NULL;\n";
             *out << indentation++ << "if(i < tuples->size()){\n";
             *out << indentation << "tuple" << i << " = factory.getTupleFromInternalID(tuples->at(i));\n";
-            *out << indentation++ << "if(tuplesU != &EMPTY_TUPLES_VEC) {\n";
-            *out << indentation << "tupleU = NULL;\n";
-            *out << --indentation << "}\n";
+            // *out << indentation++ << "if(tuplesU != &EMPTY_TUPLES_VEC) {\n";
+            // *out << indentation << "tupleU = NULL;\n";
+            // *out << --indentation << "}\n";
             *out << --indentation << "}\n";
             *out << indentation++ << "else {\n";
             *out << indentation << "tuple" << i << " = factory.getTupleFromInternalID(tuplesU->at(i-tuples->size()));\n";
-            *out << indentation << "tupleU = tuple" << i << ";\n";
+            // *out << indentation << "tupleU = tuple" << i << ";\n";
             //*out << indentation << "tupleUNegated = false;\n";
             *out << --indentation << "}\n";
             closingParenthesis++;
@@ -205,36 +231,43 @@ void CompilationManager::compileRule(Rule* rule){
         if(i == body->getConjunction().size() - 1){
             *out<< indentation <<"//Rule is firing \n";
             // add all literals in the head to the factory
+            bool insertAsUndef = false;
             if(rule->getHead()->getDisjunction().size() > 1)
-                *out << indentation << "bool insertAsUndef = true;\n";
-            else
-                *out << indentation << "bool insertAsUndef = false;\n";
+                insertAsUndef = true;
 
             *out << indentation << "vector<int> terms;\n";
-            //*out << indentation << "Tuple* t;\n";
-            //*out << indentation << "const auto& insertResult;\n";
-            *out << indentation << "std::string representation = \"\";\n";
+            //*out << indentation << "vector<std::pair<std::string, int>> variableNameToID;\n";
+            *out << indentation << "vector<std::pair<std::string, vector<std::pair<std::string, int>>>> literalsAndVariables;\n";
+            *out << indentation << "Tuple* t;\n";
+            *out << indentation << "std::pair<const TupleLight *, bool> insertResult;\n";
+            //*out << indentation << "std::string representation = \"\";\n";
+            unsigned index = 0;
             for(Literal* lit : rule->getHead()->getDisjunction()){
-                *out << indentation << "representation += \"" << lit->getIdentifier() << "\";\n";
-                *out << indentation << "representation += \"(\";\n";
+                *out << indentation << "vector<std::pair<std::string, int>> variableNameToID_" << index << ";\n";
+                //*out << indentation << "representation += \"" << lit->getIdentifier() << "\";\n";
+                //*out << indentation << "representation += \"(\";\n";
                 for(TermBase* t : lit->getTerms()){
                     //*out << indentation << "ConstantsManager::getInstance().mapConstant()";
                     *out << indentation << "terms.push_back(" << t->getRepresentation() <<");\n";
-                    *out << indentation << "representation += ConstantsManager::getInstance().unmapConstant(" << t->getRepresentation() << ");\n";
-                    *out << indentation << "representation += \",\";\n";
+                    *out << indentation << "variableNameToID_" << index << ".push_back(std::make_pair(\"" << t->getRepresentation() << "\", " << t->getRepresentation() << "));\n";
+                    //*out << indentation << "representation += ConstantsManager::getInstance().unmapConstant(" << t->getRepresentation() << ");\n";
+                    //*out << indentation << "representation += \",\";\n";
                 }
-                *out << indentation << "representation +=\").\";\n";
-                *out << indentation << "Tuple* t = factory.addNewInternalTuple(terms, predicateToID[\"" << lit->getIdentifier() << "\"]);\n";
-                *out << indentation << "const auto& insertResult = t->setStatus(TruthStatus::True);\n";
-                *out << indentation++ <<"if(insertAsUndef){\n";
-                *out << indentation << "insertUndef(insertResult);\n";
-                *out << --indentation <<"}\n";
-                *out << indentation++ << "else{\n";
-                *out << indentation << "insertTrue(insertResult);\n";
-                *out << indentation << "std::cout<< representation + \" \";\n";
-                *out << --indentation <<"}\n";
-            }
+                //*out << indentation << "representation +=\").\";\n";
+                *out << indentation << "t = factory.addNewInternalTuple(terms, predicateToID[\"" << lit->getIdentifier() << "\"]);\n";
+                *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
+                
+                if(insertAsUndef)
+                    *out << indentation << "insertUndef(insertResult);\n";
+                else
+                    *out << indentation << "insertTrue(insertResult);\n";                
+                *out << indentation << "terms.clear();\n";
+                //*out << indentation << "variableNameToID.clear();\n";
+                *out << indentation << "literalsAndVariables.push_back(std::make_pair(\"" << lit->getIdentifier() << "\", variableNameToID_" << index << "));\n";
 
+                index++;
+            }
+            *out << indentation << "printGeneratedFromRule(literalsAndVariables);\n";
         }
         
     }

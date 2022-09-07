@@ -12,6 +12,7 @@ class Literal{
         std::string identifier;
         std::vector<TermBase*> terms;
         bool negative;
+        bool idbPredicate;
     public:
         Literal();
         Literal(std::string, std::vector<TermBase*>&);
@@ -34,6 +35,8 @@ class Literal{
         bool isGround();
         std::string getRepresentation();
         std::string getIDAndArity()const;
+        bool isIDBPredicate()const;
+        void setIDBPredicate(bool);
         bool operator==(const Literal& )const;
 
         bool isBound(const std::unordered_set<std::string>&)const;

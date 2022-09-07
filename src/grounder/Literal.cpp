@@ -134,6 +134,14 @@ bool Literal::isBound(const std::unordered_set<std::string>& boundTerms)const{
     return true;
 }
 
+bool Literal::isIDBPredicate()const{
+    return idbPredicate;
+}
+
+void Literal::setIDBPredicate(bool idbPredicate){
+    this->idbPredicate = idbPredicate;
+}
+
 void Literal::addVariablesToSet(std::unordered_set<std::string>& boundVariables)const{
     getLiteralVariables(boundVariables);
 }

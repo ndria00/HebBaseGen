@@ -36,10 +36,17 @@ Builder::Builder(Program* program){
 void Builder::addCurrentAtom(){
 	allAtoms.push_back(currentAtom);
 	if(!program->existsPredicate(currentAtom->getIDAndArity())){
-		currentAtom->setID(literalsId);
 		//predicateID[lit->getIDAndArity()] = literalsId;
 		if(program->addPredicateWithID(currentAtom->getIdentifier(), literalsId))
 			++literalsId;
+		currentAtom->setID(program->getIDForPredicate(currentAtom));
+		if(buildingHead){
+			currentAtom->setIDBPredicate(true);
+			program->addIDBPredicate(currentAtom);
+		}
+		else{
+			currentAtom->setIDBPredicate(program->isIDBPredicate(currentAtom));
+		}
 	}
 	currentAtom = nullptr;
 }
@@ -322,6 +329,7 @@ void Builder::clearMemory(){
 	for(BuiltInTerm* builtIn : allBuiltIn){
 		delete builtIn;
 	}
+	
 }
 
 void Builder::buildCompareOperator(ASPCore2Parser::CompareopContext* compareop){

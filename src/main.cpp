@@ -11,7 +11,6 @@
 #include "DataStructures/TupleFactory.h"
 #include "DataStructures/TupleLight.h"
 #include "DataStructures/ConstantsManager.h"
-#include "DependencyGraph/DependencyGraphHandler.h"
 #include "ASP2CPP/CompilationManager.h"
 #include "ASP2CPP/Executor.h"
 
@@ -90,11 +89,6 @@ int main(int argc, char *argv[]){
 			std::cout<<"Safety errors detected!"<<std::endl;
 			return 0;
 		}
-
-		//Dependency graph computation
-		DependencyGraphHandler::getInstance().createGraph(builder->getAllRules(), program->getPredicatesID());
-		//std::vector<std::vector<int>> layers = DependencyGraphHandler::getInstance().getProgramLayers();
-		DependencyGraphHandler::getInstance().printProgramLayers();
 		
 		//generating compiled program
 		CompilationManager compManager = CompilationManager(builder);
@@ -105,21 +99,21 @@ int main(int argc, char *argv[]){
 		outfile.close();
 	}
 	else if(MODE == GENERATOR){
-		std::cout<<"Generating base...TODO\n";
-		Executor executor;
-		executor.init();
+		std::cout<<"Generating base...\n";
+		ExecutorBase* executor = new Executor();
+		executor->init();
 		std::vector<std::pair<Literal*, bool>> facts = builder->getAllFacts();
 		for(unsigned i = 0; i < facts.size(); ++i){
-			executor.insertFactIntoFactory(*facts[i].first, facts[i].second);
+			executor->insertFactIntoFactory(*facts[i].first, facts[i].second);
 			facts[i].first->print();
 			std::cout<<". ";
 		}
-		executor.executeProgram();
+		executor->executeProgram();
 		std::cout<<std::endl;
+		delete executor;
 	}
 	
 	builder->clearMemory();
-	
 	delete program;
 	delete builder;
 

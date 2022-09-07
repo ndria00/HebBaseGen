@@ -35,17 +35,17 @@ using namespace std;
 void GraphWithTarjanAlgorithm::addNode(unsigned int v) {
     if (v >= adj.size())
         for (unsigned int i = adj.size(); i <= v; i++)
-            adj.push_back(list<int>());
+            adj.push_back(list<unsigned>());
 }
 
 void GraphWithTarjanAlgorithm::addEdge(unsigned int v, unsigned int w) {
     if (v >= adj.size() || w >= adj.size()) {
         if (v >= w)
             for (unsigned int i = adj.size(); i <= v; i++)
-                adj.push_back(list<int>());
+                adj.push_back(list<unsigned>());
         else
             for (unsigned int i = adj.size(); i <= w; i++)
-                adj.push_back(list<int>());
+                adj.push_back(list<unsigned>());
     }
     adj[v].push_back(w);
 }
@@ -62,8 +62,8 @@ void GraphWithTarjanAlgorithm::addEdge(unsigned int v, unsigned int w) {
 // stackMember[] --> bit/index array for faster check whether
 //                  a node is in stack
 
-void GraphWithTarjanAlgorithm::SCCUtil(int u, int disc[], int low[], stack<int>& st,
-        bool stackMember[], vector< vector <int> > & scc) {
+void GraphWithTarjanAlgorithm::SCCUtil(unsigned u, unsigned disc[], unsigned low[], stack<unsigned>& st,
+        bool stackMember[], vector< vector <unsigned> > & scc) {
     // A static variable is used for simplicity, we can avoid use
     // of static variable by passing a pointer.
     static int time = 0;
@@ -74,7 +74,7 @@ void GraphWithTarjanAlgorithm::SCCUtil(int u, int disc[], int low[], stack<int>&
     stackMember[u] = true;
 
     // Go through all vertices adjacent to this
-    list<int>::iterator i;
+    list<unsigned>::iterator i;
     for (i = adj[u].begin(); i != adj[u].end(); ++i) {
         int v = *i; // v is current adjacent of 'u'
 
@@ -94,18 +94,18 @@ void GraphWithTarjanAlgorithm::SCCUtil(int u, int disc[], int low[], stack<int>&
     }
 
     // head node found, pop the stack and print an SCC
-    int w = 0; // To store stack extracted vertices
+    unsigned w = 0; // To store stack extracted vertices
     if (low[u] == disc[u]) {
-        int currentSCCIndex = scc.size();
-        scc.push_back(vector<int>());
+        unsigned currentSCCIndex = scc.size();
+        scc.push_back(vector<unsigned>());
         while (st.top() != u) {
-            w = (int) st.top();
+            w = (unsigned) st.top();
             scc[currentSCCIndex].push_back(w);
 //            cout << w << " ";
             stackMember[w] = false;
             st.pop();
         }
-        w = (int) st.top();
+        w = (unsigned) st.top();
 //        cout << w << "\n";
         scc[currentSCCIndex].push_back(w);
         stackMember[w] = false;
@@ -115,13 +115,13 @@ void GraphWithTarjanAlgorithm::SCCUtil(int u, int disc[], int low[], stack<int>&
 
 // The function to do DFS traversal. It uses SCCUtil()
 
-const vector< vector <int> > GraphWithTarjanAlgorithm::SCC() {
-    int disc[adj.size()];
-    int low[adj.size()];
+const vector< vector <unsigned> > GraphWithTarjanAlgorithm::SCC() {
+    unsigned disc[adj.size()];
+    unsigned low[adj.size()];
     bool stackMember [adj.size()];
-    stack<int> st;
+    stack<unsigned> st;
 
-    vector< vector <int> > scc;
+    vector< vector <unsigned> > scc;
 
     // Initialize disc and low, and stackMember arrays
     for (unsigned int i = 0; i < adj.size(); i++) {

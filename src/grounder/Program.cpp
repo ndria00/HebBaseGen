@@ -50,3 +50,40 @@ bool Program::addPredicateWithID(const std::string& predName, unsigned id){
     }
     return false;
 }
+
+unsigned Program::getIDForPredicate(Literal* lit){
+    if(predicateID.count(lit->getIdentifier()) != 0)
+        return predicateID[lit->getIdentifier()];
+    return 0;
+}
+
+void Program::getRulesByID(std::vector<unsigned>& rulesID, std::vector<Rule*>& componentRules){
+    componentRules;
+    for(unsigned i = 0; i < rulesID.size(); ++i){
+        for(unsigned j = 0; j < this->rules.size(); ++j){
+            if(rules[j]->getID() == rulesID[i])
+                componentRules.push_back(rules[j]);
+        }
+    }
+}
+
+Rule* Program::getRuleByID(unsigned index){
+    for(Rule* r : rules)
+        if(r->getID() == index)
+            return r;
+    return nullptr;
+}
+
+void Program::addIDBPredicate(Literal* lit){
+    iDBPredicates[lit->getIdentifier()] = lit->getID();
+}
+
+bool Program::isIDBPredicate(Literal* lit) const{
+    if(iDBPredicates.count(lit->getIdentifier()) != 0)
+        return true;
+    return false;
+}
+
+std::unordered_map<std::string, unsigned>& Program::getIDBPredicates(){
+    return iDBPredicates;
+}

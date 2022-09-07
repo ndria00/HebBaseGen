@@ -81,6 +81,21 @@ unsigned Rule::getID()const{
     return id;
 }
 
+bool Rule::containsLiteralInHead(Literal* l)const{
+    for(Literal* l1 : head->getDisjunction()){
+        if(l1->getIDAndArity() == l->getIDAndArity())
+            return true;
+    }
+    return false;
+}
+bool Rule::containsLiteralInHead(unsigned id)const{
+    for(Literal* l1 : head->getDisjunction()){
+        if(l1->getID() == id)
+            return true;
+    }
+    return false;
+}
+
 Rule::~Rule(){
     delete head;
     delete body;  

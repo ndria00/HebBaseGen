@@ -1,2 +1,3 @@
-a(X, Y) | b(X) :- c(X, Y).
-d(Y, Z) :- a(Y, Z).
+reach(X, Y) :- arc(X, Y).
+reach(X, Z) :- reach(X, Y), arc(Y, Z).
+a(X):-b(X).

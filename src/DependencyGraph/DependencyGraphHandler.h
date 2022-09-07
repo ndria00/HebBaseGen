@@ -9,16 +9,17 @@
 #include "../grounder/Body.h"
 #include "../grounder/Head.h"
 #include "../grounder/Literal.h"
+#include "../grounder/Program.h"
 class DependencyGraphHandler{
     private:
         GraphWithTarjanAlgorithm depGraph;
     public:
         static DependencyGraphHandler& getInstance();
-        void createGraph(std::vector<Rule*>&, std::unordered_map<std::string, unsigned>&);
-        std::vector<std::vector<int>> getProgramLayers();
+        void createGraph(Program* , std::unordered_map<unsigned, unsigned>&);
+        std::vector<std::vector<unsigned>> getProgramLayers();
         DependencyGraphHandler(const DependencyGraphHandler&) = delete;
         bool operator=(const DependencyGraphHandler&) = delete;
-        void printProgramLayers();
+        void printProgramLayers(std::unordered_map<unsigned, unsigned>&);
     protected:    
         DependencyGraphHandler();
 };

@@ -55,18 +55,18 @@ struct Vertex
 // A class that represents an directed graph
 class GraphWithTarjanAlgorithm
 {
-    std::vector< std::list<int>  > adj;  
+    std::vector< std::list<unsigned>  > adj;  
  
     // A Recursive DFS based function used by SCC()
-    void SCCUtil(int u, int disc[], int low[],
-                 std::stack<int>& st, bool stackMember[], std::vector< std::vector<int> >& scc);
+    void SCCUtil(unsigned u, unsigned disc[], unsigned low[],
+                 std::stack<unsigned>& st, bool stackMember[], std::vector< std::vector<unsigned> >& scc);
 public:
     GraphWithTarjanAlgorithm(){}
     void addEdge(unsigned int v, unsigned int w);   // function to add an edge to graph
     void addNode(unsigned int v);   // function to add a node to graph
-    const std::vector< std::vector <int> > SCC() ;    // prints strongly connected components
+    const std::vector< std::vector <unsigned> > SCC() ;    // prints strongly connected components
     unsigned getNodeSize(){return adj.size();}
-    std::list<int> getAdjForNode(unsigned node){return adj[node];}
+    std::list<unsigned> getAdjForNode(unsigned node){return adj[node];}
 };
 
 

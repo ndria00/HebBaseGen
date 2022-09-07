@@ -28,6 +28,8 @@ class Rule{
         void setSafetyStatus(bool);
         void setID(unsigned);
         unsigned getID()const;
+        bool containsLiteralInHead(Literal*)const;
+        bool containsLiteralInHead(unsigned id)const;
         ~Rule();
 };
 

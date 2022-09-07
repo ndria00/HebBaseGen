@@ -19,8 +19,8 @@ void CompilationManager::generateProgram(Program* program){
     *out << indentation << "const std::vector<int> EMPTY_TUPLES_VEC;\n";
     *out << indentation << "const IndexedSet EMPTY_TUPLES_SET;\n";
     *out << indentation << "\n";
-    *out << indentation << "Executor::Executor(){\n";
-    *out << indentation << "}\n";
+    //*out << indentation << "Executor::~Executor(){\n";
+    //*out << indentation << "}\n";
 
     //predicates id
     //Program* p = builder->getProgram();
@@ -95,11 +95,28 @@ void CompilationManager::generateProgram(Program* program){
     *out << indentation++ << "void Executor::executeProgram(){\n";
     //addFacts();
     *out << indentation <<"//TODO\n";
-    for(Rule* r: program->getRules()){
-        *out << indentation++ << "{\n";
-        compileRule(r);
-        *out << --indentation << "}\n";
+
+    //DEP GRAPH
+    //Dependency graph computation
+    std::unordered_map<unsigned, unsigned> predicateNodeMapping;
+	DependencyGraphHandler::getInstance().createGraph(program, predicateNodeMapping);
+    //statifications
+    //Each layer contains the ids of its IDB predicates
+    //In order to find the rules that are part of each layer a complete search of rules needs to be done  
+	std::vector<std::vector<unsigned>> layers = DependencyGraphHandler::getInstance().getProgramLayers();
+	DependencyGraphHandler::getInstance().printProgramLayers(predicateNodeMapping);
+    for(unsigned i = 0; i < layers.size(); ++i){
+        std::vector<unsigned> effectiveLiteralsIDs;
+        for(unsigned j = 0; j < layers[i].size(); ++j){
+            for(auto& it : predicateNodeMapping)
+                if(it.second == layers[i][j])
+                    effectiveLiteralsIDs.push_back(it.first);
+        }
+        std::vector<unsigned> rulesForComponent;
+        getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
+        compileRecursiveComponent(program, rulesForComponent);
     }
+
     *out << --indentation<<"}\n";
     //print rule
     *out << indentation++ << "void printGeneratedFromRule(vector<std::pair<std::string, vector<std::pair<std::string, int>>>>& literalsVariables){\n";
@@ -121,8 +138,11 @@ void CompilationManager::generateProgram(Program* program){
     *out << indentation++ << "if(literalsVariables.size() > 1 && i < literalsVariables.size() - 1){\n";
     *out << indentation << "std::cout << \"|\";\n";
     *out << --indentation << "}\n";
-    *out << --indentation << "}\n";
+    *out << indentation++ <<"if(i == literalsVariables.size() -1){\n";
     *out << indentation << "std::cout<<\". \";\n";
+    *out << --indentation << "}\n";
+    *out << --indentation << "}\n";
+
     *out << --indentation << "}\n";
 }
 
@@ -178,20 +198,23 @@ void CompilationManager::declareAuxMap(const std::string& mapVariableName, std::
 //     }
 // }
 
-void CompilationManager::compileRule(Rule* rule){
+void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recursiveDep){
     const Body* body = rule->getBody();
     std::unordered_set<std::string> boundVariables;
     unsigned closingParenthesis = 0;
-
+    *out << indentation++ << "{\n";
+    closingParenthesis++;
     for(unsigned i = 0; i < body->getConjunction().size(); ++i){
         Literal* lit = body->getConjunction().at(i);
         if( !lit->isNegative()){
             std::string mapVariableName = lit->getIdentifier() + "_";
 
             for(unsigned t = 0; t < lit->getArity(); ++t){
-                if(lit->getTerms().at(t)->isVariable() && boundVariables.count(lit->getTermAt(t)) || ! lit->getTerms().at(t)->isVariable())
+                if(lit->getTerms().at(t)->isVariable() && boundVariables.count(lit->getTermAt(t)) || ! lit->getTerms().at(t)->isVariable()){
+                    //std::cout<< "Searching " << lit->getTermAt(t) <<", but I didn't find it\n";
                     mapVariableName += std::to_string(t) + "_";
-            }    
+                }
+            }
             *out << indentation << "const std::vector<int>* tuples;\n";
             *out << indentation << "tuples = &p" << mapVariableName << ".getValuesVec({";
             printLiteralTuple(lit, boundVariables);
@@ -225,6 +248,7 @@ void CompilationManager::compileRule(Rule* rule){
                 }
             }
         }
+
         if (!body->getConjunction().at(i)->isBound(boundVariables)) {
             body->getConjunction().at(i)->addVariablesToSet(boundVariables);
         }
@@ -240,6 +264,7 @@ void CompilationManager::compileRule(Rule* rule){
             *out << indentation << "vector<std::pair<std::string, vector<std::pair<std::string, int>>>> literalsAndVariables;\n";
             *out << indentation << "Tuple* t;\n";
             *out << indentation << "std::pair<const TupleLight *, bool> insertResult;\n";
+            *out << indentation << "bool alreadyInFactory = false;\n";
             //*out << indentation << "std::string representation = \"\";\n";
             unsigned index = 0;
             for(Literal* lit : rule->getHead()->getDisjunction()){
@@ -254,16 +279,29 @@ void CompilationManager::compileRule(Rule* rule){
                     //*out << indentation << "representation += \",\";\n";
                 }
                 //*out << indentation << "representation +=\").\";\n";
+                //if rule contains some literals that are in recursive dependency add them to the generation stack
+                for(int i = 0; i < recursiveDep.size(); ++i){
+                    if(recursiveDep[i] == lit->getIDAndArity()){
+                        *out << indentation++ << "if(factory.find(terms, predicateToID[\""<< lit->getIdentifier() << "\"]) != NULL){\n";
+                        *out << indentation << "alreadyInFactory = true;\n";
+                        *out << --indentation << "}\n";
+                    }
+                }   
+
+                *out << indentation++ << "if(!alreadyInFactory){\n";
                 *out << indentation << "t = factory.addNewInternalTuple(terms, predicateToID[\"" << lit->getIdentifier() << "\"]);\n";
                 *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
-                
+                if(recursiveDep.size() > 0)
+                    *out << indentation << "generatedStack.push_back(t->getId());\n";
+                *out << indentation << "literalsAndVariables.push_back(std::make_pair(\"" << lit->getIdentifier() << "\", variableNameToID_" << index << "));\n";
                 if(insertAsUndef)
                     *out << indentation << "insertUndef(insertResult);\n";
                 else
-                    *out << indentation << "insertTrue(insertResult);\n";                
+                    *out << indentation << "insertTrue(insertResult);\n";
+                    
+                *out << --indentation << "}\n";
                 *out << indentation << "terms.clear();\n";
                 //*out << indentation << "variableNameToID.clear();\n";
-                *out << indentation << "literalsAndVariables.push_back(std::make_pair(\"" << lit->getIdentifier() << "\", variableNameToID_" << index << "));\n";
 
                 index++;
             }
@@ -353,5 +391,74 @@ void CompilationManager::declareDataStructures(Rule* r) {
             declareAuxMap(mapVariableName, keyIndexes, li->getIdentifier());
         }
         li->addVariablesToSet(boundVariables);
+    }
+}
+
+void CompilationManager::findExitRules(std::vector<unsigned>& recursiveComponent, Program* program, std::vector<unsigned>& exitRules, std::vector<std::string>& recursiveDep){
+    std::vector<Rule*> componentRules;
+    program->getRulesByID(recursiveComponent, componentRules);
+
+    bool isExitRule;
+    for(unsigned i = 0; i < componentRules.size(); ++i){
+        isExitRule = true;
+        for(Literal* l : componentRules[i]->getBody()->getConjunction()){
+            for(unsigned j = 0; j < componentRules.size(); ++j){
+                if(componentRules[j]->containsLiteralInHead(l)){
+                    isExitRule = false;
+                    //add recursive dep on lieral l of rule[i] 
+                    if(std::find(recursiveDep.begin(), recursiveDep.end(), l->getIDAndArity()) == recursiveDep.end()){
+                        recursiveDep.push_back(l->getIDAndArity());
+                    }
+                    //break;
+                }
+
+            }
+            if(!isExitRule)
+                break;
+        }
+        if(isExitRule)
+            exitRules.push_back(componentRules[i]->getID());
+    }
+}
+
+void CompilationManager::compileRecursiveComponent(Program* program, std::vector<unsigned>& recursiveComponent){
+    *out<< indentation << "//---------------------------------------Strongly connected component------------------------\n";
+    *out<< indentation++ << "{\n";
+
+    std::vector<unsigned> exitRules;
+    std::vector<std::string> recursiveDep;
+    findExitRules(recursiveComponent, program, exitRules, recursiveDep);
+    
+    if(recursiveDep.size() > 0)
+        *out<< indentation << "std::vector<int> generatedStack;\n";
+    
+    for(unsigned i = 0; i < exitRules.size(); ++i){
+        compileRule(program->getRuleByID(exitRules[i]), recursiveDep);
+        recursiveComponent.erase(recursiveComponent.begin() + i);
+    }
+    
+    if(recursiveDep.size() > 0){
+        *out<< indentation++ << "while(! generatedStack.empty()){\n";
+        *out<< indentation << "generatedStack.pop_back();\n"; 
+    }
+
+    for(unsigned j = 0; j < recursiveComponent.size(); ++j){
+        compileRule(program->getRuleByID(recursiveComponent[j]), recursiveDep);
+    }
+    if(recursiveDep.size() > 0)
+        *out<< --indentation << "}\n";
+    //while not stack empty (remember to add facts that are from recursive rules)
+    //compilation of recursive rules...
+    //...
+    //if something new has been generated, add it to the stack and go on
+    *out<< --indentation << "}\n";
+}
+
+void CompilationManager::getRulesFromPredicateIds(Program * program, std::vector<unsigned>& preds, std::vector<unsigned>& rules){
+    for(unsigned p = 0; p < preds.size(); ++p){
+        for(Rule* r : program->getRules()){
+            if(r->containsLiteralInHead(preds[p]) && std::find(rules.begin(), rules.end(), r->getID()) == rules.end())
+                rules.push_back(r->getID());
+        }
     }
 }

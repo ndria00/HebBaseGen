@@ -45,11 +45,11 @@ bool sharedFunc::isInteger(const std::string & s)
    return (*p == 0) ;
 }
 
-std::string sharedFunc::escapeDoubleQuotes(const std::string & s) {
+std::string sharedFunc::escapeDoubleQuotes(const std::string& s) {
     if(s[0]=='"') { 
        return "\\"+s.substr(0, s.size()-1)+"\\\"";
     }
-    return s;
+    return s.substr(0, s.size());
 }
 
 bool sharedFunc::isVariable(const std::string & v) {

@@ -107,7 +107,7 @@ bool Expression::isSimpleFactor(){
     return first->isSimpleFactor();
 }
 
-std::string Expression::getRepresentation(){
+std::string Expression::getRepresentation()const{
     std::string representation = "";
     //representation += "(";
     if(first != nullptr)

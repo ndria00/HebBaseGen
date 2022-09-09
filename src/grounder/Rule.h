@@ -30,6 +30,7 @@ class Rule{
         unsigned getID()const;
         bool containsLiteralInHead(Literal*)const;
         bool containsLiteralInHead(unsigned id)const;
+        void sortLiteralsInBody();
         ~Rule();
 };
 

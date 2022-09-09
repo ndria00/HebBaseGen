@@ -52,7 +52,7 @@ FunctionalTerm::~FunctionalTerm(){
 
 }
 
-std::string FunctionalTerm::getRepresentation(){
+std::string FunctionalTerm::getRepresentation()const{
     std::string representation = "";
     representation+= "" + this->identifier + "(";
     for(unsigned i = 0; i < terms.size(); ++i) {

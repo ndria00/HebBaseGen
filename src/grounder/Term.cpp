@@ -44,7 +44,7 @@ Term::~Term(){
 
 }
 
-std::string Term::getRepresentation(){
+std::string Term::getRepresentation()const{
     std::string representation = "";
     representation += this->value;
     return representation;

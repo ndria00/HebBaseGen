@@ -33,11 +33,12 @@ class Literal{
         void removeSafeLiteralVariables(std::unordered_set<std::string>&)const;
         void clear();
         bool isGround();
-        std::string getRepresentation();
+        std::string getRepresentation()const;
         std::string getIDAndArity()const;
         bool isIDBPredicate()const;
         void setIDBPredicate(bool);
         bool operator==(const Literal& )const;
+        bool operator<(const Literal&)const;
 
         bool isBound(const std::unordered_set<std::string>&)const;
 };

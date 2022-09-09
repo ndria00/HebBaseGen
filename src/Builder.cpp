@@ -41,11 +41,20 @@ void Builder::addCurrentAtom(){
 			++literalsId;
 		currentAtom->setID(program->getIDForPredicate(currentAtom));
 		if(buildingHead){
+			//appears in head => is idb
 			currentAtom->setIDBPredicate(true);
 			program->addIDBPredicate(currentAtom);
+			//all occurrencies of the same literal are now idb predicates
+			for(Literal* lit : allAtoms){
+				if(lit->getIDAndArity() == currentAtom->getIDAndArity())
+					lit->setIDBPredicate(true);
+			}
 		}
 		else{
+			// is idb if it had already appeared in a rule head
 			currentAtom->setIDBPredicate(program->isIDBPredicate(currentAtom));
+			if(currentAtom->isIDBPredicate())
+				program->addIDBPredicate(currentAtom);
 		}
 	}
 	currentAtom = nullptr;
@@ -69,6 +78,7 @@ void Builder::addCurrentRule(){
 			allFacts.push_back(std::make_pair(lit, isDisjunctive));
 		}
 	}
+	//currentRule->sortLiteralsInBody();
 	currentRule = nullptr;
 }
 

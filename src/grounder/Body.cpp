@@ -72,6 +72,26 @@ void Body::removeBodySafeVariables(std::unordered_set<std::string>& variables)co
     }
 }
 
+bool compareLiterals(const Literal* l1, const Literal* l2){
+    if(l1->isNegative() && !l2->isNegative())
+        return false;
+    
+    return true;
+}
+
+void Body::sortLiterals(){
+    std::sort(conjunction.begin(), conjunction.end(), compareLiterals);
+}
+
 bool Body::isEmpty(){
     return conjunction.size() == 0 && aggregates.size() == 0 && builtInTerms.size() == 0;
+}
+
+
+unsigned Body::getNegativeSize()const{
+    unsigned count = 0;
+    for(Literal* l : getConjunction())
+        if(l->isNegative())
+            count++;
+    return count;
 }

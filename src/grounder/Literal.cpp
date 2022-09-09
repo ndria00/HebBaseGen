@@ -73,7 +73,7 @@ unsigned Literal::getArity()const{
     return terms.size();
 }
 
-std::string Literal::getRepresentation(){
+std::string Literal::getRepresentation() const{
     std::string representation = "";
     if(negative)
         representation+="not ";
@@ -144,4 +144,13 @@ void Literal::setIDBPredicate(bool idbPredicate){
 
 void Literal::addVariablesToSet(std::unordered_set<std::string>& boundVariables)const{
     getLiteralVariables(boundVariables);
+}
+
+bool Literal::operator<(const Literal& l2)const{
+    //if(!isNegative() && ! l2.isNegative())
+    //    return 
+    if(isNegative() && !l2.isNegative())
+        return false;
+    
+    return true;
 }

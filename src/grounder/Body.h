@@ -3,6 +3,7 @@
 #include "Literal.h"
 #include "Aggregate.h"
 #include "BuiltInTerm.h"
+#include <algorithm>
 
 class Body{
     private: 
@@ -21,7 +22,9 @@ class Body{
         void getBodyVariables(std::unordered_set<std::string>&)const;
         void removeBodySafeVariables(std::unordered_set<std::string>&)const;
         bool isEmpty();
+        void sortLiterals();
         void print()const;
+        unsigned getNegativeSize()const;
 };
 
 #endif

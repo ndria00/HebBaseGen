@@ -72,7 +72,7 @@ bool SimpleFactor::isSimpleFactor(){
     return true;
 }
 
-std::string SimpleFactor::getRepresentation(){
+std::string SimpleFactor::getRepresentation() const{
     std::string representation = "";
     if(simpleTerm != nullptr)
         representation += simpleTerm->getRepresentation();

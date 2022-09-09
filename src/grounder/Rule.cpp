@@ -96,6 +96,10 @@ bool Rule::containsLiteralInHead(unsigned id)const{
     return false;
 }
 
+void Rule::sortLiteralsInBody(){
+    body->sortLiterals();
+}
+
 Rule::~Rule(){
     delete head;
     delete body;  

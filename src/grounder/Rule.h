@@ -31,6 +31,7 @@ class Rule{
         bool containsLiteralInHead(Literal*)const;
         bool containsLiteralInHead(unsigned id)const;
         void sortLiteralsInBody();
+        void getRecursiveIndexes(std::vector<unsigned>&)const;
         ~Rule();
 };
 

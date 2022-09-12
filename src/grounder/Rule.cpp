@@ -100,6 +100,15 @@ void Rule::sortLiteralsInBody(){
     body->sortLiterals();
 }
 
+void Rule::getRecursiveIndexes(std::vector<unsigned>& recursiveDepIndex)const{
+    for(unsigned  i = 0; i < body->getConjunction().size(); ++i){
+        for(unsigned j = 0; j < head->getDisjunction().size(); ++j){
+            if(body->getConjunction().at(i)->getID() == head->getDisjunction().at(j)->getID())
+                recursiveDepIndex.push_back(i);
+        }
+    }
+}
+
 Rule::~Rule(){
     delete head;
     delete body;  

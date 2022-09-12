@@ -27,15 +27,13 @@ int main(int argc, char *argv[]){
 	if(argc > 1){
 		std::string option1 = argv[1];
 		if(option1 == "compile"){
-			std::cout<<"Compiling program..."<<std::endl;
 			MODE = COMPILER;
 		}
 		else if(option1 == "generate"){
-			std::cout<<"reading facts and generating base..."<<std::endl;
 			MODE = GENERATOR;
 		}
 		else{
-			std::cout<<"Option not supported\n";
+			std::cout<<"Option not supported... terminating\n";
 			return 0;
 		}
 	}
@@ -46,6 +44,7 @@ int main(int argc, char *argv[]){
 		myFile.open("../src/resources/input.txt");
 	}
 	else if(MODE == GENERATOR){
+		std::cout<<"reading facts and generating base..."<<std::endl;
 		myFile.open("../src/resources/facts.txt");
 	}
 
@@ -89,7 +88,7 @@ int main(int argc, char *argv[]){
 			std::cout<<"Safety errors detected!"<<std::endl;
 			return 0;
 		}
-		
+		std::cout<<"Compiling program..."<<std::endl;
 		//generating compiled program
 		CompilationManager compManager = CompilationManager(builder);
 		

@@ -1,4 +1,5 @@
 #include "CompilationManager.h"
+#include "../DataStructures/TupleFactory.h"
 #include <unordered_map>
 
 CompilationManager::CompilationManager(Builder* builder){
@@ -11,8 +12,8 @@ void CompilationManager::generateProgram(Program* program){
     *out << indentation << "#include <chrono>\n";
     *out << indentation << "#include \"Executor.h\"\n";
     *out << indentation << "#include \"../DataStructures/ConstantsManager.h\"\n";
-    *out << indentation << "#include \"../DataStructures/AuxiliaryMapSmart.h\"\n";
-    *out << indentation << "#include \"../DataStructures/TupleFactory.h\"\n";
+    //*out << indentation << "#include \"../DataStructures/AuxiliaryMapSmart.h\"\n";
+    //*out << indentation << "#include \"../DataStructures/TupleFactory.h\"\n";
     *out << indentation << "#include \"../DataStructures/IndexedSet.h\"\n";
     *out << indentation << "typedef TupleLight Tuple;\n";
     *out << indentation << "template<size_t S>\n";
@@ -30,7 +31,7 @@ void CompilationManager::generateProgram(Program* program){
     //     *out << "const int " <<  << ";\n";
     // }
     //insert facts into factory
-    *out << "TupleFactory factory;\n";
+    //*out << "TupleFactory factory;\n";
     *out << indentation << "std::vector<std::string> Executor::predicateIds;\n";
 
     for(auto lit : program->getPredicatesID()){
@@ -46,13 +47,38 @@ void CompilationManager::generateProgram(Program* program){
     }
 
     //init function
-    *out << indentation << "void printGeneratedFromRule(vector<std::pair<std::string, vector<std::pair<std::string, int>>>>& );\n\n";
+    //*out << indentation << "void printGeneratedFromRule(vector<std::pair<std::string, vector<std::pair<std::string, int>>>>& );\n\n";
+    
+    //print function
+    *out << indentation++ << "void printTuple(const Tuple* t){\n";
+    //*out << indentation << "if(t->isFalse()) std::cout << \"not \";\n";
+    //*out << indentation << "if(t->isUndef()) std::cout << \"undef \";\n";
+
+    *out << indentation << "std::cout << Executor::predicateIds[t->getPredicateName()] << \"(\";\n";
+    *out << indentation++ << "for(int i=0;i<t->size();i++){\n";
+    *out << indentation << "if(i>0) std::cout << \",\";\n";
+    *out << indentation << "std::cout << ConstantsManager::getInstance().unmapConstant(t->at(i));\n";
+    *out << --indentation << "}\n";
+    *out << indentation << "std::cout << \")\"<<std::endl;\n";
+    *out << --indentation << "}\n";
+    
     *out << indentation++ << "void Executor::init(){\n";
+    std::vector<std::pair<std::string, unsigned>>predIDPair;
     for(auto lit : program->getPredicatesID()){
-        *out << indentation << "Executor::predicateIds.push_back(\"" << lit.first << "\");\n";
+        predIDPair.push_back(std::make_pair(lit.first, lit.second));
+        
         *out << indentation << "predicateToID.insert({\"" << lit.first << "\", _" << lit.first<< "});\n";
         *out << indentation <<"factory.addPredicate();\n";
     }
+
+    std::sort(predIDPair.begin(), predIDPair.end(), [](auto &left, auto &right) {
+    return left.second < right.second;
+    });
+    for(auto& predNameID : predIDPair){
+        *out << indentation << "Executor::predicateIds.push_back(\"" << predNameID.first << "\");\n";
+    }
+
+
     *out << --indentation << "}\n";
 
     //insertTrue and false functions
@@ -72,22 +98,31 @@ void CompilationManager::generateProgram(Program* program){
         *out << --indentation <<"}\n";
     }
     
+    //TODO remove
     //insert parsered facts into factory
-    *out << indentation++ << "void Executor::insertFactIntoFactory(const Literal& lit, bool disjunctiveFact){\n";
-    //*out << indentation++ << "for(Rule* r : p.){\n";
-    //assuming that we only have a fact if the body of the rule is empty
-    //check the case in which the body is ground and made of facts
-    //*out << indentation++ << "if(r->getBody()->isEmpty()){\n";
-    //*out << indentation++ << "for(Literal* lit : r->getConjunction()){\n";
-    *out << indentation << "vector<int> terms;\n";
-    *out << indentation++ << "for(TermBase* term : lit.getTerms()){\n";
-    *out << indentation++ << "if(!term->isVariable()){\n";
-    *out << indentation << "int mappedValue = ConstantsManager::getInstance().mapConstant(term->getRepresentation());\n";
-    *out << indentation << "terms.push_back(mappedValue);\n";
-    *out << --indentation << "}\n";
-    *out << --indentation << "}\n";
-    *out << indentation << "Tuple* t = factory.addNewInternalTuple(terms, predicateToID[lit.getIdentifier()]);\n";
-    *out << indentation++ << "if(!disjunctiveFact){\n";
+    // *out << indentation++ << "void Executor::insertFactIntoFactory(const Literal& lit, bool disjunctiveFact){\n";
+    // //assuming that we only have a fact if the body of the rule is empty
+    // //check the case in which the body is ground and made of facts
+    // *out << indentation << "vector<int> terms;\n";
+    // *out << indentation++ << "for(TermBase* term : lit.getTerms()){\n";
+    // *out << indentation++ << "if(!term->isVariable()){\n";
+    // *out << indentation << "int mappedValue = ConstantsManager::getInstance().mapConstant(term->getRepresentation());\n";
+    // *out << indentation << "terms.push_back(mappedValue);\n";
+    // *out << --indentation << "}\n";
+    // *out << --indentation << "}\n";
+    // *out << indentation << "Tuple* t = factory.addNewInternalTuple(terms, predicateToID[lit.getIdentifier()]);\n";
+    // *out << indentation++ << "if(!disjunctiveFact){\n";
+    // *out << indentation << "const auto& insertResult = t->setStatus(TruthStatus::True);\n";
+    // *out << indentation << "insertTrue(insertResult);\n";
+    // *out << --indentation << "}\n";
+    // *out << indentation++ << "else{\n";
+    // *out << indentation << "const auto& insertResult = t->setStatus(TruthStatus::Undef);\n";
+    // *out << indentation << "insertUndef(insertResult);\n";
+    // *out << --indentation << "}\n";
+    // *out << --indentation << "}\n";
+
+    *out << indentation++ << "void Executor::OnLiteralTrueUndef(Tuple* t, bool disjunctiveFact){\n";
+    *out << indentation++ << "if(disjunctiveFact){\n";
     *out << indentation << "const auto& insertResult = t->setStatus(TruthStatus::True);\n";
     *out << indentation << "insertTrue(insertResult);\n";
     *out << --indentation << "}\n";
@@ -96,6 +131,7 @@ void CompilationManager::generateProgram(Program* program){
     *out << indentation << "insertUndef(insertResult);\n";
     *out << --indentation << "}\n";
     *out << --indentation << "}\n";
+
 
 
     *out << indentation++ << "void Executor::executeProgram(){\n";
@@ -127,33 +163,52 @@ void CompilationManager::generateProgram(Program* program){
         getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
         compileRecursiveComponent(program, rulesForComponent);
     }
+    *out << indentation << "printGeneratedBase();\n";
     *out << indentation << "auto finish = std::chrono::high_resolution_clock::now();\n";
     *out << indentation << "std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count()/1000000<<\"ms\";\n";
     *out << --indentation<<"}\n";
+    //TODO check and remove if disjuction should not be printed
     //print rule
-    *out << indentation++ << "void printGeneratedFromRule(vector<std::pair<std::string, vector<std::pair<std::string, int>>>>& literalsVariables){\n";
-    //for each literal
-    *out << indentation++ << "for(unsigned i  = 0; i < literalsVariables.size(); ++i){\n";
-    *out << indentation << "std::cout<<literalsVariables[i].first;\n";
-    *out << indentation++ << "for(unsigned j = 0; j < literalsVariables[i].second.size(); ++j){\n";
-    *out << indentation++ << "if(j== 0 && literalsVariables[i].second.size() > 0){\n";
-    *out << indentation << "std::cout<< \"(\";\n";
-    *out << --indentation << "}\n";
-    *out << indentation <<"std::cout << ConstantsManager::getInstance().unmapConstant(literalsVariables[i].second[j].second);\n";
-    *out << indentation++ << "if(literalsVariables[i].second.size() > 1 && j < literalsVariables[i].second.size() - 1){\n";
-    *out << indentation << "std::cout << \",\";\n";
-    *out << --indentation << "}\n";
-    *out << indentation++ << "if(j == literalsVariables[i].second.size() - 1 && literalsVariables[i].second.size() > 0){\n";
-    *out << indentation << "std::cout << \")\";\n";
-    *out << --indentation <<"}\n";
-    *out << --indentation << "}\n";
-    *out << indentation++ << "if(literalsVariables.size() > 1 && i < literalsVariables.size() - 1){\n";
-    *out << indentation << "std::cout << \"|\";\n";
-    *out << --indentation << "}\n";
-    *out << indentation++ <<"if(i == literalsVariables.size() -1){\n";
-    *out << indentation << "std::cout<<\". \";\n";
-    *out << --indentation << "}\n";
-    *out << --indentation << "}\n";
+    // *out << indentation++ << "void printGeneratedFromRule(vector<std::pair<std::string, vector<std::pair<std::string, int>>>>& literalsVariables){\n";
+    // //for each literal
+    // *out << indentation++ << "for(unsigned i  = 0; i < literalsVariables.size(); ++i){\n";
+    // *out << indentation << "std::cout<<literalsVariables[i].first;\n";
+    // *out << indentation++ << "for(unsigned j = 0; j < literalsVariables[i].second.size(); ++j){\n";
+    // *out << indentation++ << "if(j== 0 && literalsVariables[i].second.size() > 0){\n";
+    // *out << indentation << "std::cout<< \"(\";\n";
+    // *out << --indentation << "}\n";
+    // *out << indentation <<"std::cout << ConstantsManager::getInstance().unmapConstant(literalsVariables[i].second[j].second);\n";
+    // *out << indentation++ << "if(literalsVariables[i].second.size() > 1 && j < literalsVariables[i].second.size() - 1){\n";
+    // *out << indentation << "std::cout << \",\";\n";
+    // *out << --indentation << "}\n";
+    // *out << indentation++ << "if(j == literalsVariables[i].second.size() - 1 && literalsVariables[i].second.size() > 0){\n";
+    // *out << indentation << "std::cout << \")\";\n";
+    // *out << --indentation <<"}\n";
+    // *out << --indentation << "}\n";
+    // *out << indentation++ << "if(literalsVariables.size() > 1 && i < literalsVariables.size() - 1){\n";
+    // *out << indentation << "std::cout << \"|\";\n";
+    // *out << --indentation << "}\n";
+    // *out << indentation++ <<"if(i == literalsVariables.size() -1){\n";
+    // *out << indentation << "std::cout<<\". \";\n";
+    // *out << --indentation << "}\n";
+    // *out << --indentation << "}\n";
+    // *out << --indentation << "}\n";
+
+    *out << indentation++ << "void Executor::printGeneratedBase(){\n";
+    *out << indentation << "const std::vector<int>* tuples;\n";
+    for(auto& predID : program->getPredicatesID()){
+        
+        //print positive tuples
+        *out << indentation << "tuples = &p" << predID.first << "_.getValuesVec({});\n";
+        *out << indentation++ << "for(unsigned i = 0; i < tuples->size(); ++i){\n";
+        *out << indentation << "printTuple(factory.getTupleFromInternalID(tuples->at(i)));\n";
+        *out<< --indentation <<"}\n";
+        //print undef tuples
+        *out << indentation << "tuples = &u" << predID.first << "_.getValuesVec({});\n";
+        *out << indentation++ << "for(unsigned i = 0; i < tuples->size(); ++i){\n";
+        *out << indentation << "printTuple(factory.getTupleFromInternalID(tuples->at(i)));\n";
+        *out<< --indentation <<"}\n"; 
+    }
     *out << --indentation << "}\n";
 
 }
@@ -187,28 +242,9 @@ void CompilationManager::declareAuxMap(const std::string& mapVariableName, std::
         *out << "});\n";
         declaredMaps.insert(mapVariableName);
     }
-    //*out << indentation << "AuxMap<0> p" << predName << "({});\n";
-    //*out << indentation << "AuxMap<0> u" << predName << "({});\n";
-    //False literals are not needed
-    //out << indentation << "AuxMap<0> n" << predName << "({});\n";
 }
 
-// //adding facts that appear into programs to the factory
-// void CompilationManager::addFacts(){
-//     for(Rule* r : builder->getAllRules()){
-//         if(r->isFact()){
-//             for(Literal lit : r->getHead()){
-//                 //fact (add literals as true)
-//                 if(r->getHead()->getDisjunction().size() == 1){
-//                     //*out << indentation << "factory.addNewTuple()";
-//                 }
-//                 else{ //disjunctive fact (add literals as undefined)
 
-//                 }
-//             }
-//         }
-//     }
-// }
 
 void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recursiveDep){
     std::vector<Literal*> orderedConjunction;
@@ -359,64 +395,84 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
             if(rule->getHead()->getDisjunction().size() > 1)
                 insertAsUndef = true;
 
-            *out << indentation << "vector<int> terms;\n";
-            //*out << indentation << "vector<std::pair<std::string, int>> variableNameToID;\n";
-            *out << indentation << "vector<std::pair<std::string, vector<std::pair<std::string, int>>>> literalsAndVariables;\n";
+            //*out << indentation << "vector<std::pair<std::string, vector<std::pair<std::string, int>>>> literalsAndVariables;\n";
             *out << indentation << "Tuple* t;\n";
             *out << indentation << "std::pair<const TupleLight *, bool> insertResult;\n";
             *out << indentation << "bool alreadyInFactory = false;\n";
             unsigned index = 0;
             for(Literal* lit : rule->getHead()->getDisjunction()){
-                *out << indentation << "vector<std::pair<std::string, int>> variableNameToID_" << index << ";\n";
+                //*out << indentation << "vector<std::pair<std::string, int>> variableNameToID_" << index << ";\n";
 
+
+                *out << indentation++ << "if(factory.find(";
+                unsigned j = 0;
+                std::string listOfTerms = "{";
                 for(TermBase* t : lit->getTerms()){
                     //*out << indentation << "ConstantsManager::getInstance().mapConstant()";
-                    *out << indentation << "terms.push_back(" << t->getRepresentation() <<");\n";
-                    *out << indentation << "variableNameToID_" << index << ".push_back(std::make_pair(\"" << t->getRepresentation() << "\", " << t->getRepresentation() << "));\n";
-
+                    if(j != lit->getTerms().size() -1){
+                        listOfTerms += t->getRepresentation();
+                        listOfTerms += ",";
+                    }
+                    else{
+                        listOfTerms += t->getRepresentation();
+                        listOfTerms += "}";
+                    }
+                    //*out << indentation << "variableNameToID_" << index << ".push_back(std::make_pair(\"" << t->getRepresentation() << "\", " << t->getRepresentation() << "));\n";
+                    j++;
                 }
-
-                *out << indentation++ << "if(factory.find(terms, predicateToID[\""<< lit->getIdentifier() << "\"]) != NULL){\n";
+                *out << listOfTerms<<", _" << lit->getIdentifier() << ") != NULL){\n";
                 *out << indentation << "alreadyInFactory = true;\n";
                 *out << --indentation << "}\n";
 
 
                 *out << indentation++ << "if(!alreadyInFactory){\n";
-                *out << indentation << "t = factory.addNewInternalTuple(terms, predicateToID[\"" << lit->getIdentifier() << "\"]);\n";
+                *out << indentation << "t = factory.addNewInternalTuple(" << listOfTerms << ", _" << lit->getIdentifier() << ");\n";
                 *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
                 if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end())
                     *out << indentation << "generatedStack.push_back(t->getId());\n";
-                *out << indentation << "literalsAndVariables.push_back(std::make_pair(\"" << lit->getIdentifier() << "\", variableNameToID_" << index << "));\n";
+                //*out << indentation << "literalsAndVariables.push_back(std::make_pair(\"" << lit->getIdentifier() << "\", variableNameToID_" << index << "));\n";
                 if(insertAsUndef)
                     *out << indentation << "insertUndef(insertResult);\n";
                 else
                     *out << indentation << "insertTrue(insertResult);\n";
                     
                 *out << --indentation << "}\n";
-                *out << indentation << "terms.clear();\n";
+                //*out << indentation << "terms.clear();\n";
                 //*out << indentation << "variableNameToID.clear();\n";
 
                 index++;
             }
-            *out << indentation << "printGeneratedFromRule(literalsAndVariables);\n";
+            //*out << indentation << "printGeneratedFromRule(literalsAndVariables);\n";
             *out << indentation << "//negative literals saving\n";
             if(negativeBodySize > 0){
                 for(Literal* lit : orderedConjunction){
                     if(lit->isNegative()){
+                        unsigned j = 0;
+                        std::string listOfTerms = "{";
                         for(TermBase* t : lit->getTerms()){
-                        *out << indentation << "terms.push_back(" << t->getRepresentation() <<");\n";
-                        }   
+                            //*out << indentation << "ConstantsManager::getInstance().mapConstant()";
+                            if(j != lit->getTerms().size() -1){
+                                listOfTerms += t->getRepresentation();
+                                listOfTerms += ",";
+                            }
+                            else{
+                                listOfTerms += t->getRepresentation();
+                                listOfTerms += "}";
+                            }
+                            //*out << indentation << "variableNameToID_" << index << ".push_back(std::make_pair(\"" << t->getRepresentation() << "\", " << t->getRepresentation() << "));\n";
+                            j++;
+                        }
+                        *out << indentation << "alreadyInFactory = false;\n";
+                        *out << indentation++ << "if(factory.find(" << listOfTerms <<", _"<< lit->getIdentifier() << ") != NULL){\n";
+                        *out << indentation << "alreadyInFactory = true;\n";
+                        *out << --indentation << "}\n";
+
+                        *out << indentation++ << "if(!alreadyInFactory){\n";
+                        *out << indentation << "t = factory.addNewInternalTuple(" << listOfTerms << ", _" << lit->getIdentifier() << ");\n";
+                        *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
+                        *out << indentation << "insertUndef(insertResult);\n";
                     }
                 }
-                *out << indentation << "alreadyInFactory = false;\n";
-                *out << indentation++ << "if(factory.find(terms, predicateToID[\""<< lit->getIdentifier() << "\"]) != NULL){\n";
-                *out << indentation << "alreadyInFactory = true;\n";
-                *out << --indentation << "}\n";
-
-                *out << indentation++ << "if(!alreadyInFactory){\n";
-                *out << indentation << "t = factory.addNewInternalTuple(terms, predicateToID[\"" << lit->getIdentifier() << "\"]);\n";
-                *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
-                *out << indentation << "insertUndef(insertResult);\n";
 
                 if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end())
                     *out << indentation << "generatedStack.push_back(t->getId());\n";

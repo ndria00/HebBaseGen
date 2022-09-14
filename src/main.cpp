@@ -6,6 +6,7 @@
 #include "parser/ASPCore2Lexer.h"
 #include "parser/ASPCore2Parser.h"
 #include "listeners/ASPCore2ProgramListener.h"
+#include "listeners/ASPCore2FactListener.h"
 #include "grounder/Program.h"
 #include "DataStructures/AuxiliaryMapSmart.h"
 #include "DataStructures/TupleFactory.h"
@@ -60,15 +61,12 @@ int main(int argc, char *argv[]){
 
 	antlr4::ANTLRInputStream input;
 	input.load(myInput);
-	std::cout<<"Parsing "<<myInput<<std::endl;
+	//std::cout<<"Parsing "<<myInput<<std::endl;
 	ASPCore2Lexer lexer (&input);
 	antlr4::CommonTokenStream tokens(&lexer);
 	ASPCore2Parser parser (&tokens);
 	antlr4::tree::ParseTree *tree = parser.program();
 
-	Program* program =  new Program();
-	Builder* builder =  new Builder(program);
-	ASPCore2ProgramListener listener(builder);
 	if(MODE == COMPILER){
 		std::cout<<"Building program\n";
 	}
@@ -76,9 +74,12 @@ int main(int argc, char *argv[]){
 		std::cout<<"Building facts\n";
 	}
 
-	antlr4::tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
-	std::cout<<"Builder finished\n";
 	if(MODE == COMPILER){
+		Program* program =  new Program();
+		Builder* builder =  new Builder(program);
+		ASPCore2ProgramListener listener(builder);
+		antlr4::tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
+		std::cout<<"Builder finished\n";
 		listener.getBuilder()->printProgram();
 		
 		if(program->checkSafety()){
@@ -96,24 +97,28 @@ int main(int argc, char *argv[]){
 		compManager.setOutStream(&outfile);
 		compManager.generateProgram(program);
 		outfile.close();
+		builder->clearMemory();
+		delete program;
+		delete builder;
 	}
 	else if(MODE == GENERATOR){
-		std::cout<<"Generating base...\n";
-		ExecutorBase* executor = new Executor();
+		Executor* executor = new Executor();
 		executor->init();
-		std::vector<std::pair<Literal*, bool>> facts = builder->getAllFacts();
-		for(unsigned i = 0; i < facts.size(); ++i){
-			executor->insertFactIntoFactory(*facts[i].first, facts[i].second);
-			facts[i].first->print();
-			std::cout<<". ";
-		}
+		ASPCore2FactListener listener(executor);
+		antlr4::tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
+		std::cout<<"Builder finished\n";
+		std::cout<<"Generating base...\n";
+
+
+		// std::vector<std::pair<Literal*, bool>> facts = builder->getAllFacts();
+		// for(unsigned i = 0; i < facts.size(); ++i){
+		// 	executor->insertFactIntoFactory(*facts[i].first, facts[i].second);
+		// 	facts[i].first->print();
+		// 	std::cout<<". ";
+		// }
 		executor->executeProgram();
 		std::cout<<std::endl;
 		delete executor;
 	}
-	
-	builder->clearMemory();
-	delete program;
-	delete builder;
 
 }

@@ -71,7 +71,7 @@ int main(int argc, char *argv[]){
 		std::cout<<"Building program\n";
 	}
 	else if (MODE == GENERATOR){
-		std::cout<<"Building facts\n";
+		std::cout<<"Building and generating\n";
 	}
 
 	if(MODE == COMPILER){
@@ -106,8 +106,8 @@ int main(int argc, char *argv[]){
 		executor->init();
 		ASPCore2FactListener listener(executor);
 		antlr4::tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
-		std::cout<<"Builder finished\n";
-		std::cout<<"Generating base...\n";
+		//std::cout<<"Builder finished\n";
+		//std::cout<<"Generating base...\n";
 
 
 		// std::vector<std::pair<Literal*, bool>> facts = builder->getAllFacts();

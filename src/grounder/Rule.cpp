@@ -97,7 +97,51 @@ bool Rule::containsLiteralInHead(unsigned id)const{
 }
 
 void Rule::sortLiteralsInBody(){
-    body->sortLiterals();
+    
+    std::vector<Literal*> orderedConjunction;
+    std::unordered_set<std::string> boundVariables;
+   
+    Literal* boundLiteral;
+    Literal* positiveLiteral;
+    unsigned jBound;
+    unsigned jPos;
+    //for(unsigned  i = 0; i < body->getConjunction().size(); ++i){
+    while(body->getConjunction().size() > 0){
+        boundLiteral = nullptr;
+        positiveLiteral = nullptr;
+        for(unsigned  j = 0; j < body->getConjunction().size(); ++j){
+            if(body->getConjunction().at(j)->isBound(boundVariables)){
+                boundLiteral = body->getConjunction().at(j);
+                jBound = j;
+            }
+            else if(!body->getConjunction().at(j)->isNegative() && positiveLiteral == nullptr){
+                positiveLiteral = body->getConjunction().at(j); 
+                jPos = j;
+            }
+        }
+        std::vector<Literal*>::const_iterator it = body->getConjunction().begin();
+        if(boundLiteral != nullptr){
+            orderedConjunction.push_back(boundLiteral);
+            body->removeLiteralAt(it + jBound);
+            boundLiteral->addVariablesToSet(boundVariables);
+            //std::cout<<"adding bound lit\n";
+        }
+        else if(positiveLiteral != nullptr){
+            orderedConjunction.push_back(positiveLiteral);
+            body->removeLiteralAt(it + jPos);
+            positiveLiteral->addVariablesToSet(boundVariables);
+            //std::cout<<"adding positive lit\n";
+        }
+        else{//only negative literals are left
+            Literal* lit = body->getConjunction().at(0);
+            orderedConjunction.push_back(lit);
+            body->removeLiteralAt(it);
+            lit->addVariablesToSet(boundVariables);
+            //std::cout<<"adding negative lit\n";
+        }
+    }
+    body->setConjunction(orderedConjunction);
+    //body->sortLiterals();
 }
 
 void Rule::getRecursiveIndexes(std::vector<unsigned>& recursiveDepIndex)const{

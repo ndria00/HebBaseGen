@@ -42,7 +42,7 @@ void DependencyGraphHandler::createGraph(Program* program, std::unordered_map<un
 	//add edges
 	for(Rule* r : program->getRules()){
 		for(Literal * lit : r->getBody()->getConjunction()){
-			if(lit->isIDBPredicate() && !lit->isNegative()){
+			if(lit->isIDBPredicate() /*&& !lit->isNegative()*/){
 				for(Literal* litHead : r->getHead()->getDisjunction()){
 					//if(predicateID[lit->getIdentifier()] != predicateID[litHead->getIdentifier()]){
 						depGraph.addEdge(predicateNodeMapping[lit->getID()], predicateNodeMapping[litHead->getID()]);

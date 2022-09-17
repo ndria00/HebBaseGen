@@ -19,14 +19,22 @@ void ASPCore2FactListener::exitHead(ASPCore2Parser::HeadContext * /*ctx*/) {
 
 void ASPCore2FactListener::enterAtom(ASPCore2Parser::AtomContext * atom){
     if(atom->identifier() != NULL ){
-        atomName = executor->predicateToID[atom->identifier()->getText()];
+        if(executor->predicateToID.find(atom->identifier()->getText()) != executor->predicateToID.end())
+            atomName = executor->predicateToID[atom->identifier()->getText()];
+        else
+            atomName = -2;
+
+
         //std::cout<< atom->identifier()->getText() << " has id: " << executor->predicateToID[atom->identifier()->getText()] << std::endl;
     }
 }
 
-void ASPCore2FactListener::exitAtom(ASPCore2Parser::AtomContext * /*ctx*/){
+void ASPCore2FactListener::exitAtom(ASPCore2Parser::AtomContext * atom){
     //std::cout <<"built atom with id " <<atomName << "and a number of " << terms.size() <<" terms\n";
-    executor->OnLiteralTrueUndef(executor->factory.addNewInternalTuple(terms, atomName), disjunctiveFact);   
+    if(atomName != -2)
+        executor->OnLiteralTrueUndef(executor->factory.addNewInternalTuple(terms, atomName), disjunctiveFact);   
+    else
+        std::cout << atom->getText() << std::endl;
     //std::cout<<"added tuple\n";
     atomName = -1;
     terms.clear();

@@ -13,6 +13,10 @@ void Body::setConjunction(std::vector<Literal*>& conjunction){
     this->conjunction = conjunction;
 }
 
+void Body::removeLiteralAt(const std::vector<Literal*>::const_iterator& it){
+    conjunction.erase(it);
+}
+
 void Body::addAtom(Literal* a){
     conjunction.push_back(a);
 }
@@ -94,4 +98,10 @@ unsigned Body::getNegativeSize()const{
         if(l->isNegative())
             count++;
     return count;
+}
+
+void Body::reorderBodyLiterals(){
+    std::sort(conjunction.begin(), conjunction.end(), [](Literal* left, Literal* right) {
+    return true;
+    });
 }

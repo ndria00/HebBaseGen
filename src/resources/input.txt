@@ -1,2 +1,3 @@
+reach(X, Z) :- arc(Y, Z), reach(X, Y).
 reach(X, Y) :- arc(X, Y).
-reach(X, Z) :- reach(X, Y), arc(Y, Z).
+noReach(X, Y) :- node(X), node(Y), not reach(X, Y).

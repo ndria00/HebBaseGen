@@ -251,6 +251,9 @@ public:
     bool isUndef()const{
         return status == Undef;
     }
+    bool isUnknown()const{
+        return status == UNKNOWN;
+    }
     std::pair<const TupleLight *, bool>  setStatus(TruthStatus t){
         if(status==t){
             return std::make_pair(this, false);

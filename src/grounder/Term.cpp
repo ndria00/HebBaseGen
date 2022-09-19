@@ -40,6 +40,10 @@ void Term::removeSafeVariables(std::unordered_set<std::string>& variables){
         variables.erase(this->value);
 }
 
+bool Term::isBound(std::unordered_set<std::string>& boundVariables)const{
+    return boundVariables.count(value) > 0;
+}
+
 Term::~Term(){
 
 }

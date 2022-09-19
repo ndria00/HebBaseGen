@@ -20,6 +20,8 @@ class ExpressionBase : public TermBase{
         virtual void setVariable(bool ) = 0;
         virtual void getAllVariables(std::unordered_set<std::string>&) = 0;
         virtual void removeSafeVariables(std::unordered_set<std::string>&) = 0;
+        virtual bool isBound(std::unordered_set<std::string>&)const = 0;
+        virtual std::pair<std::string, bool> getUnboundedVar(std::unordered_set<std::string>&)const = 0;
         virtual std::string getRepresentation() const = 0;
         virtual bool isSimpleFactor() = 0;
         virtual ~ExpressionBase(){}

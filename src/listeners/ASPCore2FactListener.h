@@ -11,14 +11,15 @@ class ASPCore2FactListener : public ASPCore2BaseListener{
         void enterAtom(ASPCore2Parser::AtomContext * /*ctx*/) override;
         void exitAtom(ASPCore2Parser::AtomContext * /*ctx*/) override;
         void exitHead(ASPCore2Parser::HeadContext * /*ctx*/) override;
-        //void enterIdentifier(ASPCore2Parser::IdentifierContext * /*ctx*/) override;
         void enterTerm(ASPCore2Parser::TermContext * /*ctx*/) override;
-        // void visitTerminal(antlr4::tree::TerminalNode * /*node*/) override;
-
+        void enterTerm_(ASPCore2Parser::Term_Context * /*ctx*/) override;
+        void bindTerms(int, std::vector<int>&, std::string&);
     private:
         Executor* executor;
         bool disjunctiveFact;
         int atomName;
+        int atomArity;
         std::vector<int> terms;
+        std::unordered_map<std::string, std::pair<int, int>> indexAndRange;
 };
 #endif /*ASPCORE2FACTLISTENER_H*/

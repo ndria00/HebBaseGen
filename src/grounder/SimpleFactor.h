@@ -26,6 +26,8 @@ class SimpleFactor: public ExpressionBase{
         virtual void setVariable(bool ) override;
         virtual void getAllVariables(std::unordered_set<std::string>&) override;
         virtual void removeSafeVariables(std::unordered_set<std::string>&) override;
+        virtual bool isBound(std::unordered_set<std::string>&)const override;
+        virtual std::pair<std::string, bool> getUnboundedVar(std::unordered_set<std::string>&)const override;
         virtual std::string getRepresentation()const override;
         virtual bool isSimpleFactor() override;
         ~SimpleFactor();

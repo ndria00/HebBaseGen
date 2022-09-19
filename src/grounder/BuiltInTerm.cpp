@@ -48,7 +48,7 @@ void BuiltInTerm::removeSafeVariablesInBuiltIn(std::unordered_set<std::string>& 
     if(myOperator == "=" || myOperator == "=="){
         SimpleFactor* temp;
         if(leftExpr->isSimpleFactor()){
-            temp= dynamic_cast<SimpleFactor*>(leftExpr);
+            temp = dynamic_cast<SimpleFactor*>(leftExpr);
             if(variables.find(temp->getValue()) != variables.end()){
                 variables.erase(temp->getValue());
                 return;
@@ -62,4 +62,16 @@ void BuiltInTerm::removeSafeVariablesInBuiltIn(std::unordered_set<std::string>& 
             }
         }
     }
+}
+
+std::pair<std::string, bool> BuiltInTerm::canBind(std::unordered_set<std::string>& boundVariables)const{
+    std::pair<std::string, bool> firstBound = leftExpr->getUnboundedVar(boundVariables);
+    std::pair<std::string, bool> secondBound = rightExpr->getUnboundedVar(boundVariables);
+    if(firstBound.second && secondBound.second)
+        return firstBound;
+    if(firstBound.second && !secondBound.second)
+        return secondBound;
+    if(!firstBound.second && secondBound.second)
+        return firstBound;
+    return secondBound;
 }

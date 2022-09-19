@@ -38,6 +38,14 @@ void FunctionalTerm::removeSafeVariables(std::unordered_set<std::string>& variab
         term->removeSafeVariables(variables);
     }
 }
+
+bool FunctionalTerm::isBound(std::unordered_set<std::string>& boundVariables)const{
+    for(TermBase * t: terms)
+        if(!t->isBound(boundVariables))
+            return false;
+    return true;
+}
+
 std::string FunctionalTerm::getFunctionName()const{
     return identifier;
 }

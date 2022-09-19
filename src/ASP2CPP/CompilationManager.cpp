@@ -617,6 +617,7 @@ void CompilationManager::declareDataStructures(Rule* r) {
     r->getRecursiveIndexes(recursiveIndexes);
     boundVariables.clear();
     //handling single recursion rules(those that have only one literal in recursion exactly one time)
+    //TODO handle double recursion
     if(recursiveIndexes.size() > 0){
         for(unsigned j = 0; j < 1; ++j){
             Literal* lit = r->getBody()->getConjunction().at(recursiveIndexes[j]);

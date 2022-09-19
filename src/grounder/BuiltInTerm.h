@@ -21,6 +21,7 @@ class BuiltInTerm{
         void addRightExpression(ExpressionBase*);
         void getBuiltInVariables(std::unordered_set<std::string>& );
         void removeSafeVariablesInBuiltIn(std::unordered_set<std::string>&);
+        std::pair<std::string, bool> canBind(std::unordered_set<std::string>&)const;
         void print()const;
 };
 #endif

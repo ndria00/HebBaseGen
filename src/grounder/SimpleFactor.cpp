@@ -43,7 +43,8 @@ SimpleFactor::~SimpleFactor(){
 }
 
 const std::string& SimpleFactor::getValue()const{
-    simpleTerm->getValue();
+    if(simpleTerm != nullptr)
+        return simpleTerm->getValue();
 }
 
 void SimpleFactor::setValue(std::string&){
@@ -66,6 +67,16 @@ void SimpleFactor::getAllVariables(std::unordered_set<std::string>& variables){
 
 void SimpleFactor::removeSafeVariables(std::unordered_set<std::string>& variables){
     simpleTerm->removeSafeVariables(variables);
+}
+
+bool SimpleFactor::isBound(std::unordered_set<std::string>& boundVariables)const{
+    if(!isVariable())
+        return true;
+    return boundVariables.count(this->getValue()) > 0;
+}
+
+std::pair<std::string, bool> SimpleFactor::getUnboundedVar(std::unordered_set<std::string>& boundVariables)const{
+    return std::make_pair(this->getValue(), boundVariables.count(this->getValue()) > 0);
 }
 
 bool SimpleFactor::isSimpleFactor(){

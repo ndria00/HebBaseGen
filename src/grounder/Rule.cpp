@@ -105,7 +105,6 @@ void Rule::sortLiteralsInBody(){
     Literal* positiveLiteral;
     unsigned jBound;
     unsigned jPos;
-    //for(unsigned  i = 0; i < body->getConjunction().size(); ++i){
     while(body->getConjunction().size() > 0){
         boundLiteral = nullptr;
         positiveLiteral = nullptr;
@@ -141,7 +140,6 @@ void Rule::sortLiteralsInBody(){
         }
     }
     body->setConjunction(orderedConjunction);
-    //body->sortLiterals();
 }
 
 void Rule::getRecursiveIndexes(std::vector<unsigned>& recursiveDepIndex)const{

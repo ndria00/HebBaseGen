@@ -16,6 +16,7 @@ class FunctionalTerm: public TermBase{
         virtual void setVariable(bool) override;
         virtual void getAllVariables(std::unordered_set<std::string>&) override;
         virtual void removeSafeVariables(std::unordered_set<std::string>&) override;
+        virtual bool isBound(std::unordered_set<std::string>&)const override;
         void addTerm(TermBase*);
         std::string getFunctionName()const;
         const std::vector<TermBase*>& getTerms()const;

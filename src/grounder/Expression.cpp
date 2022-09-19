@@ -101,6 +101,36 @@ void Expression::removeSafeVariables(std::unordered_set<std::string>& variables)
         second->removeSafeVariables(variables);
 }
 
+bool Expression::isBound(std::unordered_set<std::string>& boundVariables)const{
+    bool firstBound = first->isBound(boundVariables);
+    bool secondBound = second->isBound(boundVariables);
+    if(!firstBound && !secondBound)
+        return false;
+    else if(firstBound && secondBound)
+        return true;
+    //check if expression is an assignment
+    if(first->isSimpleFactor() && secondBound){
+        return true;
+    }
+    else if(firstBound && second->isSimpleFactor()){
+        return true;
+    }
+
+    return false;
+}
+
+std::pair<std::string, bool> Expression::getUnboundedVar(std::unordered_set<std::string>& boundVariables)const{
+    std::pair<std::string, bool> firstUbounded = first->getUnboundedVar(boundVariables); 
+    if(firstUbounded.second)
+        return firstUbounded;
+    std::pair<std::string, bool> secondUbounded = second->getUnboundedVar(boundVariables);
+    if(secondUbounded.second)
+        return secondUbounded;
+
+    return std::make_pair("", false);
+}
+
+
 bool Expression::isSimpleFactor(){
     if(second != nullptr)
         return false;

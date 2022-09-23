@@ -12,8 +12,8 @@ class BuiltInTerm{
     
     public:
         BuiltInTerm();
-        ExpressionBase* getLeftExpr();
-        ExpressionBase* getRightExpr();
+        ExpressionBase* getLeftExpr()const;
+        ExpressionBase* getRightExpr()const;
         const std::string& getMyOperator()const;
         void setOperator(std::string&);
         void addExpression(ExpressionBase*);
@@ -23,5 +23,6 @@ class BuiltInTerm{
         void removeSafeVariablesInBuiltIn(std::unordered_set<std::string>&);
         std::pair<std::string, bool> canBind(std::unordered_set<std::string>&)const;
         void print()const;
+        std::string toString()const;
 };
 #endif

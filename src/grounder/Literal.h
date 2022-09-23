@@ -26,6 +26,7 @@ class Literal{
         void addTerm(TermBase*);
         unsigned getArity()const;
         void print()const;
+        std::string toString()const;
         bool isNegative()const;
         void setNegative(bool);
         void getLiteralVariables(std::unordered_set<std::string>&)const;

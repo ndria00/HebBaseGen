@@ -55,6 +55,20 @@ void Literal::print()const{
     std::cout<<")";
 }
 
+std::string Literal::toString()const{
+    std::string representation = "";
+    if(negative)
+        representation += "not ";
+    representation += this->identifier;
+    representation += "(";
+    for(unsigned i = 0; i < terms.size(); ++i) {
+        terms.at(i)->getRepresentation();
+        if(i != terms.size() -1)
+             representation += ", ";
+    }
+     representation += ")";
+}
+
 void Literal::getLiteralVariables(std::unordered_set<std::string>& variables)const{
     for(TermBase* term : terms){
         term->getAllVariables(variables);

@@ -4,6 +4,7 @@ Rule::Rule(){
     head = new Head();
     body = new Body();
     safe = true;
+    starterToBodyIndexes = std::unordered_map<int, std::vector<unsigned>>();
 }
 
 const Head* Rule::getHead(){
@@ -96,50 +97,84 @@ bool Rule::containsLiteralInHead(unsigned id)const{
     return false;
 }
 
-void Rule::sortLiteralsInBody(){
+bool Rule::containsLiteralInBody(std::string& id)const{
+    for(Literal* lit : body->getConjunction()){
+        if(lit->getIdentifier() == id)
+            return true; 
+    }
+    return false;
+}
+
+void Rule::sortLiteralsInBody(int starter =-1){
     
-    std::vector<Literal*> orderedConjunction;
+    std::vector<unsigned> orderedConjunction;
+    std::unordered_set<unsigned> addedLiterals;
     std::unordered_set<std::string> boundVariables;
-   
+    if(starter != -1){
+        addedLiterals.insert(starter);
+        orderedConjunction.push_back(starter);
+    }
     Literal* boundLiteral;
     Literal* positiveLiteral;
     unsigned jBound;
     unsigned jPos;
-    while(body->getConjunction().size() > 0){
+    unsigned currentIndex = 0;
+    while(orderedConjunction.size() < body->getConjunction().size()){
         boundLiteral = nullptr;
         positiveLiteral = nullptr;
         for(unsigned  j = 0; j < body->getConjunction().size(); ++j){
-            if(body->getConjunction().at(j)->isBound(boundVariables)){
+            if(body->getConjunction().at(j)->isBound(boundVariables) && !addedLiterals.count(j)){
                 boundLiteral = body->getConjunction().at(j);
                 jBound = j;
             }
-            else if(!body->getConjunction().at(j)->isNegative() && positiveLiteral == nullptr){
+            else if(!body->getConjunction().at(j)->isNegative() && positiveLiteral == nullptr && ! addedLiterals.count(j)){
                 positiveLiteral = body->getConjunction().at(j); 
                 jPos = j;
             }
         }
-        std::vector<Literal*>::const_iterator it = body->getConjunction().begin();
+        //std::vector<Literal*>::const_iterator it = body->getConjunction().begin();
         if(boundLiteral != nullptr){
-            orderedConjunction.push_back(boundLiteral);
-            body->removeLiteralAt(it + jBound);
+            orderedConjunction.push_back(jBound);
+            addedLiterals.insert(jBound);
+            //orderedConjunction.push_back(boundLiteral);
+            //body->removeLiteralAt(it + jBound);
             boundLiteral->addVariablesToSet(boundVariables);
             //std::cout<<"adding bound lit\n";
         }
         else if(positiveLiteral != nullptr){
-            orderedConjunction.push_back(positiveLiteral);
-            body->removeLiteralAt(it + jPos);
+            //orderedConjunction.push_back(positiveLiteral);
+            //body->removeLiteralAt(it + jPos);
+            orderedConjunction.push_back(jPos);
+            addedLiterals.insert(jPos);
             positiveLiteral->addVariablesToSet(boundVariables);
             //std::cout<<"adding positive lit\n";
         }
         else{//only negative literals are left
-            Literal* lit = body->getConjunction().at(0);
-            orderedConjunction.push_back(lit);
-            body->removeLiteralAt(it);
+            Literal* lit = body->getConjunction().at(currentIndex);
+            //orderedConjunction.push_back(lit);
+            //body->removeLiteralAt(it);
+            orderedConjunction.push_back(currentIndex);
+            addedLiterals.insert(currentIndex);
             lit->addVariablesToSet(boundVariables);
             //std::cout<<"adding negative lit\n";
         }
+        currentIndex++;
     }
-    body->setConjunction(orderedConjunction);
+    //if(starter != -1)
+    starterToBodyIndexes[starter] = orderedConjunction;
+    //body->setConjunction(orderedConjunction);
+}
+
+std::vector<unsigned>& Rule::getOrderedBodyByStarter(int starter){
+    return starterToBodyIndexes[starter];
+}
+
+std::unordered_map<int, std::vector<unsigned>>& Rule::getStartersAndBody(){
+    return starterToBodyIndexes;
+}
+
+void Rule::removeBuiltInAt(const std::vector<BuiltInTerm*>::const_iterator& it){
+    body->removeBuiltInAt((it));
 }
 
 void Rule::getRecursiveIndexes(std::vector<unsigned>& recursiveDepIndex)const{

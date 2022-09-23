@@ -4,10 +4,10 @@ BuiltInTerm::BuiltInTerm(){
     leftExpr = nullptr;
     rightExpr = nullptr;
 }
-ExpressionBase* BuiltInTerm::getLeftExpr(){
+ExpressionBase* BuiltInTerm::getLeftExpr()const{
     return leftExpr;
 }
-ExpressionBase* BuiltInTerm::getRightExpr(){
+ExpressionBase* BuiltInTerm::getRightExpr()const{
     return rightExpr;
 }
 const std::string& BuiltInTerm::getMyOperator()const{
@@ -27,6 +27,8 @@ void BuiltInTerm::addExpression(ExpressionBase* expr){
 }
 
 void BuiltInTerm::setOperator(std::string& myOperator){
+    if(myOperator == "=")
+        myOperator = "==";
     this->myOperator = myOperator;
 }
 
@@ -69,9 +71,21 @@ std::pair<std::string, bool> BuiltInTerm::canBind(std::unordered_set<std::string
     std::pair<std::string, bool> secondBound = rightExpr->getUnboundedVar(boundVariables);
     if(firstBound.second && secondBound.second)
         return firstBound;
-    if(firstBound.second && !secondBound.second)
+    if(firstBound.second && !secondBound.second){
+        secondBound.second = true;
         return secondBound;
-    if(!firstBound.second && secondBound.second)
+    }
+    if(!firstBound.second && secondBound.second){
+        firstBound.second = true;
         return firstBound;
+    }
     return secondBound;
+}
+
+std::string BuiltInTerm::toString()const{
+    std::string representation = "";
+    representation += leftExpr->getRepresentation();
+    representation += myOperator;
+    representation += rightExpr->getRepresentation();
+    return representation;
 }

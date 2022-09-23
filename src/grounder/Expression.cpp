@@ -103,18 +103,19 @@ void Expression::removeSafeVariables(std::unordered_set<std::string>& variables)
 
 bool Expression::isBound(std::unordered_set<std::string>& boundVariables)const{
     bool firstBound = first->isBound(boundVariables);
+    if(second == nullptr){
+        return firstBound;
+    }
     bool secondBound = second->isBound(boundVariables);
-    if(!firstBound && !secondBound)
-        return false;
-    else if(firstBound && secondBound)
+    if(firstBound && secondBound)
         return true;
-    //check if expression is an assignment
-    if(first->isSimpleFactor() && secondBound){
-        return true;
-    }
-    else if(firstBound && second->isSimpleFactor()){
-        return true;
-    }
+    // //check if expression is an assignment
+    // if(first->isSimpleFactor() && secondBound){
+    //     return true;
+    // }
+    // else if(firstBound && second->isSimpleFactor()){
+    //     return true;
+    // }
 
     return false;
 }
@@ -142,7 +143,7 @@ std::string Expression::getRepresentation()const{
     //representation += "(";
     if(first != nullptr)
         representation += first->getRepresentation();
-    std::cout<<myOperator;
+    representation += myOperator;
     if(second != nullptr){
         representation += second->getRepresentation();
     }

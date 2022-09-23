@@ -44,10 +44,51 @@ void CompilationManager::generateProgram(Program* program){
     
     //sort rule literals
     for(auto rule : program->getRules()){
-        rule->sortLiteralsInBody();
+        rule->sortLiteralsInBody(-1);
+    }
+    
+    // for(auto rule : program->getRules()){
+    //     declareDataStructures(rule);
+    // }
+
+    //DEP GRAPH
+    //Dependency graph computation
+    std::unordered_map<unsigned, unsigned> predicateNodeMapping;
+	DependencyGraphHandler::getInstance().createGraph(program, predicateNodeMapping);
+    //statifications
+    //Each layer contains the ids of its IDB predicates
+    //In order to find the rules that are part of each layer a complete search of rules needs to be done  
+	std::vector<std::vector<unsigned>> layers = DependencyGraphHandler::getInstance().getProgramLayers();
+	DependencyGraphHandler::getInstance().printProgramLayers(predicateNodeMapping);
+    for(int i = layers.size()-1; i >= 0 ; --i){
+        std::vector<unsigned> effectiveLiteralsIDs;
+        for(unsigned j = 0; j < layers[i].size(); ++j){
+            for(auto& it : predicateNodeMapping){
+                if(it.second == layers[i][j]){
+                    effectiveLiteralsIDs.push_back(it.first);
+                }
+            }
+        }
+        std::vector<unsigned> rulesForComponent;
+        getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
+        std::vector<unsigned> exitRules;
+        std::vector<std::string> recursiveDep;
+        findExitRules(rulesForComponent, program, exitRules, recursiveDep);
+        for(unsigned r = 0; r < rulesForComponent.size(); ++r){
+            //for each ordering possible given from recursiveDep declare maps
+            for(unsigned l = 0;  l < recursiveDep.size(); ++l){
+                Rule* rule = program->getRuleByID(rulesForComponent[r]);
+                for(int lit = 0; lit < rule->getBody()->getConjunction().size(); ++lit){
+                    if(recursiveDep[l] == rule->getBody()->getConjunction().at(lit)->getIdentifier()){
+                        rule->sortLiteralsInBody(lit);
+                    }
+                }
+            }
+        }
     }
 
-    for(auto rule : program->getRules()){
+    //declare maps for each starter
+    for(Rule* rule : program->getRules()){
         declareDataStructures(rule);
     }
 
@@ -56,8 +97,6 @@ void CompilationManager::generateProgram(Program* program){
     
     //print function
     *out << indentation++ << "void printTuple(const Tuple* t){\n";
-    //*out << indentation << "if(t->isFalse()) std::cout << \"not \";\n";
-    //*out << indentation << "if(t->isUndef()) std::cout << \"undef \";\n";
 
     *out << indentation << "std::cout << Executor::predicateIds[t->getPredicateName()] << \"(\";\n";
     *out << indentation++ << "for(int i=0;i<t->size();i++){\n";
@@ -144,16 +183,6 @@ void CompilationManager::generateProgram(Program* program){
     *out << indentation << "auto start = std::chrono::high_resolution_clock::now();\n";
     *out << indentation <<"//TODO\n";
 
-
-    //DEP GRAPH
-    //Dependency graph computation
-    std::unordered_map<unsigned, unsigned> predicateNodeMapping;
-	DependencyGraphHandler::getInstance().createGraph(program, predicateNodeMapping);
-    //statifications
-    //Each layer contains the ids of its IDB predicates
-    //In order to find the rules that are part of each layer a complete search of rules needs to be done  
-	std::vector<std::vector<unsigned>> layers = DependencyGraphHandler::getInstance().getProgramLayers();
-	DependencyGraphHandler::getInstance().printProgramLayers(predicateNodeMapping);
     for(int i = layers.size()-1; i >= 0 ; --i){
         std::vector<unsigned> effectiveLiteralsIDs;
         for(unsigned j = 0; j < layers[i].size(); ++j){
@@ -251,19 +280,9 @@ void CompilationManager::declareAuxMap(const std::string& mapVariableName, std::
 
 
 
-void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recursiveDep){
-    std::cout<<"Compiling: ";
-    rule->print();
-    std::cout<<endl;
-    // std::vector<Literal*> orderedConjunction;
-    //TODO :substituite with a more efficient method
-    // for(Literal* lit : rule->getBody()->getConjunction())
-    //     if(!lit->isNegative())
-    //         orderedConjunction.push_back(lit);
-    
-    // for(Literal* lit : rule->getBody()->getConjunction())
-    //     if(lit->isNegative())
-    //         orderedConjunction.push_back(lit);
+void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recursiveDep, int starter = -1){
+    // if(currentRecursiveAtom != "")
+    //     *out << indentation++ << "This a compilation from starter\n";
 
     const Body* body = rule->getBody();
     unsigned negativeBodySize = body->getNegativeSize();
@@ -272,129 +291,139 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
     *out << indentation++ << "{\n";
 
     std::unordered_map<std::string, unsigned> variablesNameToTupleIndexes;
-    //*out <<"int recursionIndex = -1\n";
-    //TODO check recursoveDep.size()>1
-    //simple case in which there is only one recursive dependency in a rule (reachability)
-    std::vector<unsigned> selfRecursiveIndexes;
-    rule->getRecursiveIndexes(selfRecursiveIndexes);
 
-    if(selfRecursiveIndexes.size() == 1){
-        //foreach recursive literal print an if that determines which and how many variables are to be declared
-        for(unsigned i = 0; i < selfRecursiveIndexes.size(); ++i){
-            unsigned j = 0;
-            Literal* recursiveLit = rule->getBody()->getConjunction().at(selfRecursiveIndexes[i]);
+    // std::vector<unsigned> selfRecursiveIndexes;
+    // rule->getRecursiveIndexes(selfRecursiveIndexes);
 
-            for(unsigned t = 0; t < recursiveLit->getArity(); ++t){
-                if(recursiveLit->getTerms().at(t)->isVariable())
-                    variablesNameToTupleIndexes[recursiveLit->getTermAt(t)] = t; 
-            }
+    // if(selfRecursiveIndexes.size() == 1){
+    //     //foreach recursive literal print an if that determines which and how many variables are to be declared
+    //     for(unsigned i = 0; i < selfRecursiveIndexes.size(); ++i){
+    //         unsigned j = 0;
+    //         Literal* recursiveLit = rule->getBody()->getConjunction().at(selfRecursiveIndexes[i]);
 
-            // for(Literal* lit: rule->getBody()->getConjunction()){
-            //     if(std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end() && !lit->isNegative()){
-            //         // if(j == 0){
-            //         //     *out << indentation++ << "if(literalName == predicateToID[\"" << lit->getIdentifier() << "\"]){\n";
-            //         //     //*out << "recursionIndex = 22";
-            //         //     for(unsigned t = 0; t < lit->getArity(); ++t){
-            //         //         if(lit->getTerms().at(t)->isVariable())
-            //         //             variablesNameToTupleIndexes[lit->getTermAt(t)] = t; 
-            //         //     }
-            //         //     *out << --indentation <<"}\n";
+    //         for(unsigned t = 0; t < recursiveLit->getArity(); ++t){
+    //             if(recursiveLit->getTerms().at(t)->isVariable())
+    //                 variablesNameToTupleIndexes[recursiveLit->getTermAt(t)] = t; 
+    //         }
 
-            //         // }
-            //         // else{
-            //         //     *out << indentation++ << "else if(literalName == predicateToID[\"" << lit->getIdentifier() << "\"]){\n";
-            //         //     for(unsigned t = 0; t < lit->getArity(); ++t){
-            //         //         if(lit->getTerms().at(t)->isVariable())
-            //         //             variablesNameToTupleIndexes[lit->getTermAt(t)] = t; 
-            //         //     }
-            //         //     *out << --indentation <<"}\n";
-            //         // }
-            //         //recursiveLit = std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier());
-            //     }
-            //     ++j;
-            // }
-            if (!recursiveLit->isBound(boundVariables)) {
-                recursiveLit->addVariablesToSet(boundVariables);
-            }
-        }
+    //         if (!recursiveLit->isBound(boundVariables)) {
+    //             recursiveLit->addVariablesToSet(boundVariables);
+    //         }
+    //     }
             
-        //std::unordered_set<std::string> declaredVariables;
-        for(auto& nameIndex: variablesNameToTupleIndexes ){
-            *out << indentation << "int " << nameIndex.first << " = (*recursiveTuple)[" << nameIndex.second << "];\n";
-        }
 
-    }
+    // }
 
     closingParenthesis++;
-    for(unsigned i = 0; i < body->getConjunction().size(); ++i){
-        Literal* lit = body->getConjunction()[i];
-        if(!lit->isNegative() && lit->isBound(boundVariables)){
-            *out << indentation << "const Tuple* tuple" << i << " = factory.find({";
-            printLiteralTuple(lit, boundVariables); 
-            *out << "}, _" << lit->getIdentifier() << ");\n";
-        }
-        else if(!lit->isNegative()){
-            std::string mapVariableName = lit->getIdentifier() + "_";
-
+    for(unsigned i = 0; i < rule->getOrderedBodyByStarter(starter).size(); ++i){
+        Literal* lit = body->getConjunction()[rule->getOrderedBodyByStarter(starter)[i]];
+        // compiling rule with a starter given by a recursive literal
+        if(starter != -1  && i == 0){
             for(unsigned t = 0; t < lit->getArity(); ++t){
-                if(lit->getTerms().at(t)->isVariable() && boundVariables.count(lit->getTermAt(t)) || ! lit->getTerms().at(t)->isVariable()){
-                    mapVariableName += std::to_string(t) + "_";
-                }
+                if(lit->getTerms().at(t)->isVariable())
+                    variablesNameToTupleIndexes[lit->getTermAt(t)] = t; 
             }
-            *out << indentation << "const std::vector<int>* tuples;\n";
-            *out << indentation << "tuples = &p" << mapVariableName << ".getValuesVec({";
-            printLiteralTuple(lit, boundVariables);
-            *out << "});\n";
-            *out << indentation << "const std::vector<int>* tuplesU = &u" << mapVariableName << ".getValuesVec({";
-            printLiteralTuple(lit, boundVariables);
-            *out << "});\n";
-            // *out << indentation << "const Tuple* tupleU = NULL;\n";
-                            
-            *out << indentation++ << "for(unsigned i = 0; i < tuples->size() + tuplesU->size(); i++){\n";
-            *out << indentation << "const Tuple * tuple" << i << " = NULL;\n";
-            *out << indentation++ << "if(i < tuples->size()){\n";
-            *out << indentation << "tuple" << i << " = factory.getTupleFromInternalID(tuples->at(i));\n";
-            // *out << indentation++ << "if(tuplesU != &EMPTY_TUPLES_VEC) {\n";
-            // *out << indentation << "tupleU = NULL;\n";
-            // *out << --indentation << "}\n";
-            *out << --indentation << "}\n";
-            *out << indentation++ << "else {\n";
-            *out << indentation << "tuple" << i << " = factory.getTupleFromInternalID(tuplesU->at(i-tuples->size()));\n";
-            // *out << indentation << "tupleU = tuple" << i << ";\n";
-            //*out << indentation << "tupleUNegated = false;\n";
-            *out << --indentation << "}\n";
+            for(auto& nameIndex: variablesNameToTupleIndexes ){
+                *out << indentation << "int " << nameIndex.first << " = (*recursiveTuple)[" << nameIndex.second << "];\n";
+            }
+            if (!lit->isBound(boundVariables)) {
+                lit->addVariablesToSet(boundVariables);
+            }
+        }
+        else{
+            if(!lit->isNegative() && lit->isBound(boundVariables)){
+                *out << indentation << "const Tuple* tuple" << i << " = factory.find({";
+                printLiteralTuple(lit, boundVariables); 
+                *out << "}, _" << lit->getIdentifier() << ");\n";
+            }
+            else if(!lit->isNegative()){
+                std::string mapVariableName = lit->getIdentifier() + "_";
+
+                for(unsigned t = 0; t < lit->getArity(); ++t){
+                    if(lit->getTerms().at(t)->isVariable() && boundVariables.count(lit->getTermAt(t)) || ! lit->getTerms().at(t)->isVariable()){
+                        mapVariableName += std::to_string(t) + "_";
+                    }
+                }
+                *out << indentation << "const std::vector<int>* tuples;\n";
+                *out << indentation << "tuples = &p" << mapVariableName << ".getValuesVec({";
+                printLiteralTuple(lit, boundVariables);
+                *out << "});\n";
+                *out << indentation << "const std::vector<int>* tuplesU = &u" << mapVariableName << ".getValuesVec({";
+                printLiteralTuple(lit, boundVariables);
+                *out << "});\n";
+                // *out << indentation << "const Tuple* tupleU = NULL;\n";
+                                
+                *out << indentation++ << "for(unsigned i = 0; i < tuples->size() + tuplesU->size(); i++){\n";
+                *out << indentation << "const Tuple * tuple" << i << " = NULL;\n";
+                *out << indentation++ << "if(i < tuples->size()){\n";
+                *out << indentation << "tuple" << i << " = factory.getTupleFromInternalID(tuples->at(i));\n";
+                // *out << indentation++ << "if(tuplesU != &EMPTY_TUPLES_VEC) {\n";
+                // *out << indentation << "tupleU = NULL;\n";
+                // *out << --indentation << "}\n";
+                *out << --indentation << "}\n";
+                *out << indentation++ << "else {\n";
+                *out << indentation << "tuple" << i << " = factory.getTupleFromInternalID(tuplesU->at(i-tuples->size()));\n";
+                // *out << indentation << "tupleU = tuple" << i << ";\n";
+                //*out << indentation << "tupleUNegated = false;\n";
+                *out << --indentation << "}\n";
+                closingParenthesis++;
+            }
+            else{//negative
+                *out << indentation << "const Tuple negativeTuple = Tuple({";
+                printLiteralTuple(lit, boundVariables);
+                *out << "}, _" << lit->getIdentifier() << ", true);\n";
+                *out << indentation << "const Tuple* tuple" << i << " = factory.find(negativeTuple);\n";
+                *out << indentation++ << "if(tuple" << i << " == NULL){\n";
+                *out << indentation << "tuple" << i <<" = &negativeTuple;\n";
+                *out << --indentation << "}\n";
+                *out << indentation++ << "else{\n";
+                *out << indentation << "if(tuple" << i << "->isTrue())    tuple" << i << "= NULL;\n";
+                *out << --indentation << "}\n";
+            }
+
+
+            *out << indentation++ << "if(tuple" << i << "!= NULL){\n";
             closingParenthesis++;
-        }
-        else{//negative
-            *out << indentation << "const Tuple negativeTuple = Tuple({";
-            printLiteralTuple(lit, boundVariables);
-            *out << "}, _" << lit->getIdentifier() << ", true);\n";
-            *out << indentation << "const Tuple* tuple" << i << " = factory.find(negativeTuple);\n";
-            *out << indentation++ << "if(tuple" << i << " == NULL){\n";
-            *out << indentation << "tuple" << i <<" = &negativeTuple;\n";
-            *out << --indentation << "}\n";
-            *out << indentation++ << "else{\n";
-            *out << indentation << "if(tuple" << i << "->isTrue())    tuple" << i << "= NULL;\n";
-            *out << --indentation << "}\n";
-        }
+            if (!lit->isNegative() || (i == 0)){
+                std::unordered_set<std::string> declaredVariables;
+                for(unsigned t = 0; t < lit->getArity(); ++t){
+                    if(lit->getTerms().at(t)->isVariable()  && !boundVariables.count(lit->getTermAt(t)) && ! declaredVariables.count(lit->getTermAt(t))){
+                        *out << indentation <<"int " << lit->getTermAt(t)<< " = (*tuple" << i <<")[" << t <<"];\n"; 
+                        declaredVariables.insert(lit->getTermAt(t));
+                    }
+                }
+            }
 
-
-        *out << indentation++ << "if(tuple" << i << "!= NULL){\n";
-        closingParenthesis++;
-        if (!lit->isNegative() || (i == 0)){
-            std::unordered_set<std::string> declaredVariables;
-            for(unsigned t = 0; t < lit->getArity(); ++t){
-                if(lit->getTerms().at(t)->isVariable()  && !boundVariables.count(lit->getTermAt(t)) && ! declaredVariables.count(lit->getTermAt(t))){
-                    *out << indentation <<"int " << lit->getTermAt(t)<< " = (*tuple" << i <<")[" << t <<"];\n"; 
-                    declaredVariables.insert(lit->getTermAt(t));
+            if (!lit->isBound(boundVariables)) {
+                lit->addVariablesToSet(boundVariables);
+            }
+            for(unsigned builtInIndex = 0; builtInIndex < rule->getBody()->getBuiltInTerms().size(); ++builtInIndex){
+                BuiltInTerm* currentBuiltIn = rule->getBody()->getBuiltInTerms().at(builtInIndex);
+                std::pair<std::string, bool> bindingResult = currentBuiltIn->canBind(boundVariables);
+                //builtIn is totally bound
+                if(bindingResult.second && bindingResult.first == ""){
+                    *out << indentation++ <<"if(" << currentBuiltIn->toString() << "){\n";
+                    std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                    rule->removeBuiltInAt(it);
+                    closingParenthesis++;
+                }//X = Y+2 where X is not already bound, or X == Y
+                else if(bindingResult.second && bindingResult.first != "" && (currentBuiltIn->getMyOperator() == "=" || currentBuiltIn->getMyOperator() == "==")){
+                    if(currentBuiltIn->getLeftExpr()->isBound(boundVariables)){
+                        *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getLeftExpr()->getRepresentation()<<";\n";
+                        boundVariables.insert(bindingResult.first);
+                        std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                        rule->removeBuiltInAt(it);
+                    }
+                    else if(currentBuiltIn->getRightExpr()->isBound(boundVariables)){
+                        *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getRightExpr()->getRepresentation()<<";\n";
+                        boundVariables.insert(bindingResult.first);
+                        std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                        rule->removeBuiltInAt(it);
+                    }
                 }
             }
         }
-
-        if (!lit->isBound(boundVariables)) {
-            lit->addVariablesToSet(boundVariables);
-        }
-        if(i == body->getConjunction().size() - 1){
+        if(i == rule->getOrderedBodyByStarter(starter).size() - 1){
             *out<< indentation <<"//Rule is firing \n";
             // add all literals in the head to the factory
             bool insertAsUndef = false;
@@ -570,80 +599,63 @@ void CompilationManager::printLiteralTuple(const Literal* lit, const std::unorde
 
 void CompilationManager::declareDataStructures(Rule* r) {
     std::unordered_set<std::string> boundVariables;
-    // if (start < r.getBodySize()) {
-    //     r.getFormulas().at(start)->addVariablesToSet(boundVariables);
-    // }else{
-    //     if(start > r.getFormulas().size()){
-    //         for(unsigned k = 0; k < r.getHead()[0].getAriety(); k++){
-    //             if(r.getHead()[0].isVariableTermAt(k)){
-    //                 boundVariables.insert(r.getHead()[0].getTermAt(k));
+
+    //declaration for normal order grounding
+    //assuming that each starter contains all predicates
+    for(auto it : r->getStartersAndBody()){
+        std::vector<unsigned> orderedBody = it.second;
+        for(unsigned i = 0 ; i < orderedBody.size(); i++){
+            Literal* li = r->getBody()->getConjunction().at(orderedBody[i]);
+            if(!li->isNegative() && !li->isBound(boundVariables)){
+                // std::cout<<"Declare map for: ";
+                // li->print();
+                // std::cout<<std::endl;
+                std::vector<unsigned> keyIndexes;
+                std::string mapVariableName = li->getIdentifier() + "_";
+                for(unsigned tiIndex = 0; tiIndex < li->getTerms().size(); tiIndex++){
+                    if((li->getTerms().at(tiIndex)->isVariable() && boundVariables.count(li->getTermAt(tiIndex))) || !li->getTerms().at(tiIndex)->isVariable()){
+                        mapVariableName += std::to_string(tiIndex) + "_";
+                        keyIndexes.push_back(tiIndex);
+                    }
+                }
+                declareAuxMap(mapVariableName, keyIndexes, li->getIdentifier());
+            }
+            li->addVariablesToSet(boundVariables);
+        }
+        boundVariables.clear();
+    }
+    // //declaration for grounding order defined by recursion
+    // std::vector<unsigned> recursiveIndexes;
+    // r->getRecursiveIndexes(recursiveIndexes);
+    // boundVariables.clear();
+    // //handling single recursion rules(those that have only one literal in recursion exactly one time)
+    // //TODO handle double recursion
+    // if(recursiveIndexes.size() > 0){
+    //     for(unsigned j = 0; j < 1; ++j){
+    //         Literal* lit = r->getBody()->getConjunction().at(recursiveIndexes[j]);
+    //         lit->addVariablesToSet(boundVariables);
+    //         for(unsigned i = 0 ; i < r->getBody()->getConjunction().size(); i++){
+    //             if(i != recursiveIndexes[j]){
+    //                 Literal* li = r->getBody()->getConjunction().at(i);
+    //                 if(!li->isNegative() && !li->isBound(boundVariables)){
+    //                     // std::cout<<"Declare map for: ";
+    //                     // li->print();
+    //                     // std::cout<<std::endl;
+    //                     std::vector<unsigned> keyIndexes;
+    //                     std::string mapVariableName = li->getIdentifier() + "_";
+    //                     for(unsigned tiIndex = 0; tiIndex < li->getTerms().size(); tiIndex++){
+    //                         if((li->getTerms().at(tiIndex)->isVariable() && boundVariables.count(li->getTermAt(tiIndex))) || !li->getTerms().at(tiIndex)->isVariable()){
+    //                             mapVariableName += std::to_string(tiIndex) + "_";
+    //                             keyIndexes.push_back(tiIndex);
+    //                         }
+    //                     }
+    //                     declareAuxMap(mapVariableName, keyIndexes, li->getIdentifier());
+    //                 }
+    //                 li->addVariablesToSet(boundVariables);
     //             }
     //         }
     //     }
     // }
-
-    //const std::vector<unsigned> & joinOrder = r.getOrderedBodyIndexesByStarter(start);
-    //unsigned i = 1;
-    //if (start >= r.getBodySize()) {
-    //    i = 0;
-    //}else{
-    
-    // const Literal* lit = r->getBody()->getConjunction().at(0);
-    // std::string mapVariableName=lit->getPredicateName()+"_";
-    // std::vector<unsigned> keyIndexes;
-    // declareAuxMap(mapVariableName, keyIndexes, lit->getIdentifier());
-
-    //declaration for normal order grounding
-    for(unsigned i = 0 ; i < r->getBody()->getConjunction().size(); i++){
-        Literal* li = r->getBody()->getConjunction().at(i);
-        if(!li->isNegative() && !li->isBound(boundVariables)){
-            // std::cout<<"Declare map for: ";
-            // li->print();
-            // std::cout<<std::endl;
-            std::vector<unsigned> keyIndexes;
-            std::string mapVariableName = li->getIdentifier() + "_";
-            for(unsigned tiIndex = 0; tiIndex < li->getTerms().size(); tiIndex++){
-                if((li->getTerms().at(tiIndex)->isVariable() && boundVariables.count(li->getTermAt(tiIndex))) || !li->getTerms().at(tiIndex)->isVariable()){
-                    mapVariableName += std::to_string(tiIndex) + "_";
-                    keyIndexes.push_back(tiIndex);
-                }
-            }
-            declareAuxMap(mapVariableName, keyIndexes, li->getIdentifier());
-        }
-        li->addVariablesToSet(boundVariables);
-    }
-    //declaration for grounding order defined by recursion
-    std::vector<unsigned> recursiveIndexes;
-    r->getRecursiveIndexes(recursiveIndexes);
-    boundVariables.clear();
-    //handling single recursion rules(those that have only one literal in recursion exactly one time)
-    //TODO handle double recursion
-    if(recursiveIndexes.size() > 0){
-        for(unsigned j = 0; j < 1; ++j){
-            Literal* lit = r->getBody()->getConjunction().at(recursiveIndexes[j]);
-            lit->addVariablesToSet(boundVariables);
-            for(unsigned i = 0 ; i < r->getBody()->getConjunction().size(); i++){
-                if(i != recursiveIndexes[j]){
-                    Literal* li = r->getBody()->getConjunction().at(i);
-                    if(!li->isNegative() && !li->isBound(boundVariables)){
-                        // std::cout<<"Declare map for: ";
-                        // li->print();
-                        // std::cout<<std::endl;
-                        std::vector<unsigned> keyIndexes;
-                        std::string mapVariableName = li->getIdentifier() + "_";
-                        for(unsigned tiIndex = 0; tiIndex < li->getTerms().size(); tiIndex++){
-                            if((li->getTerms().at(tiIndex)->isVariable() && boundVariables.count(li->getTermAt(tiIndex))) || !li->getTerms().at(tiIndex)->isVariable()){
-                                mapVariableName += std::to_string(tiIndex) + "_";
-                                keyIndexes.push_back(tiIndex);
-                            }
-                        }
-                        declareAuxMap(mapVariableName, keyIndexes, li->getIdentifier());
-                    }
-                    li->addVariablesToSet(boundVariables);
-                }
-            }
-        }
-    }
 }
 
 void CompilationManager::findExitRules(std::vector<unsigned>& recursiveComponent, Program* program, std::vector<unsigned>& exitRules, std::vector<std::string>& recursiveDep){
@@ -654,6 +666,7 @@ void CompilationManager::findExitRules(std::vector<unsigned>& recursiveComponent
     for(unsigned i = 0; i < componentRules.size(); ++i){
         isExitRule = true;
         for(Literal* l : componentRules[i]->getBody()->getConjunction()){
+            
             for(unsigned j = 0; j < componentRules.size(); ++j){
                 if(componentRules[j]->containsLiteralInHead(l)){
                     isExitRule = false;
@@ -665,8 +678,8 @@ void CompilationManager::findExitRules(std::vector<unsigned>& recursiveComponent
                     //break;
                 }
             }
-            if(!isExitRule)
-                break;
+            // if(!isExitRule)
+            //     break;
         }
         if(isExitRule)
             exitRules.push_back(componentRules[i]->getID());
@@ -696,13 +709,13 @@ void CompilationManager::compileRecursiveComponent(Program* program, std::vector
         std::vector<unsigned>::iterator it = std::find(recursiveComponent.begin(), recursiveComponent.end(), exitRules[i]);
         recursiveComponent.erase(it);
     }
-    //component is totally recursive (a clique?)
+    //component is totally recursive
     if(exitRules.size() == 0){
         //add all tuples in factory that are true or undef so that the component can generate
         //without need to do a preliminar grounding
-        *out << indentation << "{//adding already existing tuple for predicates involved in recursion\n";
+        *out << indentation++ << "{//adding already existing tuple for predicates involved in recursion\n";
         *out << indentation << "const std::vector<int>* actualTuples;\n";
-        for(int i = 0; i < recursiveDep.size(); ++i){
+        for(unsigned i = 0; i < recursiveDep.size(); ++i){
             
             *out << indentation << "actualTuples = &p" << recursiveDep[i] << "_.getValuesVec({});\n";
             *out << indentation << "for(int i = 0; i < actualTuples->size(); ++i) generatedStack.push_back((factory.getTupleFromInternalID(actualTuples->at(i)))->getId());\n";
@@ -710,7 +723,7 @@ void CompilationManager::compileRecursiveComponent(Program* program, std::vector
             *out << indentation << "actualTuples = &u" << recursiveDep[i] << "_.getValuesVec({});\n";
             *out << indentation << "for(int i = 0; i < actualTuples->size(); ++i) generatedStack.push_back((factory.getTupleFromInternalID(actualTuples->at(i)))->getId());\n";
         }
-        *out << indentation << "}\n";
+        *out << --indentation << "}\n";
     }
     
     if(recursiveDep.size() > 0){
@@ -718,11 +731,28 @@ void CompilationManager::compileRecursiveComponent(Program* program, std::vector
         *out << indentation << "const Tuple* recursiveTuple = factory.getTupleFromInternalID(generatedStack.back());\n";
         *out << indentation << "generatedStack.pop_back();\n";
         *out << indentation << "unsigned literalName = recursiveTuple->getPredicateName();\n";
+        //if recursive[i] -> do a specific compilation
+        for(unsigned i = 0; i < recursiveDep.size(); ++i){
+            *out << indentation++ << "if(literalName == _"<< recursiveDep[i] <<"){\n";
+                for(unsigned j = 0; j < recursiveComponent.size(); ++j){
+                    if(program->getRuleByID(recursiveComponent[j])->containsLiteralInBody(recursiveDep[i])){
+                        //compile several times basing on how many occurrencies of the predicate are present in the chosen rule
+                        for(unsigned k  = 0; k < program->getRuleByID(recursiveComponent[j])->getBody()->getConjunction().size(); ++k)
+                        if(program->getRuleByID(recursiveComponent[j])->getBody()->getConjunction()[k]->getIdentifier() == recursiveDep[i]){
+                            compileRule(program->getRuleByID(recursiveComponent[j]), recursiveDep, k);
+                        }
+                    }
+                }
+            *out << --indentation << "}\n";
+        
+        }
+    }else {
+        for(unsigned j = 0; j < recursiveComponent.size(); ++j){
+            compileRule(program->getRuleByID(recursiveComponent[j]), recursiveDep);
+        }
     }
 
-    for(unsigned j = 0; j < recursiveComponent.size(); ++j){
-        compileRule(program->getRuleByID(recursiveComponent[j]), recursiveDep);
-    }
+
     if(recursiveDep.size() > 0)
         *out<< --indentation << "}\n";
     *out<< --indentation << "}\n";

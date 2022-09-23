@@ -1,2 +1,1 @@
-reach(X, Z) :- reach(X, Y), arc(Y, Z), X=Y.
-reach(X, Y) :- arc(X, Y).
+a(X, K) :- b(X, Y), Z<Y+2, c(Z, K). 

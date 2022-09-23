@@ -13,6 +13,15 @@ void Body::setConjunction(std::vector<Literal*>& conjunction){
     this->conjunction = conjunction;
 }
 
+const std::vector<BuiltInTerm*>& Body::getBuiltInTerms()const{
+    return builtInTerms;
+}
+
+
+void Body::removeBuiltInAt(const std::vector<BuiltInTerm*>::const_iterator& it){
+    builtInTerms.erase(it);
+}
+
 void Body::removeLiteralAt(const std::vector<Literal*>::const_iterator& it){
     conjunction.erase(it);
 }

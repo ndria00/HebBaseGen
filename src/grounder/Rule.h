@@ -11,6 +11,7 @@ class Rule{
         Body* body;
         bool safe;
         unsigned id;
+        std::unordered_map<int, std::vector<unsigned>> starterToBodyIndexes;
    
     public:
         Rule();
@@ -30,7 +31,11 @@ class Rule{
         unsigned getID()const;
         bool containsLiteralInHead(Literal*)const;
         bool containsLiteralInHead(unsigned id)const;
-        void sortLiteralsInBody();
+        bool containsLiteralInBody(std::string&)const;
+        void sortLiteralsInBody(int);
+        std::vector<unsigned>& getOrderedBodyByStarter(int );
+        std::unordered_map<int, std::vector<unsigned>>& getStartersAndBody();
+        void removeBuiltInAt(const std::vector<BuiltInTerm*>::const_iterator& it);
         void getRecursiveIndexes(std::vector<unsigned>&)const;
         ~Rule();
 };

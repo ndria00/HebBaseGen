@@ -89,6 +89,7 @@ void ASPCore2FactListener::enterTerm_(ASPCore2Parser::Term_Context * term_){
     }
 }
 
+//TODO improve
 void ASPCore2FactListener::bindTerms(int index, std::vector<int>& atomTerms, std::string& stringAtomName){
     //chain stops (all terms are bound)
     if(index == atomArity){

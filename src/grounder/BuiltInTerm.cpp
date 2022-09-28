@@ -27,8 +27,8 @@ void BuiltInTerm::addExpression(ExpressionBase* expr){
 }
 
 void BuiltInTerm::setOperator(std::string& myOperator){
-    if(myOperator == "=")
-        myOperator = "==";
+    //if(myOperator == "=")
+    //    myOperator = "==";
     this->myOperator = myOperator;
 }
 

@@ -2,6 +2,7 @@
    
 Program::Program(){
     rules = std::vector<Rule*>();
+    choiceRules = std::vector<ChoiceRule*>();
     //predicateID = std::unordered_set<>();
 }
 
@@ -12,8 +13,13 @@ void Program::setRules(std::vector<Rule*>& rules){
     this->rules = rules;
 }
 
+
 void Program::addRule(Rule* r){
     rules.push_back(r);
+}
+
+void Program::addChoiceRule(ChoiceRule* rule){
+    choiceRules.push_back(rule);
 }
 
 bool Program::checkSafety()const{
@@ -86,4 +92,21 @@ bool Program::isIDBPredicate(Literal* lit) const{
 
 std::unordered_map<std::string, unsigned>& Program::getIDBPredicates(){
     return iDBPredicates;
+}
+
+bool Program::containsAggregates()const{
+    for(Rule* rule : rules){
+        if(rule->getBody()->getAggregates().size() > 0)
+            return true;
+    }
+    return false;
+}
+
+bool Program::containsUnsupportedBuiltIn()const{
+    // for(Rule* rule : rules){
+    //     for(BuiltInTerm* builtIn : rule->getBody()->getBuiltInTerms()){
+    //         if(BuiltInTerm->)
+    //     }
+    // }
+    return false;
 }

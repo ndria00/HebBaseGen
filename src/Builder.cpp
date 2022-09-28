@@ -7,6 +7,7 @@ Builder::Builder(Program* program){
     buildingLeftWardAggregate = false;
     buildingRightWardAggregate = false;
 	buildingAggregateLiterals = false;
+	buildingChoiceElementLiterals = false;
 
 	currentRule = nullptr;
     currentAtom = nullptr;
@@ -18,7 +19,9 @@ Builder::Builder(Program* program){
 	currentFuncTerm = nullptr;
     expressionNesting = std::vector<antlr4::ParserRuleContext*>();
 	functionalTermsNesting = std::vector<antlr4::ParserRuleContext*>();
+	currentChoiceRule = nullptr;
 	
+	allChoiceRules = std::vector<ChoiceRule*>();
 	allRules = std::vector<Rule*>();
 	allAtoms = std::vector<Literal*>();
 	allTerms = std::vector<TermBase*>();
@@ -31,6 +34,15 @@ Builder::Builder(Program* program){
 	currentBuildingTerms = std::list<antlr4::ParserRuleContext*>();
 	ruleID = 0;
 	literalsId = 0;
+}
+
+void Builder::addCurrentChoiceRule(){
+	if(currentChoiceRule != nullptr){
+		allChoiceRules.push_back(currentChoiceRule);
+		program->addChoiceRule(currentChoiceRule);	
+	}
+	buildingChoiceElementLiterals = false;
+	currentChoiceRule = nullptr;
 }
 
 void Builder::addCurrentAtom(){
@@ -66,6 +78,8 @@ void Builder::addCurrentTerm(){
 }
 
 void Builder::addCurrentRule(){
+	if(currentRule == nullptr)
+		return;
 	currentRule->setID(ruleID);
 	ruleID++;
 	allRules.push_back(currentRule);
@@ -106,7 +120,22 @@ Aggregate* Builder::getCurrentAggregate(){
 }
 
 void Builder::buildAtom(ASPCore2Parser::AtomContext * atom){
+	//if atom is not also a classic literal here the pointer is null and
+	// a new atom needs to be created
+	if(currentAtom == nullptr)
+		currentAtom = new Literal();
 	currentAtom->setIdentifier(atom->identifier()->getText());
+	if(currentChoiceRule != nullptr){
+		if(buildingChoiceElementLiterals && buildingHead){//CHECK
+			//adding atom after : of a choice element
+			currentChoiceRule->addLiteralInChoice(currentAtom);
+		}
+		else if(buildingHead){
+			//create a new choice element and add this atom before :
+			//currentChoiceRule->addChoice(currentAtom, new Body());
+			currentChoiceRule->setLiteral(currentAtom);
+		}
+	}
 }
 
 void Builder::buildNafLiteral(ASPCore2Parser::Naf_literalContext* nafLiteral){
@@ -123,11 +152,14 @@ void Builder::buildClassicLiteral(ASPCore2Parser::Classic_literalContext* classi
 	if(currentAggregate != nullptr){
 		currentAggregate->addLiteral(currentAtom);
 	}
-	else if(buildingHead){
+	else if(currentRule != nullptr && buildingHead){
 		currentRule->addAtomInHead(currentAtom);
 	}
-	else{
+	else if (currentRule != nullptr){
 		currentRule->addAtomInBody(currentAtom);
+	}
+	else if(currentChoiceRule != nullptr && !buildingHead){
+		currentChoiceRule->addLiteralInBody(currentAtom);
 	}
 }
 
@@ -138,13 +170,13 @@ void Builder::buildSimpleRule(ASPCore2Parser::Simple_ruleContext* simpleRule){
 	if(simpleRule->getStart()->getType() == ASPCore2Parser::WCONS){
 		currentRule = new WeakConstraint();
 	}
-	else{
+	else if (simpleRule->head() != NULL &&  simpleRule->head()->choice_atom() == NULL){
 		currentRule = new Rule();
 	}
 }
 
-void Builder::buildRule(ASPCore2Parser::RuleContext* ruleContext){
-		//currentRule = new Rule();
+void Builder::buildChoiceRule(ASPCore2Parser::Choice_atomContext*){
+		currentChoiceRule = new ChoiceRule();
 }
 
 void Builder::buildTerm(ASPCore2Parser::TermContext* term){
@@ -340,6 +372,10 @@ void Builder::clearMemory(){
 	for(BuiltInTerm* builtIn : allBuiltIn){
 		delete builtIn;
 	}
+
+	for(ChoiceRule* rule : allChoiceRules){
+		delete rule;
+	}
 	
 }
 
@@ -477,6 +513,15 @@ Literal* Builder::getCurrentAtom(){
 	return currentAtom;
 }
 
+void Builder::buildChoiceElementLiterals(ASPCore2Parser::Choice_elements_literalsContext *){
+	buildingChoiceElementLiterals = true;
+}
+
+void Builder::buildChoiceElement(ASPCore2Parser::Choice_elementContext*){
+	buildingChoiceElementLiterals = false;
+	currentChoiceRule->addChoice();
+}
+
 void Builder::printProgram(){
 	for(Rule* r: allRules){
 		r->print();
@@ -546,4 +591,8 @@ std::vector<Literal*>& Builder::getAllLiterals(){
 
  std::vector<std::pair<Literal*, bool>>& Builder::getAllFacts(){
 	 return allFacts;
+ }
+
+ ChoiceRule* Builder::getCurrentChoiceRule(){
+	 return currentChoiceRule;
  }

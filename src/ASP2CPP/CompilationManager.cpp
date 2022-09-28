@@ -340,7 +340,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 std::string mapVariableName = lit->getIdentifier() + "_";
 
                 for(unsigned t = 0; t < lit->getArity(); ++t){
-                    if(lit->getTerms().at(t)->isVariable() && boundVariables.count(lit->getTermAt(t)) || ! lit->getTerms().at(t)->isVariable()){
+                    if((lit->getTerms().at(t)->isVariable() && boundVariables.count(lit->getTermAt(t))) || ! lit->getTerms().at(t)->isVariable()){
                         mapVariableName += std::to_string(t) + "_";
                     }
                 }
@@ -402,7 +402,10 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 std::pair<std::string, bool> bindingResult = currentBuiltIn->canBind(boundVariables);
                 //builtIn is totally bound
                 if(bindingResult.second && bindingResult.first == ""){
-                    *out << indentation++ <<"if(" << currentBuiltIn->toString() << "){\n";
+                    if(currentBuiltIn->getMyOperator() != "=")
+                        *out << indentation++ <<"if(" << currentBuiltIn->toString()<< "){\n";
+                    else
+                        *out << indentation++ <<"if(" << currentBuiltIn->getLeftExpr()->getRepresentation() << " == " <<currentBuiltIn->getRightExpr()->getRepresentation() << "){\n";
                     std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
                     rule->removeBuiltInAt(it);
                     closingParenthesis++;
@@ -442,11 +445,23 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 std::string listOfTerms = "{";
                 for(TermBase* t : lit->getTerms()){
                     if(j != lit->getTerms().size() -1){
-                        listOfTerms += t->getRepresentation();
+                        if(!t->isVariable()){
+                            listOfTerms += "ConstantsManager::getInstance().mapConstant(\"";
+                            listOfTerms += sharedFunc::escapeDoubleQuotes(t->getRepresentation());
+                            listOfTerms += "\")";
+                        }
+                        else
+                            listOfTerms += t->getRepresentation();
                         listOfTerms += ",";
                     }
                     else{
-                        listOfTerms += t->getRepresentation();
+                        if(!t->isVariable()){
+                            listOfTerms += "ConstantsManager::getInstance().mapConstant(\"";
+                            listOfTerms += sharedFunc::escapeDoubleQuotes(t->getRepresentation());
+                            listOfTerms += "\")";
+                        }
+                        else
+                            listOfTerms += t->getRepresentation();
                         listOfTerms += "}";
                     }
                     j++;
@@ -563,6 +578,11 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
     }
 }
 
+void compileChoiceRule(ChoiceRule* rule){
+
+}
+
+
 void CompilationManager::printLiteralTuple(const Literal* lit) {
     for (unsigned t = 0; t < lit->getArity(); t++) {
         if (t > 0) {
@@ -621,6 +641,20 @@ void CompilationManager::declareDataStructures(Rule* r) {
                 declareAuxMap(mapVariableName, keyIndexes, li->getIdentifier());
             }
             li->addVariablesToSet(boundVariables);
+
+            for(unsigned builtInIndex = 0; builtInIndex < r->getBody()->getBuiltInTerms().size(); ++builtInIndex){
+                BuiltInTerm* currentBuiltIn = r->getBody()->getBuiltInTerms().at(builtInIndex);
+                std::pair<std::string, bool> bindingResult = currentBuiltIn->canBind(boundVariables);
+                //builtIn is totally bound
+                if(bindingResult.second && bindingResult.first != "" && (currentBuiltIn->getMyOperator() == "=" || currentBuiltIn->getMyOperator() == "==")){
+                    if(currentBuiltIn->getLeftExpr()->isBound(boundVariables)){
+                        boundVariables.insert(bindingResult.first);
+                    }
+                    else if(currentBuiltIn->getRightExpr()->isBound(boundVariables)){
+                        boundVariables.insert(bindingResult.first);
+                    }
+                }
+            }
         }
         boundVariables.clear();
     }

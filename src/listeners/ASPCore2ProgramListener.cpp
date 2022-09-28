@@ -16,7 +16,10 @@ void ASPCore2ProgramListener::enterSimple_rule(ASPCore2Parser::Simple_ruleContex
 
 void ASPCore2ProgramListener::exitSimple_rule(ASPCore2Parser::Simple_ruleContext *){
     //std::cout<<"Exited rule "<<std::endl;
-    builder->addCurrentRule();
+    if(builder->getCurrentRule() != nullptr)
+        builder->addCurrentRule();
+    else if(builder->getCurrentChoiceRule() != nullptr)
+        builder->addCurrentChoiceRule();
 }
 
 void ASPCore2ProgramListener::enterHead(ASPCore2Parser::HeadContext *){
@@ -146,6 +149,27 @@ void ASPCore2ProgramListener::exitExpr(ASPCore2Parser::ExprContext *){
 
 void ASPCore2ProgramListener::exitFactor(ASPCore2Parser::FactorContext *){
     builder->exitExprFact();
+}
+
+void ASPCore2ProgramListener::enterChoice_atom(ASPCore2Parser::Choice_atomContext * choiceContext){
+    builder->buildChoiceRule(choiceContext);
+}
+
+void ASPCore2ProgramListener::exitChoice_atom(ASPCore2Parser::Choice_atomContext * ctx){
+    //std::cout << ctx->toString() << std::endl; 
+    //builder->addCurrentChoiceRule();
+}
+
+void ASPCore2ProgramListener::enterChoice_elements_literals(ASPCore2Parser::Choice_elements_literalsContext * ctx){ 
+    builder->buildChoiceElementLiterals(ctx);
+}
+
+void ASPCore2ProgramListener::enterChoice_element(ASPCore2Parser::Choice_elementContext * ctx){
+    builder->buildChoiceElement(ctx);
+}
+
+void ASPCore2ProgramListener::exitChoice_element(ASPCore2Parser::Choice_elementContext * /*ctx*/){
+
 }
 
 void ASPCore2ProgramListener::enterBuiltin_atom(ASPCore2Parser::Builtin_atomContext * builtIn) {

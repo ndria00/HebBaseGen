@@ -82,6 +82,14 @@ int main(int argc, char *argv[]){
 		std::cout<<"Builder finished\n";
 		listener.getBuilder()->printProgram();
 		
+		if(program->containsAggregates()){
+			std::cout<<"Aggregates are not yet supported... Terminating"<<std::endl;
+			return 0;
+		}
+		//TODO
+		// if(program->containsUnsupportedBuiltIn()){
+			
+		// }
 		if(program->checkSafety()){
 			std::cout<<"No safety errors found"<<std::endl;
 		}

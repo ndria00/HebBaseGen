@@ -14,6 +14,7 @@
 #include "grounder/BuiltInTerm.h"
 #include "grounder/Program.h"
 #include "grounder/FunctionalTerm.h"
+#include "grounder/ChoiceRule.h"
 #include <vector>
 #include <list>
 
@@ -25,7 +26,7 @@ class Builder{
         void buildClassicLiteral(ASPCore2Parser::Classic_literalContext*);
         void buildHead(ASPCore2Parser::HeadContext*);
         void buildSimpleRule(ASPCore2Parser::Simple_ruleContext*);
-        void buildRule(ASPCore2Parser::RuleContext*);
+        void buildChoiceRule(ASPCore2Parser::Choice_atomContext*);
         void buildTerm(ASPCore2Parser::TermContext*);
         void buildTerm_(ASPCore2Parser::Term_Context*);
         void buildTerm__(ASPCore2Parser::Term__Context*);
@@ -39,9 +40,12 @@ class Builder{
         void buildExpression(ASPCore2Parser::ExprContext*);
         void buildFactor(ASPCore2Parser::FactorContext*);
         void buildBuiltInAtom(ASPCore2Parser::Builtin_atomContext*);
+        void buildChoiceElementLiterals(ASPCore2Parser::Choice_elements_literalsContext*);
+        void buildChoiceElement(ASPCore2Parser::Choice_elementContext*);
         void printProgram();
         //void buildProgram(ASPCore2Parser::ProgramContext*, Program&);        
         void clearMemory();
+        void addCurrentChoiceRule();
         void addCurrentAtom();
         void addCurrentTerm();
         void addCurrentRule();
@@ -56,6 +60,7 @@ class Builder{
         Literal* getCurrentAtom();
         Rule* getCurrentRule();
         Aggregate* getCurrentAggregate();
+        ChoiceRule* getCurrentChoiceRule();
         void exitExprFact();
         void exitBinop();
         void exitBuiltIn();
@@ -77,7 +82,9 @@ class Builder{
         ExpressionBase* currentExpression;
         BuiltInTerm* currentBuiltInTerm;
         FunctionalTerm* currentFuncTerm;
+        ChoiceRule* currentChoiceRule;
 
+        std::vector<ChoiceRule*> allChoiceRules;
         std::vector<Rule*> allRules;
         std::vector<Literal*> allAtoms;
         std::vector<TermBase*> allTerms;
@@ -95,6 +102,7 @@ class Builder{
         bool buildingLeftWardAggregate = false;
         bool buildingRightWardAggregate = false;
         bool buildingAggregateLiterals = false;
+        bool buildingChoiceElementLiterals = false;
 
         std::list<antlr4::ParserRuleContext*> currentBuildingTerms;
         std::vector<antlr4::ParserRuleContext*> expressionNesting;

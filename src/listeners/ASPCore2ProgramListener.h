@@ -56,6 +56,15 @@ class ASPCore2ProgramListener : public ASPCore2BaseListener{
         void exitExpr(ASPCore2Parser::ExprContext * /*ctx*/) override;
         void exitFactor(ASPCore2Parser::FactorContext * /*ctx*/) override;
         
+        void enterChoice_atom(ASPCore2Parser::Choice_atomContext * /*ctx*/) override;
+        void exitChoice_atom(ASPCore2Parser::Choice_atomContext * /*ctx*/) override;
+
+        void enterChoice_elements_literals(ASPCore2Parser::Choice_elements_literalsContext * /*ctx*/) override;
+
+        void enterChoice_element(ASPCore2Parser::Choice_elementContext * /*ctx*/) override;
+        void exitChoice_element(ASPCore2Parser::Choice_elementContext * /*ctx*/) override;
+
+
         void enterBuiltin_atom(ASPCore2Parser::Builtin_atomContext * /*ctx*/) override;
         void enterBinop(ASPCore2Parser::BinopContext * /*ctx*/) override;
         void exitBuiltin_atom(ASPCore2Parser::Builtin_atomContext * /*ctx*/) override;

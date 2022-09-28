@@ -1,10 +1,12 @@
 #ifndef PROGRAM_H_
 #define PROGRAM_H_
 #include "Rule.h"
+#include "ChoiceRule.h"
 #include <unordered_map>
 class Program{
     private:
         std::vector<Rule*> rules;
+        std::vector<ChoiceRule*> choiceRules;
         std::unordered_map<std::string, unsigned> predicateID;
         std::unordered_map<std::string, unsigned> iDBPredicates;
     public:
@@ -12,6 +14,7 @@ class Program{
         const std::vector<Rule*>& getRules()const;
         void setRules(std::vector<Rule*>&);
         void addRule(Rule*);
+        void addChoiceRule(ChoiceRule*);
         Rule* getRuleByID(unsigned);
         void print()const;
         bool checkSafety()const;
@@ -24,6 +27,8 @@ class Program{
         void addIDBPredicate(Literal* );
         bool isIDBPredicate(Literal*) const;
         std::unordered_map<std::string, unsigned>& getIDBPredicates();
+        bool containsAggregates()const;
+        bool containsUnsupportedBuiltIn()const;
 };
 
 #endif /*PROGRAM_H_*/

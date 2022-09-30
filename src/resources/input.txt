@@ -1,3 +1,1 @@
-{a(X) : b(X); c(X): d(X)}:-e(X).
-e(X):-f(X)
-e(X):-e(X), t(Y).
+{a(X): b(X), not b(Y), X>Y; c(X):d(X)}:- e(X), e(Y).

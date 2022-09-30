@@ -12,6 +12,7 @@ class Program{
     public:
         Program();
         const std::vector<Rule*>& getRules()const;
+        const std::vector<ChoiceRule*>& getChoiceRules()const;
         void setRules(std::vector<Rule*>&);
         void addRule(Rule*);
         void addChoiceRule(ChoiceRule*);

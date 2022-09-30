@@ -4,8 +4,9 @@
 #include "Head.h"
 #include "Body.h"
 #include "Aggregate.h"
+#include "RuleBase.h"
 #include <set>
-class Rule{
+class Rule : public RuleBase{
     private: 
         Head* head;
         Body* body;
@@ -15,17 +16,17 @@ class Rule{
    
     public:
         Rule();
-        const Head* getHead();
-        const Body* getBody();
-        void addAtomInHead(Literal*);
-        void addAtomInBody(Literal*);
-        void addBuiltInInBody(BuiltInTerm*);
-        void addAggregateInBody(Aggregate*);
-        void setHead(Head*);
-        void setBody(Body*);
+        const Head* getHead() override;
+        const Body* getBody()override;
+        void addAtomInHead(Literal*) override;
+        void addAtomInBody(Literal*) override;
+        void addBuiltInInBody(BuiltInTerm*) override;
+        void addAggregateInBody(Aggregate*) override;
+        void setHead(Head*) override;
+        void setBody(Body*)override;
         void print()const;
-        bool isSafe()const;
-        bool isFact()const;
+        bool isSafe()const override;
+        bool isFact()const override;
         void setSafetyStatus(bool);
         void setID(unsigned);
         unsigned getID()const;
@@ -35,7 +36,7 @@ class Rule{
         void sortLiteralsInBody(int);
         std::vector<unsigned>& getOrderedBodyByStarter(int );
         std::unordered_map<int, std::vector<unsigned>>& getStartersAndBody();
-        void removeBuiltInAt(const std::vector<BuiltInTerm*>::const_iterator& it);
+        void removeBuiltInAt(const std::vector<BuiltInTerm*>::const_iterator& it) override;
         void getRecursiveIndexes(std::vector<unsigned>&)const;
         ~Rule();
 };

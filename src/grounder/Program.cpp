@@ -9,6 +9,10 @@ Program::Program(){
 const std::vector<Rule*>& Program::getRules()const{
     return this->rules;
 }
+
+const std::vector<ChoiceRule*>& Program::getChoiceRules()const{
+    return this->choiceRules;
+}
 void Program::setRules(std::vector<Rule*>& rules){
     this->rules = rules;
 }
@@ -31,6 +35,17 @@ bool Program::checkSafety()const{
             return false;
         }
     }
+    //check safety of choice rules
+    for(ChoiceRule* rule : choiceRules){
+        if(!rule->isSafe()){
+            std::cout<<"Safety error detected at rule: ";
+            rule->print();
+            std::cout<<std::endl;
+            return false; 
+        }
+    }
+
+
     return true;
 }
 

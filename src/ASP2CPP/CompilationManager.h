@@ -23,8 +23,10 @@ class CompilationManager{
         void generateProgram(Program*);
         void declareAuxMap(const std::string&, std::vector<unsigned>, const std::string&);
         void declareDataStructures(Rule* );
+        void declareDataStructures(ChoiceRule* );
         void compileRule(Rule*, std::vector<std::string>&, int);
         void compileChoiceRule(ChoiceRule*);
+        void compileChoiceElement(const std::pair<Literal*, Body*>&);
         void compileRecursiveComponent(Program*, std::vector<unsigned>&);
         void getRulesFromPredicateIds(Program*, std::vector<unsigned>&, std::vector<unsigned>&);
         void setOutStream(std::ostream*);

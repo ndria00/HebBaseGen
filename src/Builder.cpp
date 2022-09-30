@@ -53,7 +53,7 @@ void Builder::addCurrentAtom(){
 			++literalsId;
 		}
 		currentAtom->setID(program->getIDForPredicate(currentAtom));
-		if(buildingHead){
+		if(buildingHead && !buildingChoiceElementLiterals){
 			//appears in head => is idb
 			currentAtom->setIDBPredicate(true);
 			program->addIDBPredicate(currentAtom);
@@ -527,10 +527,9 @@ void Builder::printProgram(){
 		r->print();
 		std::cout<<std::endl;
 	}
-
-	//for(Term* term: allTerms){
-	// 	std::cout<<"HEY -> "<<term->getValue()<<std::endl;
-	//}
+	for(ChoiceRule* rule : allChoiceRules){
+		rule->print();
+	}
 }
 
 void Builder::exitExprFact(){
@@ -560,7 +559,13 @@ void Builder::buildBuiltInAtom(ASPCore2Parser::Builtin_atomContext* builtIn){
 	currentBuiltInTerm = new BuiltInTerm();
 	std::string myString = builtIn->binop()->getText();
 	currentBuiltInTerm->setOperator(myString);
-	currentRule->addBuiltInInBody(currentBuiltInTerm);
+	if(currentRule != nullptr)
+		currentRule->addBuiltInInBody(currentBuiltInTerm);
+	else if (currentChoiceRule != nullptr && !buildingHead)
+		currentChoiceRule->addBuiltInInBody(currentBuiltInTerm);
+	else if (currentChoiceRule != nullptr && buildingHead){
+		currentChoiceRule->addBuiltInInChoice(currentBuiltInTerm);
+	}
 }
 
 void Builder::exitBinop(){

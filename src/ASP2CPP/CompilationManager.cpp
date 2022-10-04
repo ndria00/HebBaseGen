@@ -171,7 +171,7 @@ void CompilationManager::generateProgram(Program* program){
     // *out << --indentation << "}\n";
 
     *out << indentation++ << "void Executor::OnLiteralTrueUndef(Tuple* t, bool disjunctiveFact){\n";
-    *out << indentation++ << "if(disjunctiveFact){\n";
+    *out << indentation++ << "if(!disjunctiveFact){\n";
     *out << indentation << "const auto& insertResult = t->setStatus(TruthStatus::True);\n";
     *out << indentation << "insertTrue(insertResult);\n";
     *out << --indentation << "}\n";
@@ -382,10 +382,12 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 *out << indentation << "const Tuple negativeTuple = Tuple({";
                 printLiteralTuple(lit, boundVariables);
                 *out << "}, _" << lit->getIdentifier() << ", true);\n";
-                *out << indentation << "const Tuple* tuple" << i << " = factory.find(negativeTuple);\n";
+                *out << indentation << "const Tuple* tuple" << i << " = factory.find(" << "{";
+                printLiteralTuple(lit, boundVariables);
+                *out << "}, _" << lit->getIdentifier()<<");\n";
                 *out << indentation++ << "if(tuple" << i << " == NULL){\n";
                 *out << indentation << "tuple" << i <<" = &negativeTuple;\n";
-                *out << --indentation << "}\n";
+                *out << --indentation <<"}\n";
                 *out << indentation++ << "else{\n";
                 *out << indentation << "if(tuple" << i << "->isTrue())    tuple" << i << "= NULL;\n";
                 *out << --indentation << "}\n";
@@ -534,46 +536,46 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
 
                 index++;
             }
-            //*out << indentation << "printGeneratedFromRule(literalsAndVariables);\n";
-            *out << indentation << "//negative literals saving\n";
-            if(negativeBodySize > 0){
-                for(Literal* lit : body->getConjunction()){
-                    if(lit->isNegative()){
-                        unsigned j = 0;
-                        std::string listOfTerms = "{";
-                        for(TermBase* t : lit->getTerms()){
-                            //*out << indentation << "ConstantsManager::getInstance().mapConstant()";
-                            if(j != lit->getTerms().size() -1){
-                                listOfTerms += t->getRepresentation();
-                                listOfTerms += ",";
-                            }
-                            else{
-                                listOfTerms += t->getRepresentation();
-                                listOfTerms += "}";
-                            }
-                            //*out << indentation << "variableNameToID_" << index << ".push_back(std::make_pair(\"" << t->getRepresentation() << "\", " << t->getRepresentation() << "));\n";
-                            j++;
-                        }
-                        // *out << indentation << "alreadyInFactory = false;\n";
-                        // *out << indentation++ << "if(factory.find(" << listOfTerms <<", _"<< lit->getIdentifier() << ") != NULL){\n";
-                        // *out << indentation << "alreadyInFactory = true;\n";
-                        // *out << --indentation << "}\n";
 
-                        //*out << indentation++ << "if(!alreadyInFactory){\n";
-                        *out << indentation << "t = factory.addNewInternalTuple(" << listOfTerms << ", _" << lit->getIdentifier() << ");\n";
-                        *out << indentation++ << "if(t->isUnknown()){\n";
-                        if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end())
-                            *out << indentation << "generatedStack.push_back(t->getId());\n";
-                        *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
-                        *out << indentation << "insertUndef(insertResult);\n";
-                        *out << --indentation << "}\n";
-                    }
-                }
+            // *out << indentation << "//negative literals saving\n";
+            // if(negativeBodySize > 0){
+            //     for(Literal* lit : body->getConjunction()){
+            //         if(lit->isNegative()){
+            //             unsigned j = 0;
+            //             std::string listOfTerms = "{";
+            //             for(TermBase* t : lit->getTerms()){
+            //                 //*out << indentation << "ConstantsManager::getInstance().mapConstant()";
+            //                 if(j != lit->getTerms().size() -1){
+            //                     listOfTerms += t->getRepresentation();
+            //                     listOfTerms += ",";
+            //                 }
+            //                 else{
+            //                     listOfTerms += t->getRepresentation();
+            //                     listOfTerms += "}";
+            //                 }
+            //                 //*out << indentation << "variableNameToID_" << index << ".push_back(std::make_pair(\"" << t->getRepresentation() << "\", " << t->getRepresentation() << "));\n";
+            //                 j++;
+            //             }
+            //             // *out << indentation << "alreadyInFactory = false;\n";
+            //             // *out << indentation++ << "if(factory.find(" << listOfTerms <<", _"<< lit->getIdentifier() << ") != NULL){\n";
+            //             // *out << indentation << "alreadyInFactory = true;\n";
+            //             // *out << --indentation << "}\n";
+
+            //             //*out << indentation++ << "if(!alreadyInFactory){\n";
+            //             *out << indentation << "t = factory.addNewInternalTuple(" << listOfTerms << ", _" << lit->getIdentifier() << ");\n";
+            //             *out << indentation++ << "if(t->isUnknown()){\n";
+            //             if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end())
+            //                 *out << indentation << "generatedStack.push_back(t->getId());\n";
+            //             *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
+            //             *out << indentation << "insertUndef(insertResult);\n";
+            //             *out << --indentation << "}\n";
+            //         }
+            //     }
 
 
-                //*out << --indentation << "}\n";
-                //*out << indentation << "terms.clear();\n";
-            }
+            //     //*out << --indentation << "}\n";
+            //     //*out << indentation << "terms.clear();\n";
+            // }
         }
         
     }
@@ -634,16 +636,18 @@ void CompilationManager::compileChoiceRule(ChoiceRule* rule){
             closingParenthesis++;
         }
         else{//negative
-            *out << indentation << "const Tuple negativeTuple = Tuple({";
-            printLiteralTuple(lit, boundVariables);
-            *out << "}, _" << lit->getIdentifier() << ", true);\n";
-            *out << indentation << "const Tuple* tuple" << i << " = factory.find(negativeTuple);\n";
-            *out << indentation++ << "if(tuple" << i << " == NULL){\n";
-            *out << indentation << "tuple" << i <<" = &negativeTuple;\n";
-            *out << --indentation << "}\n";
-            *out << indentation++ << "else{\n";
-            *out << indentation << "if(tuple" << i << "->isTrue())    tuple" << i << "= NULL;\n";
-            *out << --indentation << "}\n";
+                *out << indentation << "const Tuple negativeTuple = Tuple({";
+                printLiteralTuple(lit, boundVariables);
+                *out << "}, _" << lit->getIdentifier() << ", true);\n";
+                *out << indentation << "const Tuple* tuple" << i << " = factory.find(" << "{";
+                printLiteralTuple(lit, boundVariables);
+                *out << "}, _" << lit->getIdentifier()<<");\n";
+                *out << indentation++ << "if(tuple" << i << " == NULL){\n";
+                *out << indentation << "tuple" << i <<" = &negativeTuple;\n";
+                *out << --indentation <<"}\n";
+                *out << indentation++ << "else{\n";
+                *out << indentation << "if(tuple" << i << "->isTrue())    tuple" << i << "= NULL;\n";
+                *out << --indentation << "}\n";
         }
 
 
@@ -751,16 +755,18 @@ void CompilationManager::compileChoiceElement(const std::pair<Literal*, Body*>& 
             closingParenthesis++;
         }
         else{//negative
-            *out << indentation << "const Tuple negativeTuple = Tuple({";
-            printLiteralTuple(lit, boundVariables);
-            *out << "}, _" << lit->getIdentifier() << ", true);\n";
-            *out << indentation << "const Tuple* tuple" << i << " = factory.find(negativeTuple);\n";
-            *out << indentation++ << "if(tuple" << i << " == NULL){\n";
-            *out << indentation << "tuple" << i <<" = &negativeTuple;\n";
-            *out << --indentation << "}\n";
-            *out << indentation++ << "else{\n";
-            *out << indentation << "if(tuple" << i << "->isTrue())    tuple" << i << "= NULL;\n";
-            *out << --indentation << "}\n";
+                *out << indentation << "const Tuple negativeTuple = Tuple({";
+                printLiteralTuple(lit, boundVariables);
+                *out << "}, _" << lit->getIdentifier() << ", true);\n";
+                *out << indentation << "const Tuple* tuple" << i << " = factory.find(" << "{";
+                printLiteralTuple(lit, boundVariables);
+                *out << "}, _" << lit->getIdentifier()<<");\n";
+                *out << indentation++ << "if(tuple" << i << " == NULL){\n";
+                *out << indentation << "tuple" << i <<" = &negativeTuple;\n";
+                *out << --indentation <<"}\n";
+                *out << indentation++ << "else{\n";
+                *out << indentation << "if(tuple" << i << "->isTrue())    tuple" << i << "= NULL;\n";
+                *out << --indentation << "}\n";
         }
 
 
@@ -809,9 +815,7 @@ void CompilationManager::compileChoiceElement(const std::pair<Literal*, Body*>& 
         }
         if(i == body->getConjunction().size() - 1){
             *out<< indentation <<"//Rule is firing \n";
-            //ADD LITERAL THE FACTORY
-            //SHOULD WE SAVE NEGATIVE LITERALS IN CHOICE ELEMENTS' BODY?
-
+            //SHOULD WE SAVE NEGATIVE LITERALS IN CHOICE ELEMENTS' BODY
             // add literal in choice head to the factory
             bool insertAsUndef = true;
 
@@ -871,34 +875,34 @@ void CompilationManager::compileChoiceElement(const std::pair<Literal*, Body*>& 
             *out << --indentation << "}\n";
             index++;
 
-            *out << indentation << "//negative literals saving\n";
-            if(negativeBodySize > 0){
-                for(Literal* lit : body->getConjunction()){
-                    if(lit->isNegative()){
-                        unsigned j = 0;
-                        std::string listOfTerms = "{";
-                        for(TermBase* t : lit->getTerms()){
-                            if(j != lit->getTerms().size() -1){
-                                listOfTerms += t->getRepresentation();
-                                listOfTerms += ",";
-                            }
-                            else{
-                                listOfTerms += t->getRepresentation();
-                                listOfTerms += "}";
-                            }
-                            j++;
-                        }
+            // *out << indentation << "//negative literals saving\n";
+            // if(negativeBodySize > 0){
+            //     for(Literal* lit : body->getConjunction()){
+            //         if(lit->isNegative()){
+            //             unsigned j = 0;
+            //             std::string listOfTerms = "{";
+            //             for(TermBase* t : lit->getTerms()){
+            //                 if(j != lit->getTerms().size() -1){
+            //                     listOfTerms += t->getRepresentation();
+            //                     listOfTerms += ",";
+            //                 }
+            //                 else{
+            //                     listOfTerms += t->getRepresentation();
+            //                     listOfTerms += "}";
+            //                 }
+            //                 j++;
+            //             }
 
-                        *out << indentation << "t = factory.addNewInternalTuple(" << listOfTerms << ", _" << lit->getIdentifier() << ");\n";
-                        *out << indentation++ << "if(t->isUnknown()){\n";
-                        // if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end())
-                        //     *out << indentation << "generatedStack.push_back(t->getId());\n";
-                        *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
-                        *out << indentation << "insertUndef(insertResult);\n";
-                        *out << --indentation << "}\n";
-                    }
-                }
-            }
+            //             *out << indentation << "t = factory.addNewInternalTuple(" << listOfTerms << ", _" << lit->getIdentifier() << ");\n";
+            //             *out << indentation++ << "if(t->isUnknown()){\n";
+            //             // if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end())
+            //             //     *out << indentation << "generatedStack.push_back(t->getId());\n";
+            //             *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
+            //             *out << indentation << "insertUndef(insertResult);\n";
+            //             *out << --indentation << "}\n";
+            //         }
+            //     }
+            // }
         }
         
     }

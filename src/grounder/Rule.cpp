@@ -122,6 +122,19 @@ void Rule::sortLiteralsInBody(int starter =-1){
     while(orderedConjunction.size() < body->getConjunction().size()){
         boundLiteral = nullptr;
         positiveLiteral = nullptr;
+        //think to add all builtins ASAP and consider eventual assigned variables as bound
+        std::unordered_set<unsigned> builtInTermAdded;
+        for(unsigned j = 0; j < body->getBuiltInTerms().size(); ++j){
+            if(builtInTermAdded.count(j) == 0){
+                std::pair<std::string, bool> bindingResult = body->getBuiltInTerms().at(j)->canBind(boundVariables);
+                if(bindingResult.second){
+                    body->getBuiltInTerms().at(j)->getBuiltInVariables(boundVariables);
+                    builtInTermAdded.insert(j);
+                }
+            }
+        }
+        unsigned firstNotAddedPos = 0;
+        bool foundFirstNotAdded = false;
         for(unsigned  j = 0; j < body->getConjunction().size(); ++j){
             if(body->getConjunction().at(j)->isBound(boundVariables) && !addedLiterals.count(j)){
                 boundLiteral = body->getConjunction().at(j);
@@ -130,6 +143,10 @@ void Rule::sortLiteralsInBody(int starter =-1){
             else if(!body->getConjunction().at(j)->isNegative() && positiveLiteral == nullptr && ! addedLiterals.count(j)){
                 positiveLiteral = body->getConjunction().at(j); 
                 jPos = j;
+            }
+            else if(!foundFirstNotAdded &&  !addedLiterals.count(j)){
+                foundFirstNotAdded = true;
+                firstNotAddedPos = j;
             }
         }
         //std::vector<Literal*>::const_iterator it = body->getConjunction().begin();
@@ -150,11 +167,11 @@ void Rule::sortLiteralsInBody(int starter =-1){
             //std::cout<<"adding positive lit\n";
         }
         else{//only negative literals are left
-            Literal* lit = body->getConjunction().at(currentIndex);
+            Literal* lit = body->getConjunction().at(firstNotAddedPos);
             //orderedConjunction.push_back(lit);
             //body->removeLiteralAt(it);
-            orderedConjunction.push_back(currentIndex);
-            addedLiterals.insert(currentIndex);
+            orderedConjunction.push_back(firstNotAddedPos);
+            addedLiterals.insert(firstNotAddedPos);
             lit->addVariablesToSet(boundVariables);
             //std::cout<<"adding negative lit\n";
         }

@@ -14,6 +14,7 @@
 #include "DataStructures/ConstantsManager.h"
 #include "ASP2CPP/CompilationManager.h"
 #include "ASP2CPP/Executor.h"
+#include <filesystem>
 
 void print(){
 	std::cout << "Hello world !" << std::endl;
@@ -23,6 +24,7 @@ static std::once_flag printFlag;
 enum ExecutionMode{COMPILER = 0, GENERATOR = 1};
 
 int main(int argc, char *argv[]){
+	std::cout <<argc <<std::endl;
 	ExecutionMode MODE = COMPILER;
 	
 	if(argc > 1){
@@ -42,11 +44,32 @@ int main(int argc, char *argv[]){
 	std::ifstream myFile;
 	std::string myInput = "";
 	if(MODE == COMPILER){
-		myFile.open("../src/resources/input.txt");
+		if(argc < 2)
+			myFile.open("../src/resources/input.txt");
+		else{
+				if(!std::filesystem::exists(argv[2])){
+					std::cout << "Input file does not exist\n";
+					return 0;
+				}
+				else
+					myFile.open(argv[2]);
+			}
 	}
 	else if(MODE == GENERATOR){
 		std::cout<<"reading facts and generating base..."<<std::endl;
-		myFile.open("../src/resources/facts.txt");
+		if(argc <= 2){
+			std::cout << "Opening default encoding\n";
+			myFile.open("../src/resources/facts.txt");
+		}
+		else{
+				std::cout << "Not Opening default encoding\n";
+				if(!std::filesystem::exists(argv[2])){
+					std::cout << "Input file does not exist\n";
+					return 0;
+				}
+				else
+					myFile.open(argv[2]);
+		}
 	}
 
 	

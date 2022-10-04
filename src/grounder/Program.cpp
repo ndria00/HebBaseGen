@@ -88,8 +88,11 @@ void Program::getRulesByID(std::vector<unsigned>& rulesID, std::vector<Rule*>& c
     }
 }
 
-Rule* Program::getRuleByID(unsigned index){
+RuleBase* Program::getRuleByID(unsigned index){
     for(Rule* r : rules)
+        if(r->getID() == index)
+            return r;
+    for(ChoiceRule* r : choiceRules)
         if(r->getID() == index)
             return r;
     return nullptr;

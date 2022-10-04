@@ -1,11 +1,1 @@
-pair(S,T) :- state(S), state(T), S < T.
-
-dist(S,T) :- state(S), state(T), accept(S), not accept(T).
-dist(S,T) :- state(S), state(T), accept(T), not accept(S).
-dist(S,T) :- state(S), state(T), symbol(A), delta(S,A,X), delta(T,A,Y), dist(X,Y).
-
-drop(T) :- pair(S,T), not dist(S,T).
-
-keep(S) :- state(S), not drop(S).
-
-merge(S,T) :- pair(S,T), keep(S), not dist(S,T).
+{a(X) : b(X), c(X, Y); d(X): b(X), c(X, Y), X<Y} :- e(X).

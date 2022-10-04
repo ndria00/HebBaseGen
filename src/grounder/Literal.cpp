@@ -141,7 +141,7 @@ std::string Literal::getIDAndArity()const{
 
 bool Literal::isBound(const std::unordered_set<std::string>& boundTerms)const{
     for(unsigned i = 0; i < getArity(); ++i){
-        if(terms[i]->isVariable() && !boundTerms.count(getTermAt(i))){
+        if(terms[i]->isVariable() && !terms[i]->isAnonVar() && !boundTerms.count(getTermAt(i))){
             return false;
         }
     }

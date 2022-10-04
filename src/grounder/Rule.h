@@ -11,8 +11,6 @@ class Rule : public RuleBase{
         Head* head;
         Body* body;
         bool safe;
-        unsigned id;
-        std::unordered_map<int, std::vector<unsigned>> starterToBodyIndexes;
    
     public:
         Rule();
@@ -28,16 +26,16 @@ class Rule : public RuleBase{
         bool isSafe()const override;
         bool isFact()const override;
         void setSafetyStatus(bool);
-        void setID(unsigned);
-        unsigned getID()const;
         bool containsLiteralInHead(Literal*)const;
-        bool containsLiteralInHead(unsigned id)const;
-        bool containsLiteralInBody(std::string&)const;
-        void sortLiteralsInBody(int);
+        bool containsLiteralInHead(unsigned)const override;
+        bool containsLiteralInBody(std::string&)const override;
+        void sortLiteralsInBody(int)override;
         std::vector<unsigned>& getOrderedBodyByStarter(int );
         std::unordered_map<int, std::vector<unsigned>>& getStartersAndBody();
         void removeBuiltInAt(const std::vector<BuiltInTerm*>::const_iterator& it) override;
         void getRecursiveIndexes(std::vector<unsigned>&)const;
+        bool isClassicRule()const override;
+        bool isChoiceRule()const override;
         ~Rule();
 };
 

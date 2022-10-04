@@ -18,6 +18,7 @@ class ExpressionBase : public TermBase{
         virtual void print()const = 0;
         virtual bool isVariable()const = 0;
         virtual void setVariable(bool ) = 0;
+        bool isAnonVar()const = 0;
         virtual void getAllVariables(std::unordered_set<std::string>&) = 0;
         virtual void removeSafeVariables(std::unordered_set<std::string>&) = 0;
         virtual bool isBound(std::unordered_set<std::string>&)const = 0;

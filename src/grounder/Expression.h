@@ -25,6 +25,7 @@ class Expression : public ExpressionBase{
         virtual void print()const override;
         virtual bool isVariable()const override;
         virtual void setVariable(bool ) override;
+        virtual bool isAnonVar()const override;
         virtual void getAllVariables(std::unordered_set<std::string>&) override;
         virtual void removeSafeVariables(std::unordered_set<std::string>&) override;
         virtual bool isBound(std::unordered_set<std::string>&)const;

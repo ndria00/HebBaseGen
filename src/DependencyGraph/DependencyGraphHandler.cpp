@@ -56,6 +56,41 @@ void DependencyGraphHandler::createGraph(Program* program, std::unordered_map<un
 			}
 		}
 	}
+	//dependencies from choice rule body to choice elements
+	for(ChoiceRule* r : program->getChoiceRules()){
+		for(Literal * lit : r->getBody()->getConjunction()){
+			if(lit->isIDBPredicate() /*&& !lit->isNegative()*/){
+				for(auto& choiceElem: r->getChoiceHead()){
+					//if(predicateID[lit->getIdentifier()] != predicateID[litHead->getIdentifier()]){
+						depGraph.addEdge(predicateNodeMapping[lit->getID()], predicateNodeMapping[choiceElem.first->getID()]);
+						//std::cout<<"added edge from " << lit->getID();
+						//lit->print();
+						//std::cout<<" to " << litHead->getID();
+						//litHead->print();
+						//std::cout<<std::endl;
+					//}
+				}
+			}
+		}
+	}
+
+	//dependencies from body of choice elements to choice elements in choice rule
+	for(ChoiceRule* r : program->getChoiceRules()){
+		for(auto& choiceElem: r->getChoiceHead()){
+			for(Literal* lit : choiceElem.second->getConjunction()){
+				if(lit->isIDBPredicate() /*&& !lit->isNegative()*/){
+					//if(predicateID[lit->getIdentifier()] != predicateID[litHead->getIdentifier()]){
+						depGraph.addEdge(predicateNodeMapping[lit->getID()], predicateNodeMapping[choiceElem.first->getID()]);
+						//std::cout<<"added edge from " << lit->getID();
+						//lit->print();
+						//std::cout<<" to " << litHead->getID();
+						//litHead->print();
+						//std::cout<<std::endl;
+					//}
+				}
+			}
+		}
+	}
 
 }
 

@@ -16,7 +16,7 @@ class Program{
         void setRules(std::vector<Rule*>&);
         void addRule(Rule*);
         void addChoiceRule(ChoiceRule*);
-        Rule* getRuleByID(unsigned);
+        RuleBase* getRuleByID(unsigned);
         void print()const;
         bool checkSafety()const;
         void mapAllConstants()const;

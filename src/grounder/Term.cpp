@@ -30,8 +30,12 @@ void Term::setVariable(bool variable){
     this->variable = variable;
 }
 
+bool Term::isAnonVar()const{
+    return value == "_";
+}
+
 void Term::getAllVariables(std::unordered_set<std::string>& variables){
-    if(isVariable())
+    if(isVariable() &&  ! isAnonVar())
         variables.insert(value);
 }
 

@@ -26,11 +26,16 @@ class ChoiceRule : public RuleBase{
         void addAtomInBody(Literal*) override;
         void addBuiltInInBody(BuiltInTerm*) override;
         void addAggregateInBody(Aggregate*) override;
+        bool containsLiteralInHead(unsigned)const override;
+        bool containsLiteralInBody(std::string&)const override;
+        void sortLiteralsInBody(int)override;
         void setHead(Head*) override;
         void setBody(Body*) override;
         bool isSafe()const override;
         bool isFact()const override;
         void removeBuiltInAt(const std::vector<BuiltInTerm*>::const_iterator& ) override;
+        bool isClassicRule()const override;
+        bool isChoiceRule()const override;
         void print()const;
         ~ChoiceRule();
 };

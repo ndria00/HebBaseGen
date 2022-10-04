@@ -77,7 +77,7 @@ void CompilationManager::generateProgram(Program* program){
         for(unsigned r = 0; r < rulesForComponent.size(); ++r){
             //for each ordering possible given from recursiveDep declare maps
             for(unsigned l = 0;  l < recursiveDep.size(); ++l){
-                Rule* rule = program->getRuleByID(rulesForComponent[r]);
+                RuleBase* rule = program->getRuleByID(rulesForComponent[r]);
                 for(int lit = 0; lit < rule->getBody()->getConjunction().size(); ++lit){
                     if(recursiveDep[l] == rule->getBody()->getConjunction().at(lit)->getIdentifier()){
                         rule->sortLiteralsInBody(lit);
@@ -189,9 +189,9 @@ void CompilationManager::generateProgram(Program* program){
     *out << indentation <<"//TODO\n";
 
     //compiling choiceRules that are not recursive(by definiton for now)
-    for(ChoiceRule* rule : program->getChoiceRules()){
-        compileChoiceRule(rule);
-    }
+    // for(ChoiceRule* rule : program->getChoiceRules()){
+    //     compileChoiceRule(rule);
+    // }
 
     for(int i = layers.size()-1; i >= 0 ; --i){
         std::vector<unsigned> effectiveLiteralsIDs;
@@ -293,13 +293,12 @@ void CompilationManager::declareAuxMap(const std::string& mapVariableName, std::
 void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recursiveDep, int starter = -1){
     // if(currentRecursiveAtom != "")
     //     *out << indentation++ << "This a compilation from starter\n";
-
+    rule->setAlreadyCompiled(true);
     const Body* body = rule->getBody();
     unsigned negativeBodySize = body->getNegativeSize();
     std::unordered_set<std::string> boundVariables;
     unsigned closingParenthesis = 0;
     *out << indentation++ << "{\n";
-
     std::unordered_map<std::string, unsigned> variablesNameToTupleIndexes;
 
     // std::vector<unsigned> selfRecursiveIndexes;
@@ -326,6 +325,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
 
     closingParenthesis++;
     for(unsigned i = 0; i < rule->getOrderedBodyByStarter(starter).size(); ++i){
+        std::unordered_set<unsigned> alreadyCompiledBuiltIn;
         Literal* lit = body->getConjunction()[rule->getOrderedBodyByStarter(starter)[i]];
         // compiling rule with a starter given by a recursive literal
         if(starter != -1  && i == 0){
@@ -399,7 +399,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
             if (!lit->isNegative() || (i == 0)){
                 std::unordered_set<std::string> declaredVariables;
                 for(unsigned t = 0; t < lit->getArity(); ++t){
-                    if(lit->getTerms().at(t)->isVariable()  && !boundVariables.count(lit->getTermAt(t)) && ! declaredVariables.count(lit->getTermAt(t))){
+                    if(lit->getTerms().at(t)->isVariable()  && !boundVariables.count(lit->getTermAt(t)) && ! declaredVariables.count(lit->getTermAt(t)) && !lit->getTerms().at(t)->isAnonVar()){
                         *out << indentation <<"int " << lit->getTermAt(t)<< " = (*tuple" << i <<")[" << t <<"];\n"; 
                         declaredVariables.insert(lit->getTermAt(t));
                     }
@@ -411,29 +411,35 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
             }
             for(unsigned builtInIndex = 0; builtInIndex < rule->getBody()->getBuiltInTerms().size(); ++builtInIndex){
                 BuiltInTerm* currentBuiltIn = rule->getBody()->getBuiltInTerms().at(builtInIndex);
-                std::pair<std::string, bool> bindingResult = currentBuiltIn->canBind(boundVariables);
-                //builtIn is totally bound
-                if(bindingResult.second && bindingResult.first == ""){
-                    if(currentBuiltIn->getMyOperator() != "=")
-                        *out << indentation++ <<"if(" << currentBuiltIn->toString()<< "){\n";
-                    else
-                        *out << indentation++ <<"if(" << currentBuiltIn->getLeftExpr()->getRepresentation() << " == " <<currentBuiltIn->getRightExpr()->getRepresentation() << "){\n";
-                    std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
-                    rule->removeBuiltInAt(it);
-                    closingParenthesis++;
-                }//X = Y+2 where X is not already bound, or X == Y
-                else if(bindingResult.second && bindingResult.first != "" && (currentBuiltIn->getMyOperator() == "=" || currentBuiltIn->getMyOperator() == "==")){
-                    if(currentBuiltIn->getLeftExpr()->isBound(boundVariables)){
-                        *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getLeftExpr()->getRepresentation()<<";\n";
-                        boundVariables.insert(bindingResult.first);
-                        std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
-                        rule->removeBuiltInAt(it);
-                    }
-                    else if(currentBuiltIn->getRightExpr()->isBound(boundVariables)){
-                        *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getRightExpr()->getRepresentation()<<";\n";
-                        boundVariables.insert(bindingResult.first);
-                        std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
-                        rule->removeBuiltInAt(it);
+                if(!alreadyCompiledBuiltIn.count(builtInIndex)){
+                    std::pair<std::string, bool> bindingResult = currentBuiltIn->canBind(boundVariables);
+                    //builtIn is totally bound
+                    if(bindingResult.second && bindingResult.first == ""){
+                        if(currentBuiltIn->getMyOperator() != "=")
+                            *out << indentation++ <<"if(" << currentBuiltIn->toString()<< "){\n";
+                        else
+                            *out << indentation++ <<"if(" << currentBuiltIn->getLeftExpr()->getRepresentation() << " == " <<currentBuiltIn->getRightExpr()->getRepresentation() << "){\n";
+                        
+                        alreadyCompiledBuiltIn.insert(builtInIndex);
+                        //std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                        //rule->removeBuiltInAt(it);
+                        closingParenthesis++;
+                    }//X = Y+2 where X is not already bound, or X == Y
+                    else if(bindingResult.second && bindingResult.first != "" && (currentBuiltIn->getMyOperator() == "=" || currentBuiltIn->getMyOperator() == "==")){
+                        if(currentBuiltIn->getLeftExpr()->isBound(boundVariables)){
+                            *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getLeftExpr()->getRepresentation()<<";\n";
+                            boundVariables.insert(bindingResult.first);
+                            alreadyCompiledBuiltIn.insert(builtInIndex);
+                            //std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                            //rule->removeBuiltInAt(it);
+                        }
+                        else if(currentBuiltIn->getRightExpr()->isBound(boundVariables)){
+                            *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getRightExpr()->getRepresentation()<<";\n";
+                            boundVariables.insert(bindingResult.first);
+                            alreadyCompiledBuiltIn.insert(builtInIndex);
+                            //std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                            //rule->removeBuiltInAt(it);
+                        }
                     }
                 }
             }
@@ -590,7 +596,8 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
     }
 }
 
-void CompilationManager::compileChoiceRule(ChoiceRule* rule){
+void CompilationManager::compileChoiceRule(ChoiceRule* rule, int starter = -1){
+    rule->setAlreadyCompiled(true);
     const Body* body = rule->getBody();
     unsigned negativeBodySize = body->getNegativeSize();
     std::unordered_set<std::string> boundVariables;
@@ -598,7 +605,7 @@ void CompilationManager::compileChoiceRule(ChoiceRule* rule){
     *out << indentation++ << "{\n";
 
     std::unordered_map<std::string, unsigned> variablesNameToTupleIndexes;
-
+    std::unordered_set<unsigned> alreadyCompiledBuiltIn;
     closingParenthesis++;
     for(unsigned i = 0; i < body->getConjunction().size(); ++i){
         Literal* lit = body->getConjunction()[i];
@@ -656,7 +663,7 @@ void CompilationManager::compileChoiceRule(ChoiceRule* rule){
         if (!lit->isNegative() || (i == 0)){
             std::unordered_set<std::string> declaredVariables;
             for(unsigned t = 0; t < lit->getArity(); ++t){
-                if(lit->getTerms().at(t)->isVariable()  && !boundVariables.count(lit->getTermAt(t)) && ! declaredVariables.count(lit->getTermAt(t))){
+                if(lit->getTerms().at(t)->isVariable()  && !boundVariables.count(lit->getTermAt(t)) && ! declaredVariables.count(lit->getTermAt(t)) && !lit->getTerms().at(t)->isAnonVar()){
                     *out << indentation <<"int " << lit->getTermAt(t)<< " = (*tuple" << i <<")[" << t <<"];\n"; 
                     declaredVariables.insert(lit->getTermAt(t));
                 }
@@ -668,35 +675,41 @@ void CompilationManager::compileChoiceRule(ChoiceRule* rule){
         }
         for(unsigned builtInIndex = 0; builtInIndex < rule->getBody()->getBuiltInTerms().size(); ++builtInIndex){
             BuiltInTerm* currentBuiltIn = rule->getBody()->getBuiltInTerms().at(builtInIndex);
-            std::pair<std::string, bool> bindingResult = currentBuiltIn->canBind(boundVariables);
-            //builtIn is totally bound
-            if(bindingResult.second && bindingResult.first == ""){
-                if(currentBuiltIn->getMyOperator() != "=")
-                    *out << indentation++ <<"if(" << currentBuiltIn->toString()<< "){\n";
-                else
-                    *out << indentation++ <<"if(" << currentBuiltIn->getLeftExpr()->getRepresentation() << " == " <<currentBuiltIn->getRightExpr()->getRepresentation() << "){\n";
-                std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
-                rule->removeBuiltInAt(it);
-                closingParenthesis++;
-            }//X = Y+2 where X is not already bound, or X == Y
-            else if(bindingResult.second && bindingResult.first != "" && (currentBuiltIn->getMyOperator() == "=" || currentBuiltIn->getMyOperator() == "==")){
-                if(currentBuiltIn->getLeftExpr()->isBound(boundVariables)){
-                    *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getLeftExpr()->getRepresentation()<<";\n";
-                    boundVariables.insert(bindingResult.first);
-                    std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
-                    rule->removeBuiltInAt(it);
-                }
-                else if(currentBuiltIn->getRightExpr()->isBound(boundVariables)){
-                    *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getRightExpr()->getRepresentation()<<";\n";
-                    boundVariables.insert(bindingResult.first);
-                    std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
-                    rule->removeBuiltInAt(it);
+            if(!alreadyCompiledBuiltIn.count(builtInIndex)){
+                std::pair<std::string, bool> bindingResult = currentBuiltIn->canBind(boundVariables);
+                //builtIn is totally bound
+                if(bindingResult.second && bindingResult.first == ""){
+                    if(currentBuiltIn->getMyOperator() != "=")
+                        *out << indentation++ <<"if(" << currentBuiltIn->toString()<< "){\n";
+                    else
+                        *out << indentation++ <<"if(" << currentBuiltIn->getLeftExpr()->getRepresentation() << " == " <<currentBuiltIn->getRightExpr()->getRepresentation() << "){\n";
+                    
+                    alreadyCompiledBuiltIn.insert(builtInIndex);
+                    //std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                    //rule->removeBuiltInAt(it);
+                    closingParenthesis++;
+                }//X = Y+2 where X is not already bound, or X == Y
+                else if(bindingResult.second && bindingResult.first != "" && (currentBuiltIn->getMyOperator() == "=" || currentBuiltIn->getMyOperator() == "==")){
+                    if(currentBuiltIn->getLeftExpr()->isBound(boundVariables)){
+                        *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getLeftExpr()->getRepresentation()<<";\n";
+                        boundVariables.insert(bindingResult.first);
+                        alreadyCompiledBuiltIn.insert(builtInIndex);
+                        //std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                        //rule->removeBuiltInAt(it);
+                    }
+                    else if(currentBuiltIn->getRightExpr()->isBound(boundVariables)){
+                        *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getRightExpr()->getRepresentation()<<";\n";
+                        boundVariables.insert(bindingResult.first);
+                        alreadyCompiledBuiltIn.insert(builtInIndex);
+                        //std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                        //rule->removeBuiltInAt(it);
+                    }
                 }
             }
         }
         if(i == body->getConjunction().size() - 1){
             *out<< indentation <<"//Rule is firing \n";
-            //CHECK THAT EACH BODY OF THE CHOICE ELEMENTS IS SATISFIED IN ORDER TO ADD THEM TO THE FACTORY
+            // check that each body of choice elements is satisfied in order to add it to the factory
             for(auto& choiceElem : rule->getChoiceHead()){
                 compileChoiceElement(choiceElem);
             }
@@ -717,7 +730,7 @@ void CompilationManager::compileChoiceElement(const std::pair<Literal*, Body*>& 
     *out << indentation++ << "{\n";
 
     std::unordered_map<std::string, unsigned> variablesNameToTupleIndexes;
-
+    std::unordered_set<unsigned> alreadyCompiledBuiltIn;
     closingParenthesis++;
     for(unsigned i = 0; i < body->getConjunction().size(); ++i){
         Literal* lit = body->getConjunction()[i];
@@ -775,7 +788,7 @@ void CompilationManager::compileChoiceElement(const std::pair<Literal*, Body*>& 
         if (!lit->isNegative() || (i == 0)){
             std::unordered_set<std::string> declaredVariables;
             for(unsigned t = 0; t < lit->getArity(); ++t){
-                if(lit->getTerms().at(t)->isVariable()  && !boundVariables.count(lit->getTermAt(t)) && ! declaredVariables.count(lit->getTermAt(t))){
+                if(lit->getTerms().at(t)->isVariable()  && !boundVariables.count(lit->getTermAt(t)) && !declaredVariables.count(lit->getTermAt(t)) && !lit->getTerms().at(t)->isAnonVar()){
                     *out << indentation <<"int " << lit->getTermAt(t)<< " = (*tuple" << i <<")[" << t <<"];\n"; 
                     declaredVariables.insert(lit->getTermAt(t));
                 }
@@ -794,22 +807,25 @@ void CompilationManager::compileChoiceElement(const std::pair<Literal*, Body*>& 
                     *out << indentation++ <<"if(" << currentBuiltIn->toString()<< "){\n";
                 else
                     *out << indentation++ <<"if(" << currentBuiltIn->getLeftExpr()->getRepresentation() << " == " <<currentBuiltIn->getRightExpr()->getRepresentation() << "){\n";
-                std::vector<BuiltInTerm*>::const_iterator it = body->getBuiltInTerms().begin() + builtInIndex;
-                choiceElem.second->removeBuiltInAt(it);
+                //std::vector<BuiltInTerm*>::const_iterator it = body->getBuiltInTerms().begin() + builtInIndex;
+                //choiceElem.second->removeBuiltInAt(it);
+                alreadyCompiledBuiltIn.insert(builtInIndex);
                 closingParenthesis++;
             }//X = Y+2 where X is not already bound, or X == Y
             else if(bindingResult.second && bindingResult.first != "" && (currentBuiltIn->getMyOperator() == "=" || currentBuiltIn->getMyOperator() == "==")){
                 if(currentBuiltIn->getLeftExpr()->isBound(boundVariables)){
                     *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getLeftExpr()->getRepresentation()<<";\n";
                     boundVariables.insert(bindingResult.first);
-                    std::vector<BuiltInTerm*>::const_iterator it = body->getBuiltInTerms().begin() + builtInIndex;
-                    choiceElem.second->removeBuiltInAt(it);
+                    //std::vector<BuiltInTerm*>::const_iterator it = body->getBuiltInTerms().begin() + builtInIndex;
+                    //choiceElem.second->removeBuiltInAt(it);
+                    alreadyCompiledBuiltIn.insert(builtInIndex);
                 }
                 else if(currentBuiltIn->getRightExpr()->isBound(boundVariables)){
                     *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getRightExpr()->getRepresentation()<<";\n";
                     boundVariables.insert(bindingResult.first);
-                    std::vector<BuiltInTerm*>::const_iterator it = body->getBuiltInTerms().begin() + builtInIndex;
-                    choiceElem.second->removeBuiltInAt(it);
+                    //std::vector<BuiltInTerm*>::const_iterator it = body->getBuiltInTerms().begin() + builtInIndex;
+                    //choiceElem.second->removeBuiltInAt(it);
+                    alreadyCompiledBuiltIn.insert(builtInIndex);
                 }
             }
         }
@@ -1094,6 +1110,8 @@ void CompilationManager::findExitRules(std::vector<unsigned>& recursiveComponent
 }
 
 void CompilationManager::compileRecursiveComponent(Program* program, std::vector<unsigned>& recursiveComponent){
+    if(recursiveComponent.size() == 0)
+        return;
     //std::cout << "compiling " << recursiveComponent.size() <<"rules\n";
     //for(unsigned i = 0; i < recursiveComponent.size(); ++i){
     //    std::cout <<"Compiling rule n: "<<recursiveComponent[i]<<std::endl;
@@ -1109,8 +1127,13 @@ void CompilationManager::compileRecursiveComponent(Program* program, std::vector
         *out<< indentation << "std::vector<int> generatedStack;\n";
 
     for(unsigned i = 0; i < exitRules.size(); ++i){
-        Rule* rule = program->getRuleByID(exitRules[i]);
-        compileRule(rule, recursiveDep);
+        RuleBase* rule = program->getRuleByID(exitRules[i]);
+        if(rule->isChoiceRule() && ! rule->isAlreadyCompiled()){
+            compileChoiceRule(static_cast<ChoiceRule*>(rule));
+        }
+        else if(rule->isClassicRule() && !rule->isAlreadyCompiled()){
+            compileRule(static_cast<Rule*>(rule), recursiveDep);
+        }
         //if(rule == nullptr)
         //   std::cout<<"Something went wrong\n";
         std::vector<unsigned>::iterator it = std::find(recursiveComponent.begin(), recursiveComponent.end(), exitRules[i]);
@@ -1146,7 +1169,10 @@ void CompilationManager::compileRecursiveComponent(Program* program, std::vector
                         //compile several times basing on how many occurrencies of the predicate are present in the chosen rule
                         for(unsigned k  = 0; k < program->getRuleByID(recursiveComponent[j])->getBody()->getConjunction().size(); ++k)
                         if(program->getRuleByID(recursiveComponent[j])->getBody()->getConjunction()[k]->getIdentifier() == recursiveDep[i]){
-                            compileRule(program->getRuleByID(recursiveComponent[j]), recursiveDep, k);
+                            if(program->getRuleByID(recursiveComponent[j])->isChoiceRule())
+                                compileChoiceRule(static_cast<ChoiceRule*>(program->getRuleByID(recursiveComponent[j])));
+                            else if(program->getRuleByID(recursiveComponent[j])->isClassicRule())
+                                compileRule(static_cast<Rule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep, k);
                         }
                     }
                 }
@@ -1155,7 +1181,11 @@ void CompilationManager::compileRecursiveComponent(Program* program, std::vector
         }
     }else {
         for(unsigned j = 0; j < recursiveComponent.size(); ++j){
-            compileRule(program->getRuleByID(recursiveComponent[j]), recursiveDep);
+            RuleBase* ruleBase = program->getRuleByID(recursiveComponent[j]);
+            if(ruleBase->isChoiceRule() && ! ruleBase->isAlreadyCompiled())
+                compileRule(static_cast<Rule*>(ruleBase), recursiveDep);
+            else if(ruleBase->isClassicRule() && !ruleBase->isAlreadyCompiled())
+                compileChoiceRule(static_cast<ChoiceRule*>(ruleBase));
         }
     }
 
@@ -1168,6 +1198,10 @@ void CompilationManager::compileRecursiveComponent(Program* program, std::vector
 void CompilationManager::getRulesFromPredicateIds(Program * program, std::vector<unsigned>& preds, std::vector<unsigned>& rules){
     for(unsigned p = 0; p < preds.size(); ++p){
         for(Rule* r : program->getRules()){
+            if(r->containsLiteralInHead(preds[p]) && std::find(rules.begin(), rules.end(), r->getID()) == rules.end())
+                rules.push_back(r->getID());
+        }
+        for(ChoiceRule* r : program->getChoiceRules()){
             if(r->containsLiteralInHead(preds[p]) && std::find(rules.begin(), rules.end(), r->getID()) == rules.end())
                 rules.push_back(r->getID());
         }

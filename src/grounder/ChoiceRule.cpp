@@ -49,6 +49,100 @@ void ChoiceRule::addBuiltInInBody(BuiltInTerm* builtIn){
 void ChoiceRule::addAggregateInBody(Aggregate* aggregate){
     body->addAggregate(aggregate);
 }
+
+bool ChoiceRule::containsLiteralInHead(unsigned id)const{
+    for(auto& choiceElem : choiceHead){
+        if(choiceElem.first->getID() == id){
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ChoiceRule::containsLiteralInBody(std::string& id)const{
+    for(Literal* lit : body->getConjunction()){
+        if(lit->getIdentifier() == id)
+            return true; 
+    }
+    return false;
+}
+
+void ChoiceRule::sortLiteralsInBody(int starter = -1){
+    std::vector<unsigned> orderedConjunction;
+    std::unordered_set<unsigned> addedLiterals;
+    std::unordered_set<std::string> boundVariables;
+    if(starter != -1){
+        addedLiterals.insert(starter);
+        orderedConjunction.push_back(starter);
+    }
+    Literal* boundLiteral;
+    Literal* positiveLiteral;
+    unsigned jBound;
+    unsigned jPos;
+    unsigned currentIndex = 0;
+    while(orderedConjunction.size() < body->getConjunction().size()){
+        boundLiteral = nullptr;
+        positiveLiteral = nullptr;
+        //think to add all builtins ASAP and consider eventual assigned variables as bound
+        std::unordered_set<unsigned> builtInTermAdded;
+        for(unsigned j = 0; j < body->getBuiltInTerms().size(); ++j){
+            if(builtInTermAdded.count(j) == 0){
+                std::pair<std::string, bool> bindingResult = body->getBuiltInTerms().at(j)->canBind(boundVariables);
+                if(bindingResult.second){
+                    body->getBuiltInTerms().at(j)->getBuiltInVariables(boundVariables);
+                    builtInTermAdded.insert(j);
+                }
+            }
+        }
+        unsigned firstNotAddedPos = 0;
+        bool foundFirstNotAdded = false;
+        for(unsigned  j = 0; j < body->getConjunction().size(); ++j){
+            if(body->getConjunction().at(j)->isBound(boundVariables) && !addedLiterals.count(j)){
+                boundLiteral = body->getConjunction().at(j);
+                jBound = j;
+            }
+            else if(!body->getConjunction().at(j)->isNegative() && positiveLiteral == nullptr && ! addedLiterals.count(j)){
+                positiveLiteral = body->getConjunction().at(j); 
+                jPos = j;
+            }
+            else if(!foundFirstNotAdded &&  !addedLiterals.count(j)){
+                foundFirstNotAdded = true;
+                firstNotAddedPos = j;
+            }
+        }
+        //std::vector<Literal*>::const_iterator it = body->getConjunction().begin();
+        if(boundLiteral != nullptr){
+            orderedConjunction.push_back(jBound);
+            addedLiterals.insert(jBound);
+            //orderedConjunction.push_back(boundLiteral);
+            //body->removeLiteralAt(it + jBound);
+            boundLiteral->addVariablesToSet(boundVariables);
+            //std::cout<<"adding bound lit\n";
+        }
+        else if(positiveLiteral != nullptr){
+            //orderedConjunction.push_back(positiveLiteral);
+            //body->removeLiteralAt(it + jPos);
+            orderedConjunction.push_back(jPos);
+            addedLiterals.insert(jPos);
+            positiveLiteral->addVariablesToSet(boundVariables);
+            //std::cout<<"adding positive lit\n";
+        }
+        else{//only negative literals are left
+            Literal* lit = body->getConjunction().at(firstNotAddedPos);
+            //orderedConjunction.push_back(lit);
+            //body->removeLiteralAt(it);
+            orderedConjunction.push_back(firstNotAddedPos);
+            addedLiterals.insert(firstNotAddedPos);
+            lit->addVariablesToSet(boundVariables);
+            //std::cout<<"adding negative lit\n";
+        }
+        currentIndex++;
+    }
+    //if(starter != -1)
+    starterToBodyIndexes[starter] = orderedConjunction;
+    //body->setConjunction(orderedConjunction);
+}
+
 void ChoiceRule::setHead(Head*){
 
 }
@@ -79,6 +173,14 @@ bool ChoiceRule::isFact()const{
 }
 void ChoiceRule::removeBuiltInAt(const std::vector<BuiltInTerm*>::const_iterator& it){
     body->removeBuiltInAt(it);
+}
+
+bool ChoiceRule::isClassicRule()const{
+    return true;
+}
+
+bool ChoiceRule::isChoiceRule()const{
+    return false;
 }
 
 void ChoiceRule::print()const{

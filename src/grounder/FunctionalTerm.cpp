@@ -27,6 +27,9 @@ bool FunctionalTerm::isVariable()const{
 void FunctionalTerm::setVariable(bool){
 
 }
+bool FunctionalTerm::isAnonVar()const{
+    return false;
+}
 void FunctionalTerm::getAllVariables(std::unordered_set<std::string>& variables){
     for(TermBase* term : terms){
         if(term->isVariable())

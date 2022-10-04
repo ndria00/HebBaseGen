@@ -4,7 +4,6 @@ Rule::Rule(){
     head = new Head();
     body = new Body();
     safe = true;
-    starterToBodyIndexes = std::unordered_map<int, std::vector<unsigned>>();
 }
 
 const Head* Rule::getHead(){
@@ -73,13 +72,6 @@ void Rule::print()const{
         body->print();
     }
     std::cout<<".";
-}
-
-void Rule::setID(unsigned id){
-    this->id = id;
-}
-unsigned Rule::getID()const{
-    return id;
 }
 
 bool Rule::containsLiteralInHead(Literal* l)const{
@@ -201,6 +193,14 @@ void Rule::getRecursiveIndexes(std::vector<unsigned>& recursiveDepIndex)const{
                 recursiveDepIndex.push_back(i);
         }
     }
+}
+
+bool Rule::isClassicRule()const{
+    return false;
+}
+
+bool Rule::isChoiceRule()const{
+    return true;
 }
 
 Rule::~Rule(){

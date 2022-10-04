@@ -85,6 +85,10 @@ void Expression::setVariable(bool ) {
 
 }
 
+bool Expression::isAnonVar()const{
+    return false;
+}
+
 void Expression::getAllVariables(std::unordered_set<std::string>& variables){
     if(first != nullptr){
         first->getAllVariables(variables);

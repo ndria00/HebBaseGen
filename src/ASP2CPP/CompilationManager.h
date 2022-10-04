@@ -25,7 +25,7 @@ class CompilationManager{
         void declareDataStructures(Rule* );
         void declareDataStructures(ChoiceRule* );
         void compileRule(Rule*, std::vector<std::string>&, int);
-        void compileChoiceRule(ChoiceRule*);
+        void compileChoiceRule(ChoiceRule*, int);
         void compileChoiceElement(const std::pair<Literal*, Body*>&);
         void compileRecursiveComponent(Program*, std::vector<unsigned>&);
         void getRulesFromPredicateIds(Program*, std::vector<unsigned>&, std::vector<unsigned>&);

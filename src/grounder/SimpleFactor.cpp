@@ -58,8 +58,12 @@ void SimpleFactor::setVariable(bool ) {
 
 }
 
+bool SimpleFactor::isAnonVar()const{
+    return false;
+}
+
 void SimpleFactor::getAllVariables(std::unordered_set<std::string>& variables){
-    if(simpleTerm->isVariable()){
+    if(simpleTerm->isVariable() && !simpleTerm->isAnonVar()){
         std::string myString = simpleTerm->getValue();
         variables.insert(myString);
     }

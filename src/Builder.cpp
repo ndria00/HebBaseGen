@@ -38,6 +38,8 @@ Builder::Builder(Program* program){
 
 void Builder::addCurrentChoiceRule(){
 	if(currentChoiceRule != nullptr){
+		currentChoiceRule->setID(ruleID);
+		ruleID++;
 		allChoiceRules.push_back(currentChoiceRule);
 		program->addChoiceRule(currentChoiceRule);	
 	}
@@ -183,7 +185,7 @@ void Builder::buildTerm(ASPCore2Parser::TermContext* term){
 	if(term->identifier() != NULL && term->children.size() == 1){
 		std::string myString = term->getText(); 
 		currentTerm = new Term(myString);
-		if(term->getStart()->getType() == ASPCore2Parser::VARIABLE){
+		if(term->getStart()->getType() == ASPCore2Parser::VARIABLE || term->getStart()->getType() == ASPCore2Parser::ANON_VAR){
 			currentTerm->setVariable(true);
 		}
 		if(currentAtom != nullptr){
@@ -298,7 +300,7 @@ void Builder::buildTerminal(antlr4::tree::TerminalNode * terminal){
 		currentBuildingTerms.pop_back();
 		std::string myString= terminal->getText();
 		currentTerm = new Term(myString);
-		if(terminal->getSymbol()->getType() == ASPCore2Parser::VARIABLE){
+		if(terminal->getSymbol()->getType() == ASPCore2Parser::VARIABLE || terminal->getSymbol()->getType() == ASPCore2Parser::ANON_VAR){
 			currentTerm->setVariable(true);
 		}
 		if(currentExpression != nullptr){

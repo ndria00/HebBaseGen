@@ -16,3 +16,11 @@ void RuleBase::setID(unsigned id){
 unsigned RuleBase::getID()const{
     return id;
 }
+
+std::vector<unsigned>& RuleBase::getOrderedBodyByStarter(int starter){
+    return starterToBodyIndexes[starter];
+}
+
+std::unordered_map<int, std::vector<unsigned>>& RuleBase::getStartersAndBody(){
+    return starterToBodyIndexes;
+}

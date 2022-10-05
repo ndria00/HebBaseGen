@@ -16,6 +16,8 @@ class RuleBase{
         unsigned getID()const;
         bool isAlreadyCompiled()const;
         void setAlreadyCompiled(bool);
+        std::vector<unsigned>& getOrderedBodyByStarter(int );
+        std::unordered_map<int, std::vector<unsigned>>& getStartersAndBody();
         virtual const Head* getHead() = 0;
         virtual const Body* getBody() = 0;
         virtual void addAtomInHead(Literal*) = 0;
@@ -24,6 +26,7 @@ class RuleBase{
         virtual void addAggregateInBody(Aggregate*) = 0;
         virtual bool containsLiteralInBody(std::string&)const = 0;
         virtual bool containsLiteralInHead(unsigned) const = 0;
+        virtual bool containsLiteralInHead(Literal*) const = 0;
         virtual void sortLiteralsInBody(int) = 0;
         virtual void setHead(Head*) = 0;
         virtual void setBody(Body*) = 0;

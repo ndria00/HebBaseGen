@@ -27,6 +27,7 @@ class ChoiceRule : public RuleBase{
         void addBuiltInInBody(BuiltInTerm*) override;
         void addAggregateInBody(Aggregate*) override;
         bool containsLiteralInHead(unsigned)const override;
+        bool containsLiteralInHead(Literal*)const override;
         bool containsLiteralInBody(std::string&)const override;
         void sortLiteralsInBody(int)override;
         void setHead(Head*) override;

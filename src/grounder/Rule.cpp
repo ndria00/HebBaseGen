@@ -174,14 +174,6 @@ void Rule::sortLiteralsInBody(int starter =-1){
     //body->setConjunction(orderedConjunction);
 }
 
-std::vector<unsigned>& Rule::getOrderedBodyByStarter(int starter){
-    return starterToBodyIndexes[starter];
-}
-
-std::unordered_map<int, std::vector<unsigned>>& Rule::getStartersAndBody(){
-    return starterToBodyIndexes;
-}
-
 void Rule::removeBuiltInAt(const std::vector<BuiltInTerm*>::const_iterator& it){
     body->removeBuiltInAt((it));
 }
@@ -196,11 +188,11 @@ void Rule::getRecursiveIndexes(std::vector<unsigned>& recursiveDepIndex)const{
 }
 
 bool Rule::isClassicRule()const{
-    return false;
+    return true;
 }
 
 bool Rule::isChoiceRule()const{
-    return true;
+    return false;
 }
 
 Rule::~Rule(){

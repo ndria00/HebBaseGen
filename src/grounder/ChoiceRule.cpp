@@ -59,6 +59,14 @@ bool ChoiceRule::containsLiteralInHead(unsigned id)const{
     return false;
 }
 
+bool ChoiceRule::containsLiteralInHead(Literal* l1)const{
+    for(auto& choiceElem : choiceHead){
+        if(l1->getIDAndArity() == choiceElem.first->getIDAndArity())
+            return true;
+    }
+    return false;
+}
+
 bool ChoiceRule::containsLiteralInBody(std::string& id)const{
     for(Literal* lit : body->getConjunction()){
         if(lit->getIdentifier() == id)
@@ -176,11 +184,11 @@ void ChoiceRule::removeBuiltInAt(const std::vector<BuiltInTerm*>::const_iterator
 }
 
 bool ChoiceRule::isClassicRule()const{
-    return true;
+    return false;
 }
 
 bool ChoiceRule::isChoiceRule()const{
-    return false;
+    return true;
 }
 
 void ChoiceRule::print()const{

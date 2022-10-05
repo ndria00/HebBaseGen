@@ -78,12 +78,18 @@ unsigned Program::getIDForPredicate(Literal* lit){
     return 0;
 }
 
-void Program::getRulesByID(std::vector<unsigned>& rulesID, std::vector<Rule*>& componentRules){
+void Program::getRulesByID(std::vector<unsigned>& rulesID, std::vector<RuleBase*>& componentRules){
     componentRules;
     for(unsigned i = 0; i < rulesID.size(); ++i){
         for(unsigned j = 0; j < this->rules.size(); ++j){
             if(rules[j]->getID() == rulesID[i])
                 componentRules.push_back(rules[j]);
+        }
+    }
+    for(unsigned i = 0; i < rulesID.size(); ++i){
+        for(unsigned j = 0; j < this->choiceRules.size(); ++j){
+            if(choiceRules[j]->getID() == rulesID[i])
+                componentRules.push_back(choiceRules[j]);
         }
     }
 }

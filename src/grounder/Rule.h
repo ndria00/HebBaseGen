@@ -26,12 +26,10 @@ class Rule : public RuleBase{
         bool isSafe()const override;
         bool isFact()const override;
         void setSafetyStatus(bool);
-        bool containsLiteralInHead(Literal*)const;
+        bool containsLiteralInHead(Literal*)const override;
         bool containsLiteralInHead(unsigned)const override;
         bool containsLiteralInBody(std::string&)const override;
         void sortLiteralsInBody(int)override;
-        std::vector<unsigned>& getOrderedBodyByStarter(int );
-        std::unordered_map<int, std::vector<unsigned>>& getStartersAndBody();
         void removeBuiltInAt(const std::vector<BuiltInTerm*>::const_iterator& it) override;
         void getRecursiveIndexes(std::vector<unsigned>&)const;
         bool isClassicRule()const override;

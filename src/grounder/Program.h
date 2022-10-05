@@ -23,7 +23,7 @@ class Program{
         bool existsPredicate(std::string)const;
         bool addPredicateWithID(const std::string&, unsigned);
         std::unordered_map<std::string, unsigned>& getPredicatesID();
-        void getRulesByID(std::vector<unsigned>&, std::vector<Rule*>&);
+        void getRulesByID(std::vector<unsigned>&, std::vector<RuleBase*>&);
         unsigned getIDForPredicate(Literal* );
         void addIDBPredicate(Literal* );
         bool isIDBPredicate(Literal*) const;

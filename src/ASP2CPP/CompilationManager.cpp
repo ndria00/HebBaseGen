@@ -597,7 +597,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
 }
 
 void CompilationManager::compileChoiceRule(ChoiceRule* rule, std::vector<std::string>& recursiveDep, int starter = -1){
-    rule->setAlreadyCompiled(true);
+    //rule->setAlreadyCompiled(true);
     const Body* body = rule->getBody();
     unsigned negativeBodySize = body->getNegativeSize();
     std::unordered_set<std::string> boundVariables;
@@ -718,8 +718,11 @@ void CompilationManager::compileChoiceRule(ChoiceRule* rule, std::vector<std::st
         if(i == rule->getOrderedBodyByStarter(starter).size() - 1){
             *out<< indentation <<"//Rule is firing \n";
             // check that each body of choice elements is satisfied in order to add it to the factory
+            // consider only those choice element that have as heas literal one of 
+            // the literal that are considered in this recursive component
             for(auto& choiceElem : rule->getChoiceHead()){
-                compileChoiceElement(choiceElem);
+                if(std::find(recursiveDep.begin(), recursiveDep.end(), choiceElem.first->getIdentifier()) != recursiveDep.end())
+                    compileChoiceElement(choiceElem);
             }
         }
         
@@ -844,7 +847,6 @@ void CompilationManager::compileChoiceElement(const std::pair<Literal*, Body*>& 
         }
         if(i == body->getConjunction().size() - 1){
             *out<< indentation <<"//Rule is firing \n";
-            //SHOULD WE SAVE NEGATIVE LITERALS IN CHOICE ELEMENTS' BODY
             // add literal in choice head to the factory
             bool insertAsUndef = true;
 
@@ -1086,6 +1088,27 @@ void CompilationManager::findExitRules(std::vector<unsigned>& recursiveComponent
             // if(!isExitRule)
             //     break;
         }
+        //add recursive dep from body to head of choice elements
+        //is not exit rule if there are literals in choice elements
+        //body that appear in the head of any other rule that is part
+        //of current component
+        if(componentRules[i]->isChoiceRule()){
+            ChoiceRule* rule = static_cast<ChoiceRule*>(componentRules[i]);
+            for(auto& choiceElem : rule->getChoiceHead()){
+                for(Literal* lit : choiceElem.second->getConjunction()){
+                    for(unsigned j = 0; j < componentRules.size(); ++j){
+                        if(componentRules[j]->containsLiteralInHead(lit)){
+                            isExitRule = false;
+                            //add recursive dep on lieral l of rule[i] 
+                            if(std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) == recursiveDep.end()){
+                                recursiveDep.push_back(lit->getIdentifier());
+                                //std::cout << "adding " << l->getIdentifier() <<std::endl;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         if(isExitRule)
             exitRules.push_back(componentRules[i]->getID());
     }
@@ -1110,8 +1133,6 @@ void CompilationManager::compileRecursiveComponent(Program* program, std::vector
 
     for(unsigned i = 0; i < exitRules.size(); ++i){
         RuleBase* rule = program->getRuleByID(exitRules[i]);
-        bool ruleIsCHOICE = rule->isChoiceRule();
-        bool ruleCompiled = rule->isAlreadyCompiled();
         if(rule->isChoiceRule() && !rule->isAlreadyCompiled()){
             compileChoiceRule(static_cast<ChoiceRule*>(rule), recursiveDep);
         }

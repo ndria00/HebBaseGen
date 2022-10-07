@@ -26,7 +26,6 @@ enum ExecutionMode{COMPILER = 0, GENERATOR = 1};
 int main(int argc, char *argv[]){
 	std::cout <<argc <<std::endl;
 	ExecutionMode MODE = COMPILER;
-	
 	if(argc > 1){
 		std::string option1 = argv[1];
 		if(option1 == "compile"){
@@ -77,6 +76,7 @@ int main(int argc, char *argv[]){
 		std::string line;
 		while(getline(myFile, line)){
 			myInput += line;
+			myInput += "\n";
 		}
 	}
 	

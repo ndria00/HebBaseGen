@@ -96,9 +96,17 @@ void ChoiceRule::sortLiteralsInBody(int starter = -1){
         for(unsigned j = 0; j < body->getBuiltInTerms().size(); ++j){
             if(builtInTermAdded.count(j) == 0){
                 std::pair<std::string, bool> bindingResult = body->getBuiltInTerms().at(j)->canBind(boundVariables);
-                if(bindingResult.second){
-                    body->getBuiltInTerms().at(j)->getBuiltInVariables(boundVariables);
-                    builtInTermAdded.insert(j);
+                if(body->getBuiltInTerms().at(j)->getMyOperator() != "=" && body->getBuiltInTerms().at(j)->getMyOperator() != "=="){
+                        if(bindingResult.second && bindingResult.first == ""){
+                            body->getBuiltInTerms().at(j)->getBuiltInVariables(boundVariables);
+                            builtInTermAdded.insert(j);
+                        }
+                }
+                else{
+                    if(bindingResult.second){
+                        body->getBuiltInTerms().at(j)->getBuiltInVariables(boundVariables);
+                        builtInTermAdded.insert(j);
+                    }
                 }
             }
         }

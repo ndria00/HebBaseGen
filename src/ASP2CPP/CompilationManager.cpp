@@ -444,6 +444,45 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 }
             }
         }
+        //to ensure that builtin are all compile.
+        //Fix for the corner case in which a rule with a signle atom is being
+        //compiled starting by a recursive literal and this rule contains some builtin  
+        if(i == rule->getOrderedBodyByStarter(starter).size() - 1){
+            for(unsigned builtInIndex = 0; builtInIndex < rule->getBody()->getBuiltInTerms().size(); ++builtInIndex){
+                BuiltInTerm* currentBuiltIn = rule->getBody()->getBuiltInTerms().at(builtInIndex);
+                if(!alreadyCompiledBuiltIn.count(builtInIndex)){
+                    std::pair<std::string, bool> bindingResult = currentBuiltIn->canBind(boundVariables);
+                    //builtIn is totally bound
+                    if(bindingResult.second && bindingResult.first == ""){
+                        if(currentBuiltIn->getMyOperator() != "=")
+                            *out << indentation++ <<"if(" << currentBuiltIn->toString()<< "){\n";
+                        else
+                            *out << indentation++ <<"if(" << currentBuiltIn->getLeftExpr()->getRepresentation() << " == " <<currentBuiltIn->getRightExpr()->getRepresentation() << "){\n";
+                        
+                        alreadyCompiledBuiltIn.insert(builtInIndex);
+                        //std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                        //rule->removeBuiltInAt(it);
+                        closingParenthesis++;
+                    }//X = Y+2 where X is not already bound, or X == Y
+                    else if(bindingResult.second && bindingResult.first != "" && (currentBuiltIn->getMyOperator() == "=" || currentBuiltIn->getMyOperator() == "==")){
+                        if(currentBuiltIn->getLeftExpr()->isBound(boundVariables)){
+                            *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getLeftExpr()->getRepresentation()<<";\n";
+                            boundVariables.insert(bindingResult.first);
+                            alreadyCompiledBuiltIn.insert(builtInIndex);
+                            //std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                            //rule->removeBuiltInAt(it);
+                        }
+                        else if(currentBuiltIn->getRightExpr()->isBound(boundVariables)){
+                            *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getRightExpr()->getRepresentation()<<";\n";
+                            boundVariables.insert(bindingResult.first);
+                            alreadyCompiledBuiltIn.insert(builtInIndex);
+                            //std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                            //rule->removeBuiltInAt(it);
+                        }
+                    }
+                }
+            }  
+        }
         if(i == rule->getOrderedBodyByStarter(starter).size() - 1){
             *out<< indentation <<"//Rule is firing \n";
             // add all literals in the head to the factory
@@ -480,10 +519,10 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                         }
                         else
                             listOfTerms += t->getRepresentation();
-                        listOfTerms += "}";
                     }
                     j++;
                 }
+                listOfTerms += "}";
                 //*out << listOfTerms<<", _" << lit->getIdentifier() << ") != NULL){\n";
                 //*out << indentation << "alreadyInFactory = true;\n";
                 //*out << --indentation << "}\n";
@@ -876,10 +915,10 @@ void CompilationManager::compileChoiceElement(const std::pair<Literal*, Body*>& 
                     }
                     else
                         listOfTerms += t->getRepresentation();
-                    listOfTerms += "}";
                 }
                 j++;
             }
+            listOfTerms += "}";
             *out << indentation << "t = factory.addNewInternalTuple(" << listOfTerms << ", _" << lit->getIdentifier() << ");\n";
             *out << indentation++ <<"if(t->isUnknown()){\n";
             // if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end()){

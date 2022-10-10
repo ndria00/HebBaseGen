@@ -24,7 +24,7 @@ static std::once_flag printFlag;
 enum ExecutionMode{COMPILER = 0, GENERATOR = 1};
 
 int main(int argc, char *argv[]){
-	std::cout <<argc <<std::endl;
+	//std::cout <<argc <<std::endl;
 	ExecutionMode MODE = COMPILER;
 	if(argc > 1){
 		std::string option1 = argv[1];

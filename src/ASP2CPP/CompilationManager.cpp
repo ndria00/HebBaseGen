@@ -209,7 +209,7 @@ void CompilationManager::generateProgram(Program* program){
     }
     *out << indentation << "printGeneratedBase();\n";
     *out << indentation << "auto finish = std::chrono::high_resolution_clock::now();\n";
-    *out << indentation << "std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count()/1000000<<\"ms\";\n";
+    *out << indentation << "//std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count()/1000000<<\"ms\";\n";
     *out << --indentation<<"}\n";
     //TODO check and remove if disjuction should not be printed
     //print rule

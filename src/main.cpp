@@ -22,10 +22,12 @@ void print(){
 static std::once_flag printFlag;
 
 enum ExecutionMode{COMPILER = 0, GENERATOR = 1};
+enum PrintMode{SILENT = 0, VERBOSE = 1};
 
 int main(int argc, char *argv[]){
 	//std::cout <<argc <<std::endl;
 	ExecutionMode MODE = COMPILER;
+	PrintMode printMode= SILENT;
 	if(argc > 1){
 		std::string option1 = argv[1];
 		if(option1 == "compile"){
@@ -55,13 +57,16 @@ int main(int argc, char *argv[]){
 			}
 	}
 	else if(MODE == GENERATOR){
-		std::cout<<"reading facts and generating base..."<<std::endl;
+		if(printMode == VERBOSE)
+			std::cout<<"reading facts and generating base..."<<std::endl;
 		if(argc <= 2){
-			std::cout << "Opening default encoding\n";
+			if(printMode == VERBOSE)
+				std::cout << "Opening default encoding\n";
 			myFile.open("../src/resources/facts.txt");
 		}
 		else{
-				std::cout << "Not Opening default encoding\n";
+				if(printMode == VERBOSE)
+					std::cout << "Not Opening default encoding\n";
 				if(!std::filesystem::exists(argv[2])){
 					std::cout << "Input file does not exist\n";
 					return 0;
@@ -94,7 +99,8 @@ int main(int argc, char *argv[]){
 		std::cout<<"Building program\n";
 	}
 	else if (MODE == GENERATOR){
-		std::cout<<"Building and generating\n";
+		if(printMode == VERBOSE)
+			std::cout<<"Building and generating\n";
 	}
 
 	if(MODE == COMPILER){

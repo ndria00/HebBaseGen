@@ -6,7 +6,8 @@
 #include "parser/ASPCore2Lexer.h"
 #include "parser/ASPCore2Parser.h"
 #include "listeners/ASPCore2ProgramListener.h"
-#include "listeners/ASPCore2FactListener.h"
+//#include "listeners/ASPCore2FactListener.h"
+#include "listeners/ASPFactParserRegex.h"
 #include "grounder/Program.h"
 #include "DataStructures/AuxiliaryMapSmart.h"
 #include "DataStructures/TupleFactory.h"
@@ -27,7 +28,7 @@ enum PrintMode{SILENT = 0, VERBOSE = 1};
 int main(int argc, char *argv[]){
 	//std::cout <<argc <<std::endl;
 	ExecutionMode MODE = COMPILER;
-	PrintMode printMode= SILENT;
+	PrintMode printMode= VERBOSE;
 	if(argc > 1){
 		std::string option1 = argv[1];
 		if(option1 == "compile"){
@@ -77,23 +78,17 @@ int main(int argc, char *argv[]){
 	}
 
 	
-	if(myFile.is_open()){
-		std::string line;
-		while(getline(myFile, line)){
-			myInput += line;
-			myInput += "\n";
-		}
-	}
-	
+	// if(myFile.is_open()){
+	// 	std::string line;
+	// 	while(getline(myFile, line)){
+	// 		myInput += line;
+	// 		myInput += "\n";
+	// 	}
+	// }
 
-
-	antlr4::ANTLRInputStream input;
-	input.load(myInput);
+	//input.load(myInput);
 	//std::cout<<"Parsing "<<myInput<<std::endl;
-	ASPCore2Lexer lexer (&input);
-	antlr4::CommonTokenStream tokens(&lexer);
-	ASPCore2Parser parser (&tokens);
-	antlr4::tree::ParseTree *tree = parser.program();
+
 
 	if(MODE == COMPILER){
 		std::cout<<"Building program\n";
@@ -104,6 +99,11 @@ int main(int argc, char *argv[]){
 	}
 
 	if(MODE == COMPILER){
+		antlr4::ANTLRInputStream input(myFile);
+		ASPCore2Lexer lexer (&input);
+		antlr4::CommonTokenStream tokens(&lexer);
+		ASPCore2Parser parser (&tokens);
+		antlr4::tree::ParseTree *tree = parser.program();
 		Program* program =  new Program();
 		Builder* builder =  new Builder(program);
 		ASPCore2ProgramListener listener(builder);
@@ -141,8 +141,20 @@ int main(int argc, char *argv[]){
 	else if(MODE == GENERATOR){
 		Executor* executor = new Executor();
 		executor->init();
-		ASPCore2FactListener listener(executor);
-		antlr4::tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
+		ASPFactParserRegex* factParser = new ASPFactParserRegex(executor);
+		if(myFile.is_open()){
+			std::string line;
+			while(getline(myFile, line)){
+				factParser->parseFact(line);
+			}
+		}
+		//ASPCore2FactListener listener(executor);
+		// antlr4::tree::ParseTree *tree = parser.program();
+		// antlr4::tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
+		//parser.setBuildParseTree(false);
+		//parser.addParseListener(&listener);
+
+
 		//std::cout<<"Builder finished\n";
 		//std::cout<<"Generating base...\n";
 
@@ -155,7 +167,7 @@ int main(int argc, char *argv[]){
 		// }
 		executor->executeProgram();
 		std::cout<<std::endl;
+		delete factParser;
 		delete executor;
 	}
-
 }

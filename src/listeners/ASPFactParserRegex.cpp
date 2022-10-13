@@ -4,7 +4,7 @@ ASPFactParserRegex::ASPFactParserRegex(Executor* executor){
     //[\d+\.\.\d+|\d+|[a-z][a-zA-Z0-9]*]
     //[\\d+\\.\\.\\d+|\\d+|[a-z][a-zA-Z0-9]*]|
     identifierRegex = std::regex("[a-z][A-Za-z_0-9]*");
-    termRegex = std::regex("([0-9]+)|(\"(\" | . )*?\")|([a-z]+)");
+    termRegex = std::regex("([0-9]+)|(\"(\" | . )*?\")|([a-z0-9]+)");
 
     // SYMBOLIC_CONSTANT:   				[a-z][A-Za-z_0-9]* ;
     // VARIABLE:           				[A-Z][A-Za-z_0-9]* ;

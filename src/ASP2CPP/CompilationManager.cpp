@@ -388,6 +388,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 *out << "}, _" << lit->getIdentifier()<<");\n";
                 *out << indentation++ << "if(tuple" << i << " == NULL){\n";
                 *out << indentation << "tuple" << i <<" = &negativeTuple;\n";
+                *out << indentation << "undefTuple = true;\n";
                 *out << --indentation <<"}\n";
                 *out << indentation++ << "else{\n";
                 *out << indentation << "if(tuple" << i << "->isTrue())    tuple" << i << "= NULL;\n";

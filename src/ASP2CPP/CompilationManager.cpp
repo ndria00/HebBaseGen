@@ -337,6 +337,9 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
             for(auto& nameIndex: variablesNameToTupleIndexes ){
                 *out << indentation << "int " << nameIndex.first << " = (*recursiveTuple)[" << nameIndex.second << "];\n";
             }
+            *out << indentation++ << "if(recursiveTupleUndef){\n";
+            *out << indentation << "undefTuple = true;\n";
+            *out<< --indentation << "}\n";
             if (!lit->isBound(boundVariables)) {
                 lit->addVariablesToSet(boundVariables);
             }
@@ -1217,6 +1220,7 @@ void CompilationManager::compileRecursiveComponent(Program* program, std::vector
         *out << indentation << "const Tuple* recursiveTuple = factory.getTupleFromInternalID(generatedStack.back());\n";
         *out << indentation << "generatedStack.pop_back();\n";
         *out << indentation << "unsigned literalName = recursiveTuple->getPredicateName();\n";
+        *out << indentation << "bool recursiveTupleUndef = recursiveTuple->isUndef();\n";
         //if recursive[i] -> do a specific compilation
         for(unsigned i = 0; i < recursiveDep.size(); ++i){
             *out << indentation++ << "if(literalName == _"<< recursiveDep[i] <<"){\n";

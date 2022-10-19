@@ -167,6 +167,7 @@ void CompilationManager::generateProgram(Program* program){
     *out << indentation << "const auto& insertResult = t->setStatus(TruthStatus::Undef);\n";
     *out << indentation << "insertUndef(insertResult);\n";
     *out << --indentation << "}\n";
+    *out << indentation << "printTuple(t);\n";
     *out << --indentation << "}\n";
 
 

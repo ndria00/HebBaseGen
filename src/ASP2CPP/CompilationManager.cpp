@@ -12,8 +12,6 @@ void CompilationManager::generateProgram(Program* program){
     *out << indentation << "#include <chrono>\n";
     *out << indentation << "#include \"Executor.h\"\n";
     *out << indentation << "#include \"../DataStructures/ConstantsManager.h\"\n";
-    //*out << indentation << "#include \"../DataStructures/AuxiliaryMapSmart.h\"\n";
-    //*out << indentation << "#include \"../DataStructures/TupleFactory.h\"\n";
     *out << indentation << "#include \"../DataStructures/IndexedSet.h\"\n";
     *out << indentation << "typedef TupleLight Tuple;\n";
     *out << indentation << "template<size_t S>\n";
@@ -21,17 +19,7 @@ void CompilationManager::generateProgram(Program* program){
     *out << indentation << "const std::vector<int> EMPTY_TUPLES_VEC;\n";
     *out << indentation << "const IndexedSet EMPTY_TUPLES_SET;\n";
     *out << indentation << "\n";
-    //*out << indentation << "Executor::~Executor(){\n";
-    //*out << indentation << "}\n";
 
-    //predicates id
-    //Program* p = builder->getProgram();
-    // for(int i= 0; i< program->getRules().size(); ++i){
-    //     for(int j = 0; )
-    //     *out << "const int " <<  << ";\n";
-    // }
-    //insert facts into factory
-    //*out << "TupleFactory factory;\n";
     *out << indentation << "std::vector<std::string> Executor::predicateIds;\n";
 
     for(auto lit : program->getPredicatesID()){
@@ -207,53 +195,27 @@ void CompilationManager::generateProgram(Program* program){
         getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
         compileRecursiveComponent(program, rulesForComponent);
     }
-    *out << indentation << "printGeneratedBase();\n";
+    //*out << indentation << "printGeneratedBase();\n";
     *out << indentation << "auto finish = std::chrono::high_resolution_clock::now();\n";
     *out << indentation << "//std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count()/1000000<<\"ms\";\n";
     *out << --indentation<<"}\n";
-    //TODO check and remove if disjuction should not be printed
-    //print rule
-    // *out << indentation++ << "void printGeneratedFromRule(vector<std::pair<std::string, vector<std::pair<std::string, int>>>>& literalsVariables){\n";
-    // //for each literal
-    // *out << indentation++ << "for(unsigned i  = 0; i < literalsVariables.size(); ++i){\n";
-    // *out << indentation << "std::cout<<literalsVariables[i].first;\n";
-    // *out << indentation++ << "for(unsigned j = 0; j < literalsVariables[i].second.size(); ++j){\n";
-    // *out << indentation++ << "if(j== 0 && literalsVariables[i].second.size() > 0){\n";
-    // *out << indentation << "std::cout<< \"(\";\n";
-    // *out << --indentation << "}\n";
-    // *out << indentation <<"std::cout << ConstantsManager::getInstance().unmapConstant(literalsVariables[i].second[j].second);\n";
-    // *out << indentation++ << "if(literalsVariables[i].second.size() > 1 && j < literalsVariables[i].second.size() - 1){\n";
-    // *out << indentation << "std::cout << \",\";\n";
-    // *out << --indentation << "}\n";
-    // *out << indentation++ << "if(j == literalsVariables[i].second.size() - 1 && literalsVariables[i].second.size() > 0){\n";
-    // *out << indentation << "std::cout << \")\";\n";
-    // *out << --indentation <<"}\n";
-    // *out << --indentation << "}\n";
-    // *out << indentation++ << "if(literalsVariables.size() > 1 && i < literalsVariables.size() - 1){\n";
-    // *out << indentation << "std::cout << \"|\";\n";
-    // *out << --indentation << "}\n";
-    // *out << indentation++ <<"if(i == literalsVariables.size() -1){\n";
-    // *out << indentation << "std::cout<<\". \";\n";
-    // *out << --indentation << "}\n";
-    // *out << --indentation << "}\n";
-    // *out << --indentation << "}\n";
 
-    *out << indentation++ << "void Executor::printGeneratedBase(){\n";
-    *out << indentation << "const std::vector<int>* tuples;\n";
-    for(auto& predID : program->getPredicatesID()){
+    // *out << indentation++ << "void Executor::printGeneratedBase(){\n";
+    // *out << indentation << "const std::vector<int>* tuples;\n";
+    // for(auto& predID : program->getPredicatesID()){
         
-        //print positive tuples
-        *out << indentation << "tuples = &p" << predID.first << "_.getValuesVec({});\n";
-        *out << indentation++ << "for(unsigned i = 0; i < tuples->size(); ++i){\n";
-        *out << indentation << "printTuple(factory.getTupleFromInternalID(tuples->at(i)));\n";
-        *out<< --indentation <<"}\n";
-        //print undef tuples
-        *out << indentation << "tuples = &u" << predID.first << "_.getValuesVec({});\n";
-        *out << indentation++ << "for(unsigned i = 0; i < tuples->size(); ++i){\n";
-        *out << indentation << "printTuple(factory.getTupleFromInternalID(tuples->at(i)));\n";
-        *out<< --indentation <<"}\n"; 
-    }
-    *out << --indentation << "}\n";
+    //     //print positive tuples
+    //     *out << indentation << "tuples = &p" << predID.first << "_.getValuesVec({});\n";
+    //     *out << indentation++ << "for(unsigned i = 0; i < tuples->size(); ++i){\n";
+    //     *out << indentation << "printTuple(factory.getTupleFromInternalID(tuples->at(i)));\n";
+    //     *out<< --indentation <<"}\n";
+    //     //print undef tuples
+    //     *out << indentation << "tuples = &u" << predID.first << "_.getValuesVec({});\n";
+    //     *out << indentation++ << "for(unsigned i = 0; i < tuples->size(); ++i){\n";
+    //     *out << indentation << "printTuple(factory.getTupleFromInternalID(tuples->at(i)));\n";
+    //     *out<< --indentation <<"}\n"; 
+    // }
+    // *out << --indentation << "}\n";
 
 }
 
@@ -302,28 +264,6 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
     *out << indentation << "bool undefTuple = false;\n";
     std::unordered_map<std::string, unsigned> variablesNameToTupleIndexes;
 
-    // std::vector<unsigned> selfRecursiveIndexes;
-    // rule->getRecursiveIndexes(selfRecursiveIndexes);
-
-    // if(selfRecursiveIndexes.size() == 1){
-    //     //foreach recursive literal print an if that determines which and how many variables are to be declared
-    //     for(unsigned i = 0; i < selfRecursiveIndexes.size(); ++i){
-    //         unsigned j = 0;
-    //         Literal* recursiveLit = rule->getBody()->getConjunction().at(selfRecursiveIndexes[i]);
-
-    //         for(unsigned t = 0; t < recursiveLit->getArity(); ++t){
-    //             if(recursiveLit->getTerms().at(t)->isVariable())
-    //                 variablesNameToTupleIndexes[recursiveLit->getTermAt(t)] = t; 
-    //         }
-
-    //         if (!recursiveLit->isBound(boundVariables)) {
-    //             recursiveLit->addVariablesToSet(boundVariables);
-    //         }
-    //     }
-            
-
-    // }
-
     closingParenthesis++;
     for(unsigned i = 0; i < rule->getOrderedBodyByStarter(starter).size(); ++i){
         std::unordered_set<unsigned> alreadyCompiledBuiltIn;
@@ -366,15 +306,11 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 *out << indentation << "const std::vector<int>* tuplesU = &u" << mapVariableName << ".getValuesVec({";
                 printLiteralTuple(lit, boundVariables);
                 *out << "});\n";
-                // *out << indentation << "const Tuple* tupleU = NULL;\n";
                                 
                 *out << indentation++ << "for(unsigned i = 0; i < tuples->size() + tuplesU->size(); i++){\n";
                 *out << indentation << "const Tuple * tuple" << i << " = NULL;\n";
                 *out << indentation++ << "if(i < tuples->size()){\n";
                 *out << indentation << "tuple" << i << " = factory.getTupleFromInternalID(tuples->at(i));\n";
-                // *out << indentation++ << "if(tuplesU != &EMPTY_TUPLES_VEC) {\n";
-                // *out << indentation << "tupleU = NULL;\n";
-                // *out << --indentation << "}\n";
                 *out << --indentation << "}\n";
                 *out << indentation++ << "else {\n";
                 *out << indentation << "tuple" << i << " = factory.getTupleFromInternalID(tuplesU->at(i-tuples->size()));\n";
@@ -537,6 +473,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 //*out << indentation++ << "if(!alreadyInFactory){\n";
                 *out << indentation << "t = factory.addNewInternalTuple(" << listOfTerms << ", _" << lit->getIdentifier() << ");\n";
                 *out << indentation++ << "if(t->isUnknown()){\n";
+                *out << indentation << "printTuple(t);\n";
                 if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end()){
                     *out << indentation << "generatedStack.push_back(t->getId());\n"; 
                 }    
@@ -936,6 +873,7 @@ void CompilationManager::compileChoiceElement(const std::pair<Literal*, Body*>& 
             listOfTerms += "}";
             *out << indentation << "t = factory.addNewInternalTuple(" << listOfTerms << ", _" << lit->getIdentifier() << ");\n";
             *out << indentation++ <<"if(t->isUnknown()){\n";
+            *out << indentation << "printTuple(t);\n";
             // if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end()){
             //     *out << indentation << "generatedStack.push_back(t->getId());\n"; 
             // }    

@@ -9,9 +9,9 @@ CXX = g++
 BUILD = COMPILE
 
 # define any compile-time flags
-CXXFLAGS.COMPILE	:= -std=c++17 -Wall -g -Wextra -O3 -DCOMPILE
+CXXFLAGS.COMPILE	:= -std=c++17 -Wall  -Wextra -O3 -DCOMPILE
 
-CXXFLAGS.RUN	:= -std=c++17 -Wall -g -Wextra -O3 -DRUN
+CXXFLAGS.RUN	:= -std=c++17 -Wall  -Wextra -O3 -DRUN
 
 CXXFLAGS	:= $(CXXFLAGS.$(BUILD))
 

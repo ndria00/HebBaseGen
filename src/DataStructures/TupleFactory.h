@@ -51,7 +51,8 @@ class TupleFactory{
     private:
         std::vector<std::unordered_set<TupleLight*,TuplePointerHash,TuplePointerEq>> tupleToInternalVarSets;
         std::vector<TupleLight*> internalIDToTuple;
-        std::list<TupleLight> storage;
+        // std::list<TupleLight> storage;
+
         bool generated;
 
     public:
@@ -63,14 +64,16 @@ class TupleFactory{
             tupleToInternalVarSets.push_back(std::unordered_set<TupleLight*,TuplePointerHash,TuplePointerEq>());
         }
         TupleFactory(/* args */){
-            storage.push_back(TupleLight());
-            internalIDToTuple.push_back(&storage.back());
+            // storage.push_back(TupleLight());
+            internalIDToTuple.push_back(nullptr);
             //AggregateSetCmp::factory=this;
             generated=false;
         }
         
         ~TupleFactory(){
-
+            for(unsigned i = 0; i < internalIDToTuple.size(); ++i){
+                delete internalIDToTuple[i];
+            }
         }
         void removeFromCollisionsList(int id){
             if(id < internalIDToTuple.size()){
@@ -108,11 +111,12 @@ class TupleFactory{
             auto it = tupleToInternalVar.find(&bufferTuple);
             if(it==tupleToInternalVar.end()){
                 
-                storage.push_back(bufferTuple);
-                TupleLight* trueReference = &storage.back();
+                //storage.push_back(bufferTuple);
+                internalIDToTuple.push_back(new TupleLight(bufferTuple));
+                TupleLight* trueReference = internalIDToTuple.back();
                 tupleToInternalVar.insert(trueReference);
-                internalIDToTuple.push_back(trueReference);
-                trueReference->setId(storage.size()-1);
+                // internalIDToTuple.push_back(trueReference);
+                trueReference->setId(internalIDToTuple.size()-1);
                 bufferTuple.clearContent();
                 return trueReference;
             }
@@ -152,22 +156,22 @@ class TupleFactory{
         }
 
 
-        void print()const {
-            std::cout<<"Tuple factory"<<std::endl;
-            bool first=true;
-            for(auto tuple : storage){
-                if(!first)
-                    tuple.print();
-                else
-                    first=false;
-            }
-        }
-        unsigned size(){
-            return storage.size();
-        }
-        void printSize(){
-            std::cout<<storage.size()<<std::endl;
-        }
+        // void print()const {
+        //     std::cout<<"Tuple factory"<<std::endl;
+        //     bool first=true;
+        //     for(auto tuple : storage){
+        //         if(!first)
+        //             tuple.print();
+        //         else
+        //             first=false;
+        //     }
+        // }
+        // unsigned size(){
+        //     return storage.size();
+        // }
+        // void printSize(){
+        //     std::cout<<storage.size()<<std::endl;
+        // }
 
         const std::vector<TupleLight*>& getTuples()const {return internalIDToTuple;}
         float loadFactor()const{
@@ -227,57 +231,57 @@ class TupleFactory{
             }
         }
             
-        void printStats(){
-            std::cout << "FACTORY::TupleCount "<<storage.size()<<std::endl;
-            for(int i=0; i<1;i++){
-                std::cout << "FACTORY::Predicate    "<<i<<std::endl;
+        // void printStats(){
+        //     std::cout << "FACTORY::TupleCount "<<storage.size()<<std::endl;
+        //     for(int i=0; i<1;i++){
+        //         std::cout << "FACTORY::Predicate    "<<i<<std::endl;
             
-                auto& tupleToInternalVar = tupleToInternalVarSets[i];
+        //         auto& tupleToInternalVar = tupleToInternalVarSets[i];
                 
-                std::cout << "   FACTORY::BucketCount             "<<tupleToInternalVar.bucket_count()<<std::endl;
-                std::vector<int> bucketsLoad(tupleToInternalVar.bucket_count(),0);
-                for(TupleLight* t : tupleToInternalVar){
-                    bucketsLoad[tupleToInternalVar.bucket(t)]++;
-                }
-                float countNotEmptyBucket=0;
-                float avgLoadForNotEmptyBucket=0;
-                int mostLoadedBucket=0;
-                int maxLoad=0;
-                int minLoadedBucket=0;
-                int minLoad=0;
-                for(int i=0; i<tupleToInternalVar.bucket_count();i++){
-                    if(bucketsLoad[i]>0){
-                        countNotEmptyBucket+=1;
-                        avgLoadForNotEmptyBucket+=bucketsLoad[i];
-                        if(bucketsLoad[i]>maxLoad){
-                            maxLoad=bucketsLoad[i];
-                            mostLoadedBucket=i;
-                        }
-                        if(bucketsLoad[i]<minLoad || minLoad ==0){
-                            minLoad=bucketsLoad[i];
-                            minLoadedBucket=i;
-                        }
-                    }
+        //         std::cout << "   FACTORY::BucketCount             "<<tupleToInternalVar.bucket_count()<<std::endl;
+        //         std::vector<int> bucketsLoad(tupleToInternalVar.bucket_count(),0);
+        //         for(TupleLight* t : tupleToInternalVar){
+        //             bucketsLoad[tupleToInternalVar.bucket(t)]++;
+        //         }
+        //         float countNotEmptyBucket=0;
+        //         float avgLoadForNotEmptyBucket=0;
+        //         int mostLoadedBucket=0;
+        //         int maxLoad=0;
+        //         int minLoadedBucket=0;
+        //         int minLoad=0;
+        //         for(int i=0; i<tupleToInternalVar.bucket_count();i++){
+        //             if(bucketsLoad[i]>0){
+        //                 countNotEmptyBucket+=1;
+        //                 avgLoadForNotEmptyBucket+=bucketsLoad[i];
+        //                 if(bucketsLoad[i]>maxLoad){
+        //                     maxLoad=bucketsLoad[i];
+        //                     mostLoadedBucket=i;
+        //                 }
+        //                 if(bucketsLoad[i]<minLoad || minLoad ==0){
+        //                     minLoad=bucketsLoad[i];
+        //                     minLoadedBucket=i;
+        //                 }
+        //             }
 
-                }
-                std::vector<int> bucketCountForLoading(maxLoad+1);
-                for(int i=0; i<tupleToInternalVar.bucket_count();i++){
-                    if(bucketsLoad[i]>0){
-                        bucketCountForLoading[bucketsLoad[i]]++;
-                    }
-                }
-                for(int i=1;i<bucketCountForLoading.size();i++){
-                    std::cout << "   FACTORY::BucketCountOfLength"<<i<<"         "<<bucketCountForLoading[i]<<std::endl;
-                }
-                avgLoadForNotEmptyBucket/=countNotEmptyBucket;
+        //         }
+        //         std::vector<int> bucketCountForLoading(maxLoad+1);
+        //         for(int i=0; i<tupleToInternalVar.bucket_count();i++){
+        //             if(bucketsLoad[i]>0){
+        //                 bucketCountForLoading[bucketsLoad[i]]++;
+        //             }
+        //         }
+        //         for(int i=1;i<bucketCountForLoading.size();i++){
+        //             std::cout << "   FACTORY::BucketCountOfLength"<<i<<"         "<<bucketCountForLoading[i]<<std::endl;
+        //         }
+        //         avgLoadForNotEmptyBucket/=countNotEmptyBucket;
 
-                std::cout << "   FACTORY::NonEmptyBucket%         "<<(countNotEmptyBucket/(float)bucketsLoad.size())*100<<std::endl;
-                std::cout << "   FACTORY::AvgLoadNonEmptyBucket   "<<avgLoadForNotEmptyBucket<<std::endl;
+        //         std::cout << "   FACTORY::NonEmptyBucket%         "<<(countNotEmptyBucket/(float)bucketsLoad.size())*100<<std::endl;
+        //         std::cout << "   FACTORY::AvgLoadNonEmptyBucket   "<<avgLoadForNotEmptyBucket<<std::endl;
                 
-                std::cout << "   FACTORY::MinLoadedBucketSize     "<<minLoad<<std::endl;
-                std::cout << "   FACTORY::MaxLoadedBucketSize     "<<maxLoad<<std::endl;
-            }
-        }
+        //         std::cout << "   FACTORY::MinLoadedBucketSize     "<<minLoad<<std::endl;
+        //         std::cout << "   FACTORY::MaxLoadedBucketSize     "<<maxLoad<<std::endl;
+        //     }
+        // }
         bool isGenerated()const {return generated;}
         void setGenerated(bool gen){this->generated=gen;}
 };

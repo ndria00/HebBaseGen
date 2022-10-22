@@ -56,6 +56,9 @@ class TupleFactory{
         bool generated;
 
     public:
+        void destroyTuple(TupleLight* t){
+            delete t;
+        }
         static TupleLight bufferTuple;
         void setBufferedTupleStorage(int* vectorData,int size,int predName){
             bufferTuple.setContent(vectorData,size,predName);
@@ -71,9 +74,9 @@ class TupleFactory{
         }
         
         ~TupleFactory(){
-            for(unsigned i = 0; i < internalIDToTuple.size(); ++i){
-                delete internalIDToTuple[i];
-            }
+            // for(unsigned i = 0; i < internalIDToTuple.size(); ++i){
+            //     delete internalIDToTuple[i];
+            // }
         }
         void removeFromCollisionsList(int id){
             if(id < internalIDToTuple.size()){

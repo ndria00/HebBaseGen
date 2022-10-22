@@ -64,9 +64,14 @@ bool Program::existsPredicate(std::string repr)const{
     return predicateID.count(repr) > 0;
 }
 
+std::string& Program::getPredicateByID(unsigned id){
+    return inversePredicateMap[id];
+}
+
 bool Program::addPredicateWithID(const std::string& predName, unsigned id){
     if(predicateID.count(predName) == 0){
         predicateID[predName] = id;
+        inversePredicateMap[id] = predName;
         return true;
     }
     return false;

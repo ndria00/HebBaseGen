@@ -29,6 +29,7 @@ class ChoiceRule : public RuleBase{
         bool containsLiteralInHead(unsigned)const override;
         bool containsLiteralInHead(Literal*)const override;
         bool containsLiteralInBody(std::string&)const override;
+        void getAllLiterals(std::unordered_set<unsigned>&)const override;
         void sortLiteralsInBody(int)override;
         void setHead(Head*) override;
         void setBody(Body*) override;

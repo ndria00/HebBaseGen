@@ -181,7 +181,11 @@ void CompilationManager::generateProgram(Program* program){
     // for(ChoiceRule* rule : program->getChoiceRules()){
     //     compileChoiceRule(rule);
     // }
-
+    std::unordered_set<unsigned> remainingPredicatesToRemove;
+    for(auto kv : program->getPredicatesID()){
+        remainingPredicatesToRemove.insert(kv.second);
+    }
+    std::unordered_set<unsigned> predicatesNotDefined;
     for(int i = layers.size()-1; i >= 0 ; --i){
         std::vector<unsigned> effectiveLiteralsIDs;
         for(unsigned j = 0; j < layers[i].size(); ++j){
@@ -189,12 +193,42 @@ void CompilationManager::generateProgram(Program* program){
                 if(it.second == layers[i][j]){
                     effectiveLiteralsIDs.push_back(it.first);
                     //std::cout << "working on "<<it.first<<std::endl;
+                    //predicatesCompletelyDefined.insert(it.first);
                 }
             }
         }
+        //TODO IMPROVE
         std::vector<unsigned> rulesForComponent;
         getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
         compileRecursiveComponent(program, rulesForComponent);
+        rulesForComponent.clear();
+        //getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
+        predicatesNotDefined.clear();
+        //get all literals that are in some head or or body of any rule that has not been yet compiled
+        // for(int j = i-1; j >= 0; --j){
+        //     for(int k = 0; k < rulesForComponent.size(); ++k){
+        //         std::cout <<"Rule " << rulesForComponent[k] << " not compiled....\n" 
+        //         program->getRuleByID(rulesForComponent[k])->getAllLiterals(predicatesNotDefined);
+        //     }
+        // }
+        for(Rule* r : program->getRules()){
+            if(!r->isAlreadyCompiled()){
+                r->getAllLiterals(predicatesNotDefined);
+            }
+        }
+        //get literals that can be deleted as the difference between literals that
+        //appear somewhere in rules and all the literals that has not been deleted since now
+        std::unordered_set<unsigned> toDelete;
+        for(auto pred : remainingPredicatesToRemove){
+            if(predicatesNotDefined.count(pred) == 0){
+                toDelete.insert(pred);
+            }
+        }
+        deleteCompletelyDefinedPredicates(toDelete, program);
+        for(auto pred: toDelete){
+            remainingPredicatesToRemove.erase(pred);
+        }
+        std::cout <<"Completed component\n";
     }
     //*out << indentation << "printGeneratedBase();\n";
     *out << indentation << "auto finish = std::chrono::high_resolution_clock::now();\n";
@@ -217,6 +251,34 @@ void CompilationManager::generateProgram(Program* program){
     //     *out<< --indentation <<"}\n"; 
     // }
     // *out << --indentation << "}\n";
+
+    //TODO REMOVE BECAUSE IT IS NOT NEEDED
+    //deleteCompletelyDefinedPredicates(remainingPredicatesToRemove, program);
+}
+
+void CompilationManager::deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>& toRemove, Program* program){
+    std::cout <<"deleting: ";
+    for(auto pred : toRemove){
+        *out << indentation << "//Removing tuples of predicates that have been completely defined\n";
+        *out << indentation++ << "{\n";
+        *out << indentation << "const std::vector<int>* tuplesToRemove;\n";
+        *out << indentation << "tuplesToRemove = &p" << program->getPredicateByID(pred) << "_.getValuesVec({});\n";
+        *out << indentation++ << "for(unsigned i = 0; i< tuplesToRemove->size(); ++i){\n";
+        *out << indentation << "factory.destroyTuple(factory.getTupleFromInternalID(tuplesToRemove->at(i)));\n";
+        *out << --indentation <<"}\n";
+        *out << indentation << "p" << program->getPredicateByID(pred) << "_.clear();\n";
+
+        *out << indentation << "tuplesToRemove = &u" << program->getPredicateByID(pred) << "_.getValuesVec({});\n";
+        *out << indentation++ << "for(unsigned i = 0; i< tuplesToRemove->size(); ++i){\n";
+        *out << indentation << "factory.destroyTuple(factory.getTupleFromInternalID(tuplesToRemove->at(i)));\n";
+        *out << --indentation <<"}\n";
+        *out << indentation << "u" << program->getPredicateByID(pred) << "_.clear();\n";
+
+        *out << --indentation <<"}\n";
+        
+        std::cout << pred << ", ";
+    }
+    std::cout<<std::endl;
 
 }
 

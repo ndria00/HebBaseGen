@@ -29,6 +29,7 @@ class CompilationManager{
         void compileChoiceElement(const std::pair<Literal*, Body*>&);
         void compileRecursiveComponent(Program*, std::vector<unsigned>&);
         void getRulesFromPredicateIds(Program*, std::vector<unsigned>&, std::vector<unsigned>&);
+        void deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>&, Program*);
         void setOutStream(std::ostream*);
         void addFacts();
 

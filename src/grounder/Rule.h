@@ -29,6 +29,7 @@ class Rule : public RuleBase{
         bool containsLiteralInHead(Literal*)const override;
         bool containsLiteralInHead(unsigned)const override;
         bool containsLiteralInBody(std::string&)const override;
+        void getAllLiterals(std::unordered_set<unsigned>&)const override;
         void sortLiteralsInBody(int)override;
         void removeBuiltInAt(const std::vector<BuiltInTerm*>::const_iterator& it) override;
         void getRecursiveIndexes(std::vector<unsigned>&)const;

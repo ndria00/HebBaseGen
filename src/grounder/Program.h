@@ -9,6 +9,7 @@ class Program{
         std::vector<ChoiceRule*> choiceRules;
         std::unordered_map<std::string, unsigned> predicateID;
         std::unordered_map<std::string, unsigned> iDBPredicates;
+        std::unordered_map<unsigned, std::string> inversePredicateMap;
     public:
         Program();
         const std::vector<Rule*>& getRules()const;
@@ -21,6 +22,7 @@ class Program{
         bool checkSafety()const;
         void mapAllConstants()const;
         bool existsPredicate(std::string)const;
+        std::string& getPredicateByID(unsigned);
         bool addPredicateWithID(const std::string&, unsigned);
         std::unordered_map<std::string, unsigned>& getPredicatesID();
         void getRulesByID(std::vector<unsigned>&, std::vector<RuleBase*>&);

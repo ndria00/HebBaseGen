@@ -75,6 +75,18 @@ bool ChoiceRule::containsLiteralInBody(std::string& id)const{
     return false;
 }
 
+void ChoiceRule::getAllLiterals(std::unordered_set<unsigned>& allLiterals)const{
+    for(auto& choiceElem : choiceHead){
+        allLiterals.insert(choiceElem.first->getID());
+        for(Literal* l : choiceElem.second->getConjunction()){
+            allLiterals.insert(l->getID());
+        }
+    }
+    for(Literal* l : body->getConjunction()){
+        allLiterals.insert(l->getID());
+    }
+}
+
 void ChoiceRule::sortLiteralsInBody(int starter = -1){
     std::vector<unsigned> orderedConjunction;
     std::unordered_set<unsigned> addedLiterals;

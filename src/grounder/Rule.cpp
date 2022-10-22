@@ -97,6 +97,16 @@ bool Rule::containsLiteralInBody(std::string& id)const{
     return false;
 }
 
+void Rule::getAllLiterals(std::unordered_set<unsigned>& allLiterals)const{
+    for(Literal* l : head->getDisjunction()){
+        allLiterals.insert(l->getID());
+    }
+
+    for(Literal* l : body->getConjunction()){
+        allLiterals.insert(l->getID());
+    }
+}
+
 void Rule::sortLiteralsInBody(int starter =-1){
     
     std::vector<unsigned> orderedConjunction;

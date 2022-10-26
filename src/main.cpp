@@ -28,7 +28,7 @@ enum PrintMode{SILENT = 0, VERBOSE = 1};
 int main(int argc, char *argv[]){
 	//std::cout <<argc <<std::endl;
 	ExecutionMode MODE = COMPILER;
-	PrintMode printMode= VERBOSE;
+	PrintMode printMode= SILENT;
 	if(argc > 1){
 		std::string option1 = argv[1];
 		if(option1 == "compile"){
@@ -119,6 +119,12 @@ int main(int argc, char *argv[]){
 		// if(program->containsUnsupportedBuiltIn()){
 			
 		// }
+		for(ChoiceRule* r : program->getChoiceRules()){
+			if(r->cointainsRecursiveInChoices()){
+				std::cout << "recursion inside choice elements is not supported" << std::endl;
+				return 0;
+			}
+		}
 		if(program->checkSafety()){
 			std::cout<<"No safety errors found"<<std::endl;
 		}

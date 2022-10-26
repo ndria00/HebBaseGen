@@ -230,6 +230,17 @@ void ChoiceRule::print()const{
     std::cout << ".\n";
 }
 
+bool ChoiceRule::cointainsRecursiveInChoices()const{
+    for(auto choiceElem : choiceHead){
+        for(Literal* l : choiceElem.second->getConjunction()){
+            if(l->getID() == choiceElem.first->getID()){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 ChoiceRule::~ChoiceRule(){
     if(body != nullptr)
         delete body;

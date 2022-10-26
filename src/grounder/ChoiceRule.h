@@ -38,6 +38,7 @@ class ChoiceRule : public RuleBase{
         void removeBuiltInAt(const std::vector<BuiltInTerm*>::const_iterator& ) override;
         bool isClassicRule()const override;
         bool isChoiceRule()const override;
+        bool cointainsRecursiveInChoices()const;
         void print()const;
         ~ChoiceRule();
 };

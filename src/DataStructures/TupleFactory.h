@@ -56,8 +56,8 @@ class TupleFactory{
         bool generated;
 
     public:
-        void destroyTuple(TupleLight* t){
-            delete t;
+        void destroyTuple(int id){
+            delete internalIDToTuple[id];
         }
         static TupleLight bufferTuple;
         void setBufferedTupleStorage(int* vectorData,int size,int predName){

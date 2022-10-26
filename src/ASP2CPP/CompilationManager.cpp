@@ -264,15 +264,17 @@ void CompilationManager::deleteCompletelyDefinedPredicates(std::unordered_set<un
         *out << indentation << "const std::vector<int>* tuplesToRemove;\n";
         *out << indentation << "tuplesToRemove = &p" << program->getPredicateByID(pred) << "_.getValuesVec({});\n";
         *out << indentation++ << "for(unsigned i = 0; i< tuplesToRemove->size(); ++i){\n";
-        *out << indentation << "factory.destroyTuple(factory.getTupleFromInternalID(tuplesToRemove->at(i)));\n";
+        *out << indentation << "factory.removeFromCollisionsList(tuplesToRemove->at(i));\n";
+        *out << indentation << "factory.destroyTuple(tuplesToRemove->at(i));\n";
         *out << --indentation <<"}\n";
-        *out << indentation << "p" << program->getPredicateByID(pred) << "_.clear();\n";
+        //*out << indentation << "p" << program->getPredicateByID(pred) << "_.clear();\n";
 
         *out << indentation << "tuplesToRemove = &u" << program->getPredicateByID(pred) << "_.getValuesVec({});\n";
         *out << indentation++ << "for(unsigned i = 0; i< tuplesToRemove->size(); ++i){\n";
-        *out << indentation << "factory.destroyTuple(factory.getTupleFromInternalID(tuplesToRemove->at(i)));\n";
+        *out << indentation << "factory.removeFromCollisionsList(tuplesToRemove->at(i));\n";
+        *out << indentation << "factory.destroyTuple(tuplesToRemove->at(i));\n";
         *out << --indentation <<"}\n";
-        *out << indentation << "u" << program->getPredicateByID(pred) << "_.clear();\n";
+        //*out << indentation << "u" << program->getPredicateByID(pred) << "_.clear();\n";
 
         *out << --indentation <<"}\n";
         
@@ -561,8 +563,8 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 }
                 else{
                     *out << indentation++ << "if(!undefTuple){\n";
-                    *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
                     *out << indentation << "factory.removeFromCollisionsList(t->getId());\n";
+                    *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
                     *out << indentation << "insertTrue(insertResult);\n";
                     *out << --indentation << "}\n";
                 }
@@ -651,7 +653,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
 }
 
 void CompilationManager::compileChoiceRule(ChoiceRule* rule, std::vector<std::string>& recursiveDep, int starter = -1){
-    //rule->setAlreadyCompiled(true);
+    rule->setAlreadyCompiled(true);
     const Body* body = rule->getBody();
     unsigned negativeBodySize = body->getNegativeSize();
     std::unordered_set<std::string> boundVariables;
@@ -769,14 +771,53 @@ void CompilationManager::compileChoiceRule(ChoiceRule* rule, std::vector<std::st
                 }
             }
         }
+        //to ensure that builtin are all compile.
+        //Fix for the corner case in which a rule with a signle atom is being
+        //compiled starting by a recursive literal and this rule contains some builtin  
+        if(i == rule->getOrderedBodyByStarter(starter).size() - 1){
+            for(unsigned builtInIndex = 0; builtInIndex < rule->getBody()->getBuiltInTerms().size(); ++builtInIndex){
+                BuiltInTerm* currentBuiltIn = rule->getBody()->getBuiltInTerms().at(builtInIndex);
+                if(!alreadyCompiledBuiltIn.count(builtInIndex)){
+                    std::pair<std::string, bool> bindingResult = currentBuiltIn->canBind(boundVariables);
+                    //builtIn is totally bound
+                    if(bindingResult.second && bindingResult.first == ""){
+                        if(currentBuiltIn->getMyOperator() != "=")
+                            *out << indentation++ <<"if(" << currentBuiltIn->toString()<< "){\n";
+                        else
+                            *out << indentation++ <<"if(" << currentBuiltIn->getLeftExpr()->getRepresentation() << " == " <<currentBuiltIn->getRightExpr()->getRepresentation() << "){\n";
+                        
+                        alreadyCompiledBuiltIn.insert(builtInIndex);
+                        //std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                        //rule->removeBuiltInAt(it);
+                        closingParenthesis++;
+                    }//X = Y+2 where X is not already bound, or X == Y
+                    else if(bindingResult.second && bindingResult.first != "" && (currentBuiltIn->getMyOperator() == "=" || currentBuiltIn->getMyOperator() == "==")){
+                        if(currentBuiltIn->getLeftExpr()->isBound(boundVariables)){
+                            *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getLeftExpr()->getRepresentation()<<";\n";
+                            boundVariables.insert(bindingResult.first);
+                            alreadyCompiledBuiltIn.insert(builtInIndex);
+                            //std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                            //rule->removeBuiltInAt(it);
+                        }
+                        else if(currentBuiltIn->getRightExpr()->isBound(boundVariables)){
+                            *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getRightExpr()->getRepresentation()<<";\n";
+                            boundVariables.insert(bindingResult.first);
+                            alreadyCompiledBuiltIn.insert(builtInIndex);
+                            //std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                            //rule->removeBuiltInAt(it);
+                        }
+                    }
+                }
+            }  
+        }
         if(i == rule->getOrderedBodyByStarter(starter).size() - 1){
             *out<< indentation <<"//Rule is firing \n";
             // check that each body of choice elements is satisfied in order to add it to the factory
             // consider only those choice element that have as heas literal one of 
             // the literal that are considered in this recursive component
             for(auto& choiceElem : rule->getChoiceHead()){
-                if(std::find(recursiveDep.begin(), recursiveDep.end(), choiceElem.first->getIdentifier()) != recursiveDep.end())
-                    compileChoiceElement(choiceElem);
+                //if(std::find(recursiveDep.begin(), recursiveDep.end(), choiceElem.first->getIdentifier()) != recursiveDep.end())
+                compileChoiceElement(choiceElem);
             }
         }
         
@@ -899,6 +940,45 @@ void CompilationManager::compileChoiceElement(const std::pair<Literal*, Body*>& 
                 }
             }
         }
+        //to ensure that builtin are all compile.
+        //Fix for the corner case in which a rule with a signle atom is being
+        //compiled starting by a recursive literal and this rule contains some builtin  
+        if(i == body->getConjunction().size() - 1){
+            for(unsigned builtInIndex = 0; builtInIndex < body->getBuiltInTerms().size(); ++builtInIndex){
+                BuiltInTerm* currentBuiltIn = body->getBuiltInTerms().at(builtInIndex);
+                if(!alreadyCompiledBuiltIn.count(builtInIndex)){
+                    std::pair<std::string, bool> bindingResult = currentBuiltIn->canBind(boundVariables);
+                    //builtIn is totally bound
+                    if(bindingResult.second && bindingResult.first == ""){
+                        if(currentBuiltIn->getMyOperator() != "=")
+                            *out << indentation++ <<"if(" << currentBuiltIn->toString()<< "){\n";
+                        else
+                            *out << indentation++ <<"if(" << currentBuiltIn->getLeftExpr()->getRepresentation() << " == " <<currentBuiltIn->getRightExpr()->getRepresentation() << "){\n";
+                        
+                        alreadyCompiledBuiltIn.insert(builtInIndex);
+                        //std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                        //rule->removeBuiltInAt(it);
+                        closingParenthesis++;
+                    }//X = Y+2 where X is not already bound, or X == Y
+                    else if(bindingResult.second && bindingResult.first != "" && (currentBuiltIn->getMyOperator() == "=" || currentBuiltIn->getMyOperator() == "==")){
+                        if(currentBuiltIn->getLeftExpr()->isBound(boundVariables)){
+                            *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getLeftExpr()->getRepresentation()<<";\n";
+                            boundVariables.insert(bindingResult.first);
+                            alreadyCompiledBuiltIn.insert(builtInIndex);
+                            //std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                            //rule->removeBuiltInAt(it);
+                        }
+                        else if(currentBuiltIn->getRightExpr()->isBound(boundVariables)){
+                            *out << indentation << "int " << bindingResult.first << " = " <<currentBuiltIn->getRightExpr()->getRepresentation()<<";\n";
+                            boundVariables.insert(bindingResult.first);
+                            alreadyCompiledBuiltIn.insert(builtInIndex);
+                            //std::vector<BuiltInTerm*>::const_iterator it = rule->getBody()->getBuiltInTerms().begin() + builtInIndex;
+                            //rule->removeBuiltInAt(it);
+                        }
+                    }
+                }
+            }  
+        }
         if(i == body->getConjunction().size() - 1){
             *out<< indentation <<"//Rule is firing \n";
             // add literal in choice head to the factory
@@ -954,8 +1034,8 @@ void CompilationManager::compileChoiceElement(const std::pair<Literal*, Body*>& 
                 *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
             }
             else{
-                *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
                 *out << indentation << "factory.removeFromCollisionsList(t->getId());\n";
+                *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
                 *out << indentation << "insertTrue(insertResult);\n";
             }
             *out << --indentation << "}\n";
@@ -1183,76 +1263,93 @@ void CompilationManager::compileRecursiveComponent(Program* program, std::vector
     std::vector<std::string> recursiveDep;
     findExitRules(recursiveComponent, program, exitRules, recursiveDep);
     //std::cout << "found " << exitRules.size() <<" exit rule\n";
-    if(recursiveDep.size() > 0)
-        *out<< indentation << "std::vector<int> generatedStack;\n";
 
-    for(unsigned i = 0; i < exitRules.size(); ++i){
-        RuleBase* rule = program->getRuleByID(exitRules[i]);
-        if(rule->isChoiceRule() && !rule->isAlreadyCompiled()){
-            compileChoiceRule(static_cast<ChoiceRule*>(rule), recursiveDep);
-        }
-        else if(rule->isClassicRule() && !rule->isAlreadyCompiled()){
-            compileRule(static_cast<Rule*>(rule), recursiveDep);
-        }
-        //if(rule == nullptr)
-        //   std::cout<<"Something went wrong\n";
-        std::vector<unsigned>::iterator it = std::find(recursiveComponent.begin(), recursiveComponent.end(), exitRules[i]);
-        recursiveComponent.erase(it);
-    }
-    //component is totally recursive
-    if(exitRules.size() == 0){
-        //add all tuples in factory that are true or undef so that the component can generate
-        //without need to do a preliminar grounding
-        *out << indentation++ << "{//adding already existing tuple for predicates involved in recursion\n";
-        *out << indentation << "const std::vector<int>* actualTuples;\n";
-        for(unsigned i = 0; i < recursiveDep.size(); ++i){
-            
-            *out << indentation << "actualTuples = &p" << recursiveDep[i] << "_.getValuesVec({});\n";
-            *out << indentation << "for(int i = 0; i < actualTuples->size(); ++i) generatedStack.push_back((factory.getTupleFromInternalID(actualTuples->at(i)))->getId());\n";
-        
-            *out << indentation << "actualTuples = &u" << recursiveDep[i] << "_.getValuesVec({});\n";
-            *out << indentation << "for(int i = 0; i < actualTuples->size(); ++i) generatedStack.push_back((factory.getTupleFromInternalID(actualTuples->at(i)))->getId());\n";
-        }
-        *out << --indentation << "}\n";
-    }
     
-    if(recursiveDep.size() > 0){
-        *out << indentation++ << "while(! generatedStack.empty()){\n";
-        *out << indentation << "const Tuple* recursiveTuple = factory.getTupleFromInternalID(generatedStack.back());\n";
-        *out << indentation << "generatedStack.pop_back();\n";
-        *out << indentation << "unsigned literalName = recursiveTuple->getPredicateName();\n";
-        *out << indentation << "bool recursiveTupleUndef = recursiveTuple->isUndef();\n";
-        //if recursive[i] -> do a specific compilation
-        for(unsigned i = 0; i < recursiveDep.size(); ++i){
-            *out << indentation++ << "if(literalName == _"<< recursiveDep[i] <<"){\n";
-                for(unsigned j = 0; j < recursiveComponent.size(); ++j){
-                    if(program->getRuleByID(recursiveComponent[j])->containsLiteralInBody(recursiveDep[i])){
-                        //compile several times basing on how many occurrencies of the predicate are present in the chosen rule
-                        for(unsigned k  = 0; k < program->getRuleByID(recursiveComponent[j])->getBody()->getConjunction().size(); ++k)
-                        if(program->getRuleByID(recursiveComponent[j])->getBody()->getConjunction()[k]->getIdentifier() == recursiveDep[i]){
-                            if(program->getRuleByID(recursiveComponent[j])->isChoiceRule())
-                                compileChoiceRule(static_cast<ChoiceRule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep,k);
-                            else if(program->getRuleByID(recursiveComponent[j])->isClassicRule())
-                                compileRule(static_cast<Rule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep, k);
+    //check that you are actually compiling something
+    //This is for the corner case of disjunction and choice rules that can be 
+    //taken into consideration among different layers but shouldn't
+    //because in the first component they appear they are completely defined (see SCC and arcs for more details)
+    bool allRulesCompiledForComponent = true;
+
+    for(unsigned i = 0; i < recursiveComponent.size(); ++i){
+        if(!program->getRuleByID(recursiveComponent.at(i))->isAlreadyCompiled()){
+            allRulesCompiledForComponent = false;
+            break;
+        } 
+    }
+    if(!allRulesCompiledForComponent){
+        if(recursiveDep.size() > 0)
+            *out<< indentation << "std::vector<int> generatedStack;\n";
+
+        for(unsigned i = 0; i < exitRules.size(); ++i){
+            RuleBase* rule = program->getRuleByID(exitRules[i]);
+            if(rule->isChoiceRule() && !rule->isAlreadyCompiled()){
+                compileChoiceRule(static_cast<ChoiceRule*>(rule), recursiveDep);
+            }
+            else if(rule->isClassicRule() && !rule->isAlreadyCompiled()){
+                compileRule(static_cast<Rule*>(rule), recursiveDep);
+            }
+            //if(rule == nullptr)
+            //   std::cout<<"Something went wrong\n";
+            std::vector<unsigned>::iterator it = std::find(recursiveComponent.begin(), recursiveComponent.end(), exitRules[i]);
+            recursiveComponent.erase(it);
+        }
+        //component is totally recursive
+        if(exitRules.size() == 0){
+            //add all tuples in factory that are true or undef so that the component can generate
+            //without need to do a preliminar grounding
+            *out << indentation++ << "{//adding already existing tuple for predicates involved in recursion\n";
+            *out << indentation << "const std::vector<int>* actualTuples;\n";
+            for(unsigned i = 0; i < recursiveDep.size(); ++i){
+                
+                *out << indentation << "actualTuples = &p" << recursiveDep[i] << "_.getValuesVec({});\n";
+                *out << indentation << "for(int i = 0; i < actualTuples->size(); ++i) generatedStack.push_back((factory.getTupleFromInternalID(actualTuples->at(i)))->getId());\n";
+            
+                *out << indentation << "actualTuples = &u" << recursiveDep[i] << "_.getValuesVec({});\n";
+                *out << indentation << "for(int i = 0; i < actualTuples->size(); ++i) generatedStack.push_back((factory.getTupleFromInternalID(actualTuples->at(i)))->getId());\n";
+            }
+            *out << --indentation << "}\n";
+        }
+
+        
+        if(recursiveDep.size() > 0){
+            *out << indentation++ << "while(! generatedStack.empty()){\n";
+            *out << indentation << "const Tuple* recursiveTuple = factory.getTupleFromInternalID(generatedStack.back());\n";
+            *out << indentation << "generatedStack.pop_back();\n";
+            *out << indentation << "unsigned literalName = recursiveTuple->getPredicateName();\n";
+            *out << indentation << "bool recursiveTupleUndef = recursiveTuple->isUndef();\n";
+            //if recursive[i] -> do a specific compilation
+            for(unsigned i = 0; i < recursiveDep.size(); ++i){
+                *out << indentation++ << "if(literalName == _"<< recursiveDep[i] <<"){\n";
+                    for(unsigned j = 0; j < recursiveComponent.size(); ++j){
+                        if(program->getRuleByID(recursiveComponent[j])->containsLiteralInBody(recursiveDep[i])){
+                            //compile several times basing on how many occurrencies of the predicate are present in the chosen rule
+                            for(unsigned k  = 0; k < program->getRuleByID(recursiveComponent[j])->getBody()->getConjunction().size(); ++k)
+                            if(program->getRuleByID(recursiveComponent[j])->getBody()->getConjunction()[k]->getIdentifier() == recursiveDep[i]){
+                                if(program->getRuleByID(recursiveComponent[j])->isChoiceRule() && !(exitRules.size() == 0 && program->getRuleByID(recursiveComponent[j])->isAlreadyCompiled()))
+                                    compileChoiceRule(static_cast<ChoiceRule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep,k);
+                                else if(program->getRuleByID(recursiveComponent[j])->isClassicRule())
+                                    compileRule(static_cast<Rule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep, k);
+                            }
                         }
                     }
-                }
-            *out << --indentation << "}\n";
-        
+                *out << --indentation << "}\n";
+            
+            }
+        }else { //TODO REMOVE because this scenario is not possible
+            for(unsigned j = 0; j < recursiveComponent.size(); ++j){
+                RuleBase* ruleBase = program->getRuleByID(recursiveComponent[j]);
+                if(ruleBase->isChoiceRule() && ! ruleBase->isAlreadyCompiled())
+                    compileChoiceRule(static_cast<ChoiceRule*>(ruleBase), recursiveDep);
+                else if(ruleBase->isClassicRule() && !ruleBase->isAlreadyCompiled())
+                    compileRule(static_cast<Rule*>(ruleBase), recursiveDep);
+            }
         }
-    }else {
-        for(unsigned j = 0; j < recursiveComponent.size(); ++j){
-            RuleBase* ruleBase = program->getRuleByID(recursiveComponent[j]);
-            if(ruleBase->isChoiceRule() && ! ruleBase->isAlreadyCompiled())
-                compileRule(static_cast<Rule*>(ruleBase), recursiveDep);
-            else if(ruleBase->isClassicRule() && !ruleBase->isAlreadyCompiled())
-                compileChoiceRule(static_cast<ChoiceRule*>(ruleBase), recursiveDep);
-        }
+
+
+        if(recursiveDep.size() > 0)
+            *out<< --indentation << "}\n";
     }
-
-
-    if(recursiveDep.size() > 0)
-        *out<< --indentation << "}\n";
     *out<< --indentation << "}\n";
 }
 

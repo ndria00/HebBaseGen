@@ -259,23 +259,28 @@ void CompilationManager::generateProgram(Program* program){
 void CompilationManager::deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>& toRemove, Program* program){
     std::cout <<"deleting: ";
     for(auto pred : toRemove){
+        std::string predicateNameString = program->getPredicateByID(pred);
         *out << indentation << "//Removing tuples of predicates that have been completely defined\n";
         *out << indentation++ << "{\n";
         *out << indentation << "const std::vector<int>* tuplesToRemove;\n";
-        *out << indentation << "tuplesToRemove = &p" << program->getPredicateByID(pred) << "_.getValuesVec({});\n";
+        *out << indentation << "tuplesToRemove = &p" << predicateNameString << "_.getValuesVec({});\n";
         *out << indentation++ << "for(unsigned i = 0; i< tuplesToRemove->size(); ++i){\n";
-        *out << indentation << "factory.removeFromCollisionsList(tuplesToRemove->at(i));\n";
+        //*out << indentation << "factory.removeFromCollisionsList(tuplesToRemove->at(i));\n";
         *out << indentation << "factory.destroyTuple(tuplesToRemove->at(i));\n";
         *out << --indentation <<"}\n";
         //*out << indentation << "p" << program->getPredicateByID(pred) << "_.clear();\n";
-
-        *out << indentation << "tuplesToRemove = &u" << program->getPredicateByID(pred) << "_.getValuesVec({});\n";
+        *out << indentation << "tuplesToRemove = &u" << predicateNameString << "_.getValuesVec({});\n";
         *out << indentation++ << "for(unsigned i = 0; i< tuplesToRemove->size(); ++i){\n";
-        *out << indentation << "factory.removeFromCollisionsList(tuplesToRemove->at(i));\n";
+        //*out << indentation << "factory.removeFromCollisionsList(tuplesToRemove->at(i));\n";
         *out << indentation << "factory.destroyTuple(tuplesToRemove->at(i));\n";
         *out << --indentation <<"}\n";
         //*out << indentation << "u" << program->getPredicateByID(pred) << "_.clear();\n";
-
+        for(std::string mapName : this->predicatesPositiveMaps[predicateNameString]){
+            *out << indentation << mapName << ".clear();\n";   
+        }
+        for(std::string mapName : this->predicatesUndefMaps[predicateNameString]){
+            *out << indentation << mapName << ".clear();\n";   
+        }
         *out << --indentation <<"}\n";
         
         std::cout << pred << ", ";
@@ -326,11 +331,16 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
     std::unordered_set<std::string> boundVariables;
     unsigned closingParenthesis = 0;
     *out << indentation++ << "{\n";
-    *out << indentation << "bool undefTuple = false;\n";
     std::unordered_map<std::string, unsigned> variablesNameToTupleIndexes;
 
     closingParenthesis++;
     for(unsigned i = 0; i < rule->getOrderedBodyByStarter(starter).size(); ++i){
+        if(i == 0){
+            *out << indentation << "bool undefTuple" << i << "= false;\n";
+        }
+        else{
+            *out << indentation << "bool undefTuple" << i << " = undefTuple" << i-1 << ";\n";
+        }
         std::unordered_set<unsigned> alreadyCompiledBuiltIn;
         Literal* lit = body->getConjunction()[rule->getOrderedBodyByStarter(starter)[i]];
         // compiling rule with a starter given by a recursive literal
@@ -343,10 +353,16 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 *out << indentation << "int " << nameIndex.first << " = (*recursiveTuple)[" << nameIndex.second << "];\n";
             }
             *out << indentation++ << "if(recursiveTupleUndef){\n";
-            *out << indentation << "undefTuple = true;\n";
+            *out << indentation << "undefTuple" << i << " = true;\n";
             *out<< --indentation << "}\n";
             if (!lit->isBound(boundVariables)) {
                 lit->addVariablesToSet(boundVariables);
+            }
+            //when recursive tuple is negative
+            //TODO REMOVE WHEN NEGATIVE DEPENDENCIES WILL BE REMOVED
+            if(lit->isNegative()){
+                *out << indentation++ << "if(!recursiveTuple->isTrue()){\n";
+                closingParenthesis++;
             }
         }
         else{
@@ -354,7 +370,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 *out << indentation << "const Tuple* tuple" << i << " = factory.find({";
                 printLiteralTuple(lit, boundVariables); 
                 *out << "}, _" << lit->getIdentifier() << ");\n";
-                *out << indentation << "if(tuple" << i << " != NULL && " << "tuple" << i << "->isUndef()) undefTuple = true;\n";
+                *out << indentation << "if(tuple" << i << " != NULL && " << "tuple" << i << "->isUndef()) " << "undefTuple" << i << " = true;\n";
             }
             else if(!lit->isNegative()){
                 std::string mapVariableName = lit->getIdentifier() + "_";
@@ -379,7 +395,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 *out << --indentation << "}\n";
                 *out << indentation++ << "else {\n";
                 *out << indentation << "tuple" << i << " = factory.getTupleFromInternalID(tuplesU->at(i-tuples->size()));\n";
-                *out << indentation << "undefTuple = true;\n";
+                *out << indentation << "undefTuple" << i << " = true;\n";
                 *out << --indentation << "}\n";
                 closingParenthesis++;
             }
@@ -392,11 +408,15 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 *out << "}, _" << lit->getIdentifier()<<");\n";
                 *out << indentation++ << "if(tuple" << i << " == NULL){\n";
                 *out << indentation << "tuple" << i <<" = &negativeTuple;\n";
-                *out << indentation << "undefTuple = true;\n";
+                //ONLY IF WE HAVE NEGATIVE RECURSIVE DEPENDECY ON THIS ATOM
+                //ONLY FOR UNSTRATIFIED PROGRAMS
+                if(lit->isNegative() && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end()){
+                    *out << indentation << "undefTuple" << i << " = true;\n";
+                }
                 *out << --indentation <<"}\n";
                 *out << indentation++ << "else{\n";
                 *out << indentation << "if(tuple" << i << "->isTrue())    tuple" << i << "= NULL;\n";
-                *out << indentation << "else undefTuple = true;\n";
+                *out << indentation << "else " << "undefTuple" << i << " = true;\n";
                 *out << --indentation << "}\n";
             }
 
@@ -547,7 +567,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                     *out << indentation << "insertUndef(insertResult);\n";
                 }
                 else{
-                    *out << indentation++ << "if(undefTuple){\n";
+                    *out << indentation++ << "if(!" << "undefTuple" << i << "){\n";
                     *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
                     *out << indentation << "insertUndef(insertResult);\n";
                     *out << --indentation << "}\n";
@@ -562,7 +582,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                     *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
                 }
                 else{
-                    *out << indentation++ << "if(!undefTuple){\n";
+                    *out << indentation++ << "if(!" << "undefTuple" << i << "){\n";
                     *out << indentation << "factory.removeFromCollisionsList(t->getId());\n";
                     *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
                     *out << indentation << "insertTrue(insertResult);\n";
@@ -637,7 +657,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
             //     //*out << --indentation << "}\n";
             //     //*out << indentation << "terms.clear();\n";
             // }
-            *out << indentation << "undefTuple = false;\n";
+            //*out << indentation << "undefTuple = false;\n";
         }
         
     }
@@ -676,6 +696,12 @@ void CompilationManager::compileChoiceRule(ChoiceRule* rule, std::vector<std::st
             }
             if (!lit->isBound(boundVariables)) {
                 lit->addVariablesToSet(boundVariables);
+            }
+            //when recursive tuple is negative
+            //TODO REMOVE WHEN NEGATIVE DEPENDENCIES WILL BE REMOVED
+            if(lit->isNegative()){
+                *out << indentation++ << "if(!recursiveTuple->isTrue()){\n";
+                closingParenthesis++;
             }
         }
         else{
@@ -1309,6 +1335,15 @@ void CompilationManager::compileRecursiveComponent(Program* program, std::vector
                 *out << indentation << "for(int i = 0; i < actualTuples->size(); ++i) generatedStack.push_back((factory.getTupleFromInternalID(actualTuples->at(i)))->getId());\n";
             }
             *out << --indentation << "}\n";
+        }
+        for(unsigned i = 0; i < recursiveComponent.size(); ++i){
+            RuleBase* rule = program->getRuleByID(recursiveComponent[i]);
+            if(rule->isChoiceRule() && !rule->isAlreadyCompiled()){
+                compileChoiceRule(static_cast<ChoiceRule*>(rule), recursiveDep);
+            }
+            else if(rule->isClassicRule() && !rule->isAlreadyCompiled()){
+                compileRule(static_cast<Rule*>(rule), recursiveDep);
+            }
         }
 
         

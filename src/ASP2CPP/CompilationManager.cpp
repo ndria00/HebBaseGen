@@ -331,8 +331,6 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
     unsigned closingParenthesis = 0;
     *out << indentation++ << "{\n";
     std::unordered_map<std::string, unsigned> variablesNameToTupleIndexes;
-    *out << indentation << "bool undefTuple= false;\n";
-    std::unordered_map<unsigned, unsigned> closingParToTuples;
     closingParenthesis++;
     for(unsigned i = 0; i < rule->getOrderedBodyByStarter(starter).size(); ++i){
         if(i == 0){
@@ -354,7 +352,6 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
             }
             *out << indentation++ << "if(recursiveTupleUndef){\n";
             *out << indentation << "undefTuple" << i << " = true;\n";
-            *out << indentation << "undefTuple = true;\n";
             *out<< --indentation << "}\n";
             if (!lit->isBound(boundVariables)) {
                 lit->addVariablesToSet(boundVariables);
@@ -365,15 +362,13 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 *out << indentation++ << "if(!recursiveTuple->isTrue()){\n";
                 closingParenthesis++;
             }
-            closingParToTuples[closingParenthesis] = i;
         }
         else{
-            closingParToTuples[closingParenthesis] = i;
             if(!lit->isNegative() && lit->isBound(boundVariables)){
                 *out << indentation << "const Tuple* tuple" << i << " = factory.find({";
                 printLiteralTuple(lit, boundVariables); 
                 *out << "}, _" << lit->getIdentifier() << ");\n";
-                *out << indentation << "if(tuple" << i << " != NULL && " << "tuple" << i << "->isUndef()) undefTuple = true;\n";
+                *out << indentation << "if(tuple" << i << " != NULL && " << "tuple" << i << "->isUndef()) undefTuple" << i << " = true;\n";
             }
             else if(!lit->isNegative()){
                 std::string mapVariableName = lit->getIdentifier() + "_";
@@ -400,7 +395,6 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 *out << indentation++ << "else {\n";
                 *out << indentation << "tuple" << i << " = factory.getTupleFromInternalID(tuplesU->at(i-tuples->size()));\n";
                 *out << indentation << "undefTuple" << i << " = true;\n";
-                *out << indentation << "undefTuple = true;\n";
                 *out << --indentation << "}\n";
                 closingParenthesis++;
             }
@@ -417,12 +411,11 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 //ONLY FOR UNSTRATIFIED PROGRAMS
                 if(lit->isNegative() && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end()){
                     *out << indentation << "undefTuple" << i << " = true;\n";
-                    *out << indentation << "undefTuple = true;\n";
                 }
                 *out << --indentation <<"}\n";
                 *out << indentation++ << "else{\n";
                 *out << indentation << "if(tuple" << i << "->isTrue())    tuple" << i << "= NULL;\n";
-                *out << indentation << "else " << "undefTuple = true;\n";
+                *out << indentation << "else " << "undefTuple" << i << " = true;\n";
                 *out << --indentation << "}\n";
             }
 
@@ -573,7 +566,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                     *out << indentation << "insertUndef(insertResult);\n";
                 }
                 else{
-                    *out << indentation++ << "if(" << "undefTuple){\n";
+                    *out << indentation++ << "if(" << "undefTuple" << i << "){\n";
                     *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
                     *out << indentation << "insertUndef(insertResult);\n";
                     *out << --indentation << "}\n";
@@ -588,7 +581,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                     *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
                 }
                 else{
-                    *out << indentation++ << "if(!" << "undefTuple){\n";
+                    *out << indentation++ << "if(!" << "undefTuple" << i << "){\n";
                     *out << indentation << "factory.removeFromCollisionsList(t->getId());\n";
                     *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
                     *out << indentation << "insertTrue(insertResult);\n";
@@ -668,11 +661,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
         
     }
 
-    for (int i = closingParenthesis; i >0; --i) {
-        // if(closingParToTuples.count(i) > 0 ){
-        //     if(closingParToTuples[i] >= 1)
-        //         *out << indentation << "undefTuple" << closingParToTuples[i]-1 << " = undefTuple" << closingParToTuples[i] << ";\n";
-        // }
+    for (int i = closingParenthesis; i > 0; --i) {
         *out << --indentation << "}//close par\n";
         // if(i < negativeBodySize){
         //     *out << indentation++ << "else{\n";

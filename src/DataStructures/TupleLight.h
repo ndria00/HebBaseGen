@@ -116,25 +116,33 @@ public:
     }
     
     void setCollisionListIndex(std::variant< std::vector<int>, IndexedSet >* collisionList, unsigned index,int internalIndex=-1)const {
+        if(! std::holds_alternative<std::vector<std::pair< std::variant< std::vector<int>, IndexedSet >*,unsigned>>> (collisionsLists)){
+            collisionsLists = std::vector<std::pair< std::variant< std::vector<int>, IndexedSet >*,unsigned>>();
+        }
+        auto& collList = std::get<std::vector<std::pair< std::variant< std::vector<int>, IndexedSet >*,unsigned>>>(collisionsLists);
         if(internalIndex>=0){
-            if(collisionsLists[internalIndex].first!=collisionList){
+            if(collList[internalIndex].first!=collisionList){
                 std::cout<<"Error in swaping position in collision list"<<std::endl;
                 exit(180);
             }
-            collisionsLists[internalIndex].second=index;
+            collList[internalIndex].second=index;
             return;
         }
-        if(collisionsListsSize>=collisionsLists.size()){
-            collisionsLists.push_back(std::pair<std::variant< std::vector<int>, IndexedSet >*,unsigned>(collisionList,index));
+        if(collisionsListsSize>=collList.size()){
+            collList.push_back(std::pair<std::variant< std::vector<int>, IndexedSet >*,unsigned>(collisionList,index));
             collisionsListsSize++;
             return;
         }
-        collisionsLists[collisionsListsSize]=std::pair<std::variant< std::vector<int>, IndexedSet >*,unsigned>(collisionList,index);
+        collList[collisionsListsSize]=std::pair<std::variant< std::vector<int>, IndexedSet >*,unsigned>(collisionList,index);
         collisionsListsSize++;
     }
 
     // void removeFromCollisionsLists(const TupleFactory& factory) const ;
-    std::vector<std::pair<std::variant< std::vector<int>, IndexedSet >*,unsigned>>& getCollisionsLists()const{return collisionsLists;}
+    std::vector<std::pair<std::variant< std::vector<int>, IndexedSet >*,unsigned>>& getCollisionsLists()const{
+        if(std::holds_alternative<std::vector<std::pair< std::variant< std::vector<int>, IndexedSet >*,unsigned>>> (collisionsLists))
+            return std::get<std::vector<std::pair< std::variant< std::vector<int>, IndexedSet >*,unsigned>>> (collisionsLists);
+        return EMPTY_COLLISIONS_LIST;
+    }
 
     void clearCollisionsList(){
         collisionsListsSize=0;
@@ -254,6 +262,7 @@ public:
         return std::make_pair(this, true);
     }
 
+    static std::vector<std::pair< std::variant< std::vector<int>, IndexedSet >*,unsigned>> EMPTY_COLLISIONS_LIST;
 private:
     int predicateName;
     TruthStatus status;
@@ -261,7 +270,7 @@ private:
     int* content;
     int size_;
     mutable unsigned collisionsListsSize;
-    mutable std::vector<std::pair< std::variant< std::vector<int>, IndexedSet >*,unsigned>> collisionsLists;
+    mutable std::variant<std::monostate, std::vector<std::pair< std::variant< std::vector<int>, IndexedSet >*,unsigned>>> collisionsLists;
     // mutable std::unordered_map<std::vector<unsigned>*, unsigned> collisionsLists;
 };
 

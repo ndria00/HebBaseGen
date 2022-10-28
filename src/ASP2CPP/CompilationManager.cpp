@@ -127,7 +127,7 @@ void CompilationManager::generateProgram(Program* program){
                 std::string printElse = predIndex>0 ? "else " : "";
                 *out << indentation++ << printElse << "if(insertResult.first->getPredicateName() == _"<<predicateToMaps.first<<"){\n";
                     for(auto mapName : predicateToMaps.second){
-                        *out << indentation <<mapName << ".insert2Vec(*insertResult.first);\n";
+                        *out << indentation <<mapName << ".insert2VecNoColl(*insertResult.first);\n";
                     }
                 *out << --indentation << "}\n";
                 predIndex++;

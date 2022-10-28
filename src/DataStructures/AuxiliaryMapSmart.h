@@ -65,6 +65,15 @@ public:
     virtual ~AuxiliaryMapSmart() {
     }
 
+    inline void insert2VecNoColl(const TupleLight & value) {
+        std::bitset<S> keyCode;
+        std::vector<int> key = getKey(value);
+        valueToPos(key,keyCode);
+        auto & collisionList = tuples[keyCode];
+        std::vector<int>& collisionVector = std::get<std::vector<int>>(collisionList);
+        collisionVector.push_back(value.getId());
+    }
+
     inline const std::vector< int >& getValuesVec(const std::vector<int>& key) const {
         std::bitset<S> keyCode;
         valueToPos(key,keyCode);

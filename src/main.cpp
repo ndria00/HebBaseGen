@@ -45,17 +45,35 @@ int main(int argc, char *argv[]){
 
 	std::ifstream myFile;
 	std::string myInput = "";
+	bool datalogEncoding = true;
 	if(MODE == COMPILER){
-		if(argc < 2)
+		if(argc < 2){
 			myFile.open("../src/resources/input.txt");
+		}		
 		else{
-				if(!std::filesystem::exists(argv[2])){
-					std::cout << "Input file does not exist\n";
-					return 0;
-				}
-				else
-					myFile.open(argv[2]);
+			std::string option2 = argv[2];
+			std::string option3 = "";
+			if(argc > 3){
+				option3 = argv[3];
 			}
+			std::cout <<"Hey there " << option2 << " " << option3 <<"\n";
+			if(option2 == "asp"){
+				datalogEncoding = false;
+			}
+			std::string fileName = "";
+			if(option3 != ""){
+				fileName = option3;
+			}
+			else{
+				fileName = "../src/resources/input.txt";
+			}
+			if(!std::filesystem::exists(fileName)){
+				std::cout << "Input file does not exist\n";
+				return 0;
+			}
+			else
+				myFile.open(fileName);
+		}
 	}
 	else if(MODE == GENERATOR){
 		if(printMode == VERBOSE)
@@ -133,6 +151,7 @@ int main(int argc, char *argv[]){
 			return 0;
 		}
 		std::cout<<"Compiling program..."<<std::endl;
+		program->setLanguageDatalog(datalogEncoding);
 		//generating compiled program
 		CompilationManager compManager = CompilationManager(builder);
 		

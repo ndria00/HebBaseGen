@@ -34,6 +34,7 @@ class Program{
         bool containsAggregates()const;
         bool containsUnsupportedBuiltIn()const;
         bool isDatalog();
+        void setLanguageDatalog(bool);
 };
 
 #endif /*PROGRAM_H_*/

@@ -215,200 +215,200 @@ void Executor::init(){
 }
 inline void insertTrue(const std::pair<const TupleLight *, bool>& insertResult){
     if(insertResult.first->getPredicateName() == _ntedge){
-        pntedge_.insert2Vec(*insertResult.first);
+        pntedge_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _oppo){
-        poppo_.insert2Vec(*insertResult.first);
-        poppo_1_.insert2Vec(*insertResult.first);
+        poppo_.insert2VecNoColl(*insertResult.first);
+        poppo_1_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _first){
-        pfirst_.insert2Vec(*insertResult.first);
+        pfirst_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _nfirst){
-        pnfirst_.insert2Vec(*insertResult.first);
+        pnfirst_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _singleton){
-        psingleton_.insert2Vec(*insertResult.first);
+        psingleton_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _aedge){
-        paedge_.insert2Vec(*insertResult.first);
+        paedge_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _mllabel){
-        pmllabel_.insert2Vec(*insertResult.first);
-        pmllabel_0_1_.insert2Vec(*insertResult.first);
-        pmllabel_0_1_3_.insert2Vec(*insertResult.first);
+        pmllabel_.insert2VecNoColl(*insertResult.first);
+        pmllabel_0_1_.insert2VecNoColl(*insertResult.first);
+        pmllabel_0_1_3_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _btedge){
-        pbtedge_.insert2Vec(*insertResult.first);
+        pbtedge_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _nlast){
-        pnlast_.insert2Vec(*insertResult.first);
+        pnlast_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _trivial){
-        ptrivial_.insert2Vec(*insertResult.first);
+        ptrivial_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _input){
-        pinput_.insert2Vec(*insertResult.first);
+        pinput_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _vertex){
-        pvertex_.insert2Vec(*insertResult.first);
+        pvertex_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _nontriv){
-        pnontriv_.insert2Vec(*insertResult.first);
+        pnontriv_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _vlabel){
-        pvlabel_.insert2Vec(*insertResult.first);
-        pvlabel_0_.insert2Vec(*insertResult.first);
+        pvlabel_.insert2VecNoColl(*insertResult.first);
+        pvlabel_0_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _obs_vlabel){
-        pobs_vlabel_.insert2Vec(*insertResult.first);
-        pobs_vlabel_0_.insert2Vec(*insertResult.first);
+        pobs_vlabel_.insert2VecNoColl(*insertResult.first);
+        pobs_vlabel_0_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _minfl){
-        pminfl_.insert2Vec(*insertResult.first);
+        pminfl_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _llabel){
-        pllabel_.insert2Vec(*insertResult.first);
-        pllabel_0_2_.insert2Vec(*insertResult.first);
-        pllabel_1_2_.insert2Vec(*insertResult.first);
-        pllabel_2_.insert2Vec(*insertResult.first);
+        pllabel_.insert2VecNoColl(*insertResult.first);
+        pllabel_0_2_.insert2VecNoColl(*insertResult.first);
+        pllabel_1_2_.insert2VecNoColl(*insertResult.first);
+        pllabel_2_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _mvlabel){
-        pmvlabel_.insert2Vec(*insertResult.first);
+        pmvlabel_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _diff){
-        pdiff_.insert2Vec(*insertResult.first);
+        pdiff_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _edge){
-        pedge_.insert2Vec(*insertResult.first);
-        pedge_0_.insert2Vec(*insertResult.first);
-        pedge_1_.insert2Vec(*insertResult.first);
+        pedge_.insert2VecNoColl(*insertResult.first);
+        pedge_0_.insert2VecNoColl(*insertResult.first);
+        pedge_1_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _sign){
-        psign_.insert2Vec(*insertResult.first);
+        psign_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _active){
-        pactive_.insert2Vec(*insertResult.first);
+        pactive_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _coppo){
-        pcoppo_.insert2Vec(*insertResult.first);
-        pcoppo_1_.insert2Vec(*insertResult.first);
+        pcoppo_.insert2VecNoColl(*insertResult.first);
+        pcoppo_1_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _bot){
-        pbot_.insert2Vec(*insertResult.first);
+        pbot_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _reach){
-        preach_.insert2Vec(*insertResult.first);
-        preach_0_.insert2Vec(*insertResult.first);
+        preach_.insert2VecNoColl(*insertResult.first);
+        preach_0_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _inactive){
-        pinactive_.insert2Vec(*insertResult.first);
+        pinactive_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _obs_elabel){
-        pobs_elabel_.insert2Vec(*insertResult.first);
-        pobs_elabel_0_1_.insert2Vec(*insertResult.first);
+        pobs_elabel_.insert2VecNoColl(*insertResult.first);
+        pobs_elabel_0_1_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _last){
-        plast_.insert2Vec(*insertResult.first);
+        plast_.insert2VecNoColl(*insertResult.first);
     }
 }
 inline void insertUndef(const std::pair<const TupleLight *, bool>& insertResult){
     if(insertResult.first->getPredicateName() == _ntedge){
-        untedge_.insert2Vec(*insertResult.first);
+        untedge_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _oppo){
-        uoppo_.insert2Vec(*insertResult.first);
-        uoppo_1_.insert2Vec(*insertResult.first);
+        uoppo_.insert2VecNoColl(*insertResult.first);
+        uoppo_1_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _first){
-        ufirst_.insert2Vec(*insertResult.first);
+        ufirst_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _nfirst){
-        unfirst_.insert2Vec(*insertResult.first);
+        unfirst_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _singleton){
-        usingleton_.insert2Vec(*insertResult.first);
+        usingleton_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _aedge){
-        uaedge_.insert2Vec(*insertResult.first);
+        uaedge_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _mllabel){
-        umllabel_.insert2Vec(*insertResult.first);
-        umllabel_0_1_.insert2Vec(*insertResult.first);
-        umllabel_0_1_3_.insert2Vec(*insertResult.first);
+        umllabel_.insert2VecNoColl(*insertResult.first);
+        umllabel_0_1_.insert2VecNoColl(*insertResult.first);
+        umllabel_0_1_3_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _btedge){
-        ubtedge_.insert2Vec(*insertResult.first);
+        ubtedge_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _nlast){
-        unlast_.insert2Vec(*insertResult.first);
+        unlast_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _trivial){
-        utrivial_.insert2Vec(*insertResult.first);
+        utrivial_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _input){
-        uinput_.insert2Vec(*insertResult.first);
+        uinput_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _vertex){
-        uvertex_.insert2Vec(*insertResult.first);
+        uvertex_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _nontriv){
-        unontriv_.insert2Vec(*insertResult.first);
+        unontriv_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _vlabel){
-        uvlabel_.insert2Vec(*insertResult.first);
-        uvlabel_0_.insert2Vec(*insertResult.first);
+        uvlabel_.insert2VecNoColl(*insertResult.first);
+        uvlabel_0_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _obs_vlabel){
-        uobs_vlabel_.insert2Vec(*insertResult.first);
-        uobs_vlabel_0_.insert2Vec(*insertResult.first);
+        uobs_vlabel_.insert2VecNoColl(*insertResult.first);
+        uobs_vlabel_0_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _minfl){
-        uminfl_.insert2Vec(*insertResult.first);
+        uminfl_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _llabel){
-        ullabel_.insert2Vec(*insertResult.first);
-        ullabel_0_2_.insert2Vec(*insertResult.first);
-        ullabel_1_2_.insert2Vec(*insertResult.first);
-        ullabel_2_.insert2Vec(*insertResult.first);
+        ullabel_.insert2VecNoColl(*insertResult.first);
+        ullabel_0_2_.insert2VecNoColl(*insertResult.first);
+        ullabel_1_2_.insert2VecNoColl(*insertResult.first);
+        ullabel_2_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _mvlabel){
-        umvlabel_.insert2Vec(*insertResult.first);
+        umvlabel_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _diff){
-        udiff_.insert2Vec(*insertResult.first);
+        udiff_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _edge){
-        uedge_.insert2Vec(*insertResult.first);
-        uedge_0_.insert2Vec(*insertResult.first);
-        uedge_1_.insert2Vec(*insertResult.first);
+        uedge_.insert2VecNoColl(*insertResult.first);
+        uedge_0_.insert2VecNoColl(*insertResult.first);
+        uedge_1_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _sign){
-        usign_.insert2Vec(*insertResult.first);
+        usign_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _active){
-        uactive_.insert2Vec(*insertResult.first);
+        uactive_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _coppo){
-        ucoppo_.insert2Vec(*insertResult.first);
-        ucoppo_1_.insert2Vec(*insertResult.first);
+        ucoppo_.insert2VecNoColl(*insertResult.first);
+        ucoppo_1_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _bot){
-        ubot_.insert2Vec(*insertResult.first);
+        ubot_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _reach){
-        ureach_.insert2Vec(*insertResult.first);
-        ureach_0_.insert2Vec(*insertResult.first);
+        ureach_.insert2VecNoColl(*insertResult.first);
+        ureach_0_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _inactive){
-        uinactive_.insert2Vec(*insertResult.first);
+        uinactive_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _obs_elabel){
-        uobs_elabel_.insert2Vec(*insertResult.first);
-        uobs_elabel_0_1_.insert2Vec(*insertResult.first);
+        uobs_elabel_.insert2VecNoColl(*insertResult.first);
+        uobs_elabel_0_1_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _last){
-        ulast_.insert2Vec(*insertResult.first);
+        ulast_.insert2VecNoColl(*insertResult.first);
     }
 }
 void Executor::OnLiteralTrueUndef(Tuple* t, bool disjunctiveFact){

@@ -151,3 +151,7 @@ bool Program::isDatalog(){
 
     return datalogEncoding;
 }
+
+void Program::setLanguageDatalog(bool datalog){
+    this->datalogEncoding = datalog;
+}

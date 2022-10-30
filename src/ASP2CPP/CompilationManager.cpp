@@ -1318,7 +1318,7 @@ void CompilationManager::compileRecursiveComponent(Program* program, std::vector
                 compileChoiceRule(static_cast<ChoiceRule*>(rule), recursiveDep);
             }
             else if(rule->isClassicRule() && !rule->isAlreadyCompiled()){
-                compileRule(static_cast<Rule*>(rule), recursiveDep, true);
+                compileRule(static_cast<Rule*>(rule), recursiveDep, -1, true);
             }
             //if(rule == nullptr)
             //   std::cout<<"Something went wrong\n";

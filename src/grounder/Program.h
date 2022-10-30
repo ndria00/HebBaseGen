@@ -10,6 +10,7 @@ class Program{
         std::unordered_map<std::string, unsigned> predicateID;
         std::unordered_map<std::string, unsigned> iDBPredicates;
         std::unordered_map<unsigned, std::string> inversePredicateMap;
+        bool datalogEncoding;
     public:
         Program();
         const std::vector<Rule*>& getRules()const;
@@ -32,6 +33,7 @@ class Program{
         std::unordered_map<std::string, unsigned>& getIDBPredicates();
         bool containsAggregates()const;
         bool containsUnsupportedBuiltIn()const;
+        bool isDatalog();
 };
 
 #endif /*PROGRAM_H_*/

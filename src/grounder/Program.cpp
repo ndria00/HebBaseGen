@@ -3,6 +3,7 @@
 Program::Program(){
     rules = std::vector<Rule*>();
     choiceRules = std::vector<ChoiceRule*>();
+    datalogEncoding = false;
     //predicateID = std::unordered_set<>();
 }
 
@@ -138,4 +139,15 @@ bool Program::containsUnsupportedBuiltIn()const{
     //     }
     // }
     return false;
+}
+
+//TODO REMOVE when negative dependencies will be removed
+bool Program::isDatalog(){
+    // for(Rule* rule : rules){
+    //     if(rule->getHead()->getDisjunction().size() > 1)
+    //         return false;
+
+    // }
+
+    return datalogEncoding;
 }

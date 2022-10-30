@@ -127,7 +127,13 @@ void CompilationManager::generateProgram(Program* program){
                 std::string printElse = predIndex>0 ? "else " : "";
                 *out << indentation++ << printElse << "if(insertResult.first->getPredicateName() == _"<<predicateToMaps.first<<"){\n";
                     for(auto mapName : predicateToMaps.second){
-                        *out << indentation <<mapName << ".insert2VecNoColl(*insertResult.first);\n";
+                        if(program->isDatalog()){
+                            *out << indentation <<mapName << ".insert2VecNoColl(*insertResult.first);\n";
+                        }
+                        else{
+                            *out << indentation <<mapName << ".insert2Vec(*insertResult.first);\n";
+                        }
+                        
                     }
                 *out << --indentation << "}\n";
                 predIndex++;
@@ -321,7 +327,7 @@ void CompilationManager::declareAuxMap(const std::string& mapVariableName, std::
 
 
 
-void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recursiveDep, int starter = -1){
+void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recursiveDep, int starter = -1, bool compileAsExitRule = false){
     // if(currentRecursiveAtom != "")
     //     *out << indentation++ << "This a compilation from starter\n";
     rule->setAlreadyCompiled(true);
@@ -558,7 +564,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
                 *out << indentation << "t = factory.addNewInternalTuple(" << listOfTerms << ", _" << lit->getIdentifier() << ");\n";
                 *out << indentation++ << "if(t->isUnknown()){\n";
                 *out << indentation << "printTuple(t);\n";
-                if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end()){
+                if(!compileAsExitRule && recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end()){
                     *out << indentation << "generatedStack.push_back(t->getId());\n"; 
                 }    
                 if(insertAsUndef){
@@ -671,7 +677,7 @@ void CompilationManager::compileRule(Rule* rule, std::vector<std::string>& recur
     }
 }
 
-void CompilationManager::compileChoiceRule(ChoiceRule* rule, std::vector<std::string>& recursiveDep, int starter = -1){
+void CompilationManager::compileChoiceRule(ChoiceRule* rule, std::vector<std::string>& recursiveDep, int starter = -1, bool compileAsExitRule = false){
     rule->setAlreadyCompiled(true);
     const Body* body = rule->getBody();
     unsigned negativeBodySize = body->getNegativeSize();
@@ -842,7 +848,7 @@ void CompilationManager::compileChoiceRule(ChoiceRule* rule, std::vector<std::st
             // the literal that are considered in this recursive component
             for(auto& choiceElem : rule->getChoiceHead()){
                 //if(std::find(recursiveDep.begin(), recursiveDep.end(), choiceElem.first->getIdentifier()) != recursiveDep.end())
-                compileChoiceElement(choiceElem);
+                compileChoiceElement(choiceElem, compileAsExitRule);
             }
         }
         
@@ -858,7 +864,7 @@ void CompilationManager::compileChoiceRule(ChoiceRule* rule, std::vector<std::st
     }
 }
 
-void CompilationManager::compileChoiceElement(const std::pair<Literal*, Body*>& choiceElem){
+void CompilationManager::compileChoiceElement(const std::pair<Literal*, Body*>& choiceElem, bool compileAsExitRule = false){
     const Body* body = choiceElem.second;
     unsigned negativeBodySize = body->getNegativeSize();
     std::unordered_set<std::string> boundVariables;
@@ -1312,7 +1318,7 @@ void CompilationManager::compileRecursiveComponent(Program* program, std::vector
                 compileChoiceRule(static_cast<ChoiceRule*>(rule), recursiveDep);
             }
             else if(rule->isClassicRule() && !rule->isAlreadyCompiled()){
-                compileRule(static_cast<Rule*>(rule), recursiveDep);
+                compileRule(static_cast<Rule*>(rule), recursiveDep, true);
             }
             //if(rule == nullptr)
             //   std::cout<<"Something went wrong\n";

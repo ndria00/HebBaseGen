@@ -24,9 +24,9 @@ class CompilationManager{
         void declareAuxMap(const std::string&, std::vector<unsigned>, const std::string&);
         void declareDataStructures(RuleBase* );
         void declareDataStructures(ChoiceRule* );
-        void compileRule(Rule*, std::vector<std::string>&, int);
-        void compileChoiceRule(ChoiceRule*, std::vector<std::string>&, int);
-        void compileChoiceElement(const std::pair<Literal*, Body*>&);
+        void compileRule(Rule*, std::vector<std::string>&, int, bool);
+        void compileChoiceRule(ChoiceRule*, std::vector<std::string>&, int, bool);
+        void compileChoiceElement(const std::pair<Literal*, Body*>&, bool);
         void compileRecursiveComponent(Program*, std::vector<unsigned>&);
         void getRulesFromPredicateIds(Program*, std::vector<unsigned>&, std::vector<unsigned>&);
         void deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>&, Program*);

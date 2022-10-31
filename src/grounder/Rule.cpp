@@ -115,6 +115,7 @@ void Rule::sortLiteralsInBody(int starter =-1){
     if(starter != -1){
         addedLiterals.insert(starter);
         orderedConjunction.push_back(starter);
+        body->getConjunction().at(starter)->addVariablesToSet(boundVariables);
     }
     Literal* boundLiteral;
     Literal* positiveLiteral;

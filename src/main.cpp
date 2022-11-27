@@ -17,16 +17,10 @@
 #include "ASP2CPP/Executor.h"
 #include <filesystem>
 
-void print(){
-	std::cout << "Hello world !" << std::endl;
-}
-static std::once_flag printFlag;
-
 enum ExecutionMode{COMPILER = 0, GENERATOR = 1};
 enum PrintMode{SILENT = 0, VERBOSE = 1};
 
 int main(int argc, char *argv[]){
-	//std::cout <<argc <<std::endl;
 	ExecutionMode MODE = COMPILER;
 	PrintMode printMode= SILENT;
 	if(argc > 1){
@@ -56,7 +50,6 @@ int main(int argc, char *argv[]){
 			if(argc > 3){
 				option3 = argv[3];
 			}
-			std::cout <<"Hey there " << option2 << " " << option3 <<"\n";
 			if(option2 == "asp"){
 				datalogEncoding = false;
 			}
@@ -94,18 +87,6 @@ int main(int argc, char *argv[]){
 					myFile.open(argv[2]);
 		}
 	}
-
-	
-	// if(myFile.is_open()){
-	// 	std::string line;
-	// 	while(getline(myFile, line)){
-	// 		myInput += line;
-	// 		myInput += "\n";
-	// 	}
-	// }
-
-	//input.load(myInput);
-	//std::cout<<"Parsing "<<myInput<<std::endl;
 
 
 	if(MODE == COMPILER){
@@ -182,14 +163,6 @@ int main(int argc, char *argv[]){
 
 		//std::cout<<"Builder finished\n";
 		//std::cout<<"Generating base...\n";
-
-
-		// std::vector<std::pair<Literal*, bool>> facts = builder->getAllFacts();
-		// for(unsigned i = 0; i < facts.size(); ++i){
-		// 	executor->insertFactIntoFactory(*facts[i].first, facts[i].second);
-		// 	facts[i].first->print();
-		// 	std::cout<<". ";
-		// }
 		executor->executeProgram();
 		std::cout<<std::endl;
 		delete factParser;

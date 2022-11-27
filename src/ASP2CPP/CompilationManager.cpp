@@ -233,7 +233,7 @@ void CompilationManager::generateProgram(Program* program){
         for(auto pred: toDelete){
             remainingPredicatesToRemove.erase(pred);
         }
-        std::cout <<"Completed component\n";
+        //std::cout <<"Completed component\n";
     }
     //*out << indentation << "printGeneratedBase();\n";
     *out << indentation << "auto finish = std::chrono::high_resolution_clock::now();\n";

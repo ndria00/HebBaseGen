@@ -1,0 +1,11 @@
+assegna(Albero, Nome)| nonAssegna(Albero, Nome):- amico(Nome, Portata, Peso), albero(Albero).
+:- amico(N, _, _), #count{A: assegna(A, Nome)} != 1.
+:-albero(A), #count{N: assegna(A, N )}<2.
+raggiunge(A, N, H) :- assegna(A, N), ramo(A, H, PesoSopp), amico(N, Portata, P), PesoSopp >= P, Portata >= H.
+raggiunge(A, N, H1) :- assegna(A, N), amico(N, Portata, P), raggiunge(A, N, H), ramo(A, H1, PesoSopp), H1-H <= Portata, PesoSopp >=P.
+
+raggiungeLaCima(A, N) :- raggiunge(A, N, H), top(A, H). 
+:- albero(A), #count{N : raggiungeLaCima(A, N)} = 0.
+
+ :~ albero(A1), albero(A2), #count{N : assegna(A1, N)} = Z, #count{N: assegna(A2, N)} = Y, Z>Y. [Z-Y@1, A1, A2]
+:~ amico(N, _, _), assegna(A, N), ramo(A, H, P), not raggiunge(A, N, H). [1@2, N, H, P]

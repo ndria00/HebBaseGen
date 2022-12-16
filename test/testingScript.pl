@@ -1,22 +1,22 @@
 #!/usr/bin/perl
 
-$encodings_path = "encodings";
-$instances_path = "instances";
+$encodings_path = "test/encodings";
+$instances_path = "test/instances";
 $output_path = "output";
 $idlv_name = "idlv";
-$idlv_path = "";
-$generator_path = "../output";
+$idlv_path = "test/";
+$generator_path = "output";
 $generator_name = "main";
 $generation_option = "generate";
 $compilation_option = "compile";
-$source_folder_from_curr = "../";
+$source_folder_from_curr = ".";
 $language = "asp";
 
 @encodings= split(/\s+/, qx(ls $encodings_path) || die "Cannot read encodings");
 
 if(scalar(@ARGV) > 0){
     if(shift == "clean"){
-        qx(cd $source_folder_from_curr && make clean 2>&1);
+        qx(make clean 2>&1);
         print("Clean done\n");
     }
 }
@@ -28,9 +28,9 @@ for $problem_folder(@encodings){
 
     #prepare generator for specific problem
     #make
-    qx(cd $source_folder_from_curr && make -j8 >/dev/null 2>&1);
+    qx(make -j8 >/dev/null 2>&1);
     #compile
-    qx(cd $generator_path && ./$generator_name $compilation_option $language ../test/encodings/$problem_folder/$problem_folder.asp $drop_output 2>/dev/null) || die "cannot compile program";
+    qx(./$generator_path/$generator_name $compilation_option $language $encodings_path/$problem_folder/$problem_folder.asp 2>/dev/null) || die "cannot compile program";
     
     #for every instance of a specific problem --> test
     for $instance(@instances){
@@ -40,9 +40,10 @@ for $problem_folder(@encodings){
         %checked = {};
         $path = $instances_path."/".$problem_folder."/".$instance;
         chomp($path);
-        @results_idlv = qx(./$idlv_name $path) || die "Cannot find or execute idlv";
-        qx(cd $source_folder_from_curr && make -j8 >/dev/null 2>&1);
+        @results_idlv = qx(./$idlv_path$idlv_name $path) || die "Cannot find or execute idlv";
+        qx(make -j8 >/dev/null 2>&1);
         @results_gen = split(/\n/, qx(./$generator_path/$generator_name $generation_option $path 2>/dev/null) || die "Cannot find or execute generator");
+        print("calling ./$generator_path/$generator_name $generation_option $path\n");
         %hb_gen_atoms = ();
         for(@results_gen){
             $hb_gen_atoms{$_} += 1;

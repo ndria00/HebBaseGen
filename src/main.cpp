@@ -136,7 +136,7 @@ int main(int argc, char *argv[]){
 		//generating compiled program
 		CompilationManager compManager = CompilationManager(builder);
 		
-		std::ofstream outfile("../src/ASP2CPP/Executor.cpp");
+		std::ofstream outfile("src/ASP2CPP/Executor.cpp");
 		compManager.setOutStream(&outfile);
 		compManager.generateProgram(program);
 		outfile.close();

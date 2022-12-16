@@ -1,10 +1,7 @@
 echo "Executing make"
-make > /dev/null 2>&1
-cd output
-echo "Compiling logic program"
-./main compile $1
-cd ..
-make > /dev/null 2>&1
-cd output
+make -j 8 > /dev/null 2>&1
+echo "Compiling logic program for language $1"
+./output/main compile $1 $2
+make -j 8 > /dev/null 2>&1
 echo "Generating base"
-./main generate $2
+./output/main generate $3

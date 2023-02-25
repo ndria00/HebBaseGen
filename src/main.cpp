@@ -6,8 +6,7 @@
 #include "parser/ASPCore2Lexer.h"
 #include "parser/ASPCore2Parser.h"
 #include "listeners/ASPCore2ProgramListener.h"
-//#include "listeners/ASPCore2FactListener.h"
-#include "listeners/ASPFactParserRegex.h"
+#include "listeners/ASPCore2FactListenerNoTree.h"
 #include "grounder/Program.h"
 #include "DataStructures/AuxiliaryMapSmart.h"
 #include "DataStructures/TupleFactory.h"
@@ -147,25 +146,34 @@ int main(int argc, char *argv[]){
 	else if(MODE == GENERATOR){
 		Executor* executor = new Executor();
 		executor->init();
-		ASPFactParserRegex* factParser = new ASPFactParserRegex(executor);
+		ASPCore2FactListenerNoTree* listener = new ASPCore2FactListenerNoTree(executor);
 		if(myFile.is_open()){
 			std::string line;
 			while(getline(myFile, line)){
-				factParser->parseFact(line);
+				//TODO check if there is a way to avoid the creation of new objects
+				//note: can't find methods from antlr documentation for java
+				antlr4::ANTLRInputStream input(line);
+				ASPCore2Lexer lexer(&input);
+				antlr4::CommonTokenStream tokens(&lexer);
+				ASPCore2Parser parser(&tokens);
+				parser.setBuildParseTree(false);
+				parser.addParseListener(listener);
+				listener->setTokenStream(&tokens);
+
+				//lexer.setInputStream(&input1);
+				//tokens.setTokenSource(&lexer);
+				//parser.setTokenStream(&tokens);
+				//factParser->parseFact(line);
+				parser.program();
 			}
-		}
-		//ASPCore2FactListener listener(executor);
-		// antlr4::tree::ParseTree *tree = parser.program();
-		// antlr4::tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);
-		//parser.setBuildParseTree(false);
-		//parser.addParseListener(&listener);
+		}	
 
 
 		//std::cout<<"Builder finished\n";
 		//std::cout<<"Generating base...\n";
 		executor->executeProgram();
 		std::cout<<std::endl;
-		delete factParser;
+		delete listener;
 		delete executor;
 	}
 }

@@ -151,20 +151,23 @@ int main(int argc, char *argv[]){
 			std::string line;
 			while(getline(myFile, line)){
 				//TODO check if there is a way to avoid the creation of new objects
-				//note: can't find methods from antlr documentation for java
+				//note: stackoverflow says that recreating has essentially no impact
+				//on performances because most data is held in static fields
 				antlr4::ANTLRInputStream input(line);
 				ASPCore2Lexer lexer(&input);
 				antlr4::CommonTokenStream tokens(&lexer);
 				ASPCore2Parser parser(&tokens);
-				parser.setBuildParseTree(false);
-				parser.addParseListener(listener);
+				//parser.setBuildParseTree(false);
+				//parser.addParseListener(listener);
 				listener->setTokenStream(&tokens);
 
 				//lexer.setInputStream(&input1);
 				//tokens.setTokenSource(&lexer);
 				//parser.setTokenStream(&tokens);
 				//factParser->parseFact(line);
-				parser.program();
+				antlr4::tree::ParseTree *tree = parser.program();
+				antlr4::tree::ParseTreeWalker::DEFAULT.walk(listener, tree);
+				tree->children.clear(); 
 			}
 		}	
 

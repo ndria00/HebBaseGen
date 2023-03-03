@@ -5,8 +5,11 @@
 #include "antlr4-runtime.h"
 #include "parser/ASPCore2Lexer.h"
 #include "parser/ASPCore2Parser.h"
+#include "parserFacts/ASPCore2FactsLexer.h"
+#include "parserFacts/ASPCore2FactsParser.h"
 #include "listeners/ASPCore2ProgramListener.h"
-#include "listeners/ASPCore2FactListenerNoTree.h"
+//#include "listeners/ASPCore2FactListenerNoTree.h"
+#include "listeners/ASPCore2FactsListenerLight.h"
 #include "grounder/Program.h"
 #include "DataStructures/AuxiliaryMapSmart.h"
 #include "DataStructures/TupleFactory.h"
@@ -146,28 +149,33 @@ int main(int argc, char *argv[]){
 	else if(MODE == GENERATOR){
 		Executor* executor = new Executor();
 		executor->init();
-		ASPCore2FactListenerNoTree* listener = new ASPCore2FactListenerNoTree(executor);
+		ASPCore2FactsListenerLight* listener = new ASPCore2FactsListenerLight(executor);
 		if(myFile.is_open()){
 			std::string line;
+			std::string toParse = "";
+			unsigned lineCount = 0;
 			while(getline(myFile, line)){
 				//TODO check if there is a way to avoid the creation of new objects
 				//note: stackoverflow says that recreating has essentially no impact
 				//on performances because most data is held in static fields
+
 				antlr4::ANTLRInputStream input(line);
-				ASPCore2Lexer lexer(&input);
+				ASPCore2FactsLexer lexer(&input);
 				antlr4::CommonTokenStream tokens(&lexer);
-				ASPCore2Parser parser(&tokens);
-				//parser.setBuildParseTree(false);
-				//parser.addParseListener(listener);
-				listener->setTokenStream(&tokens);
+				ASPCore2FactsParser parser(&tokens);
+				parser.setBuildParseTree(false);
+				parser.addParseListener(listener);
+				//listener->setTokenStream(&tokens);
+				parser.instance();
 
 				//lexer.setInputStream(&input1);
 				//tokens.setTokenSource(&lexer);
 				//parser.setTokenStream(&tokens);
 				//factParser->parseFact(line);
-				antlr4::tree::ParseTree *tree = parser.program();
-				antlr4::tree::ParseTreeWalker::DEFAULT.walk(listener, tree);
-				tree->children.clear(); 
+				
+				//antlr4::tree::ParseTree *tree = parser.program();
+				//antlr4::tree::ParseTreeWalker::DEFAULT.walk(listener, tree);
+				//tree->children.clear(); 
 			}
 		}	
 

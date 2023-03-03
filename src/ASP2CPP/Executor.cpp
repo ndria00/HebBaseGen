@@ -12,11 +12,8 @@ std::vector<std::string> Executor::predicateIds;
 const int _arc = 1;
 const int _reach = 0;
 AuxMap<0> parc_({});
-AuxMap<0> uarc_({});
 AuxMap<0> preach_({});
-AuxMap<0> ureach_({});
 AuxMap<32> parc_0_({0});
-AuxMap<32> uarc_0_({0});
 void printTuple(const Tuple* t){
     std::cout << Executor::predicateIds[t->getPredicateName()] << "(";
     for(int i=0;i<t->size();i++){
@@ -35,30 +32,17 @@ void Executor::init(){
 }
 inline void insertTrue(const std::pair<const TupleLight *, bool>& insertResult){
     if(insertResult.first->getPredicateName() == _reach){
-        preach_.insert2Vec(*insertResult.first);
+        preach_.insert2VecNoColl(*insertResult.first);
     }
     else if(insertResult.first->getPredicateName() == _arc){
-        parc_.insert2Vec(*insertResult.first);
-        parc_0_.insert2Vec(*insertResult.first);
-    }
-}
-inline void insertUndef(const std::pair<const TupleLight *, bool>& insertResult){
-    if(insertResult.first->getPredicateName() == _reach){
-        ureach_.insert2Vec(*insertResult.first);
-    }
-    else if(insertResult.first->getPredicateName() == _arc){
-        uarc_.insert2Vec(*insertResult.first);
-        uarc_0_.insert2Vec(*insertResult.first);
+        parc_.insert2VecNoColl(*insertResult.first);
+        parc_0_.insert2VecNoColl(*insertResult.first);
     }
 }
 void Executor::OnLiteralTrueUndef(Tuple* t, bool disjunctiveFact){
     if(!disjunctiveFact){
         const auto& insertResult = t->setStatus(TruthStatus::True);
         insertTrue(insertResult);
-    }
-    else{
-        const auto& insertResult = t->setStatus(TruthStatus::Undef);
-        insertUndef(insertResult);
     }
     printTuple(t);
 }
@@ -68,19 +52,11 @@ void Executor::executeProgram(){
     {
         std::vector<int> generatedStack;
         {
-            bool undefTuple0= false;
             const std::vector<int>* tuples;
             tuples = &parc_.getValuesVec({});
-            const std::vector<int>* tuplesU = &uarc_.getValuesVec({});
-            for(unsigned i = 0; i < tuples->size() + tuplesU->size(); i++){
+            for(unsigned i = 0; i < tuples->size(); i++){
                 const Tuple * tuple0 = NULL;
-                if(i < tuples->size()){
-                    tuple0 = factory.getTupleFromInternalID(tuples->at(i));
-                }
-                else {
-                    tuple0 = factory.getTupleFromInternalID(tuplesU->at(i-tuples->size()));
-                    undefTuple0 = true;
-                }
+                tuple0 = factory.getTupleFromInternalID(tuples->at(i));
                 if(tuple0!= NULL){
                     int X = (*tuple0)[0];
                     int Y = (*tuple0)[1];
@@ -90,55 +66,26 @@ void Executor::executeProgram(){
                     t = factory.addNewInternalTuple({X,Y}, _reach);
                     if(t->isUnknown()){
                         printTuple(t);
-                        if(undefTuple0){
-                            insertResult = t->setStatus(TruthStatus::Undef);
-                            insertUndef(insertResult);
-                        }
-                        else{
-                            insertResult = t->setStatus(TruthStatus::True);
-                            insertTrue(insertResult);
-                        }
-                    }
-                    else if(t->isUndef()){
-                        if(!undefTuple0){
-                            factory.removeFromCollisionsList(t->getId());
-                            insertResult = t->setStatus(TruthStatus::True);
-                            insertTrue(insertResult);
-                        }
+                        insertResult = t->setStatus(TruthStatus::True);
+                        insertTrue(insertResult);
                     }
                 }//close par
             }//close par
         }//close par
         {
-            bool undefTuple0= false;
             const std::vector<int>* tuples;
             tuples = &preach_.getValuesVec({});
-            const std::vector<int>* tuplesU = &ureach_.getValuesVec({});
-            for(unsigned i = 0; i < tuples->size() + tuplesU->size(); i++){
+            for(unsigned i = 0; i < tuples->size(); i++){
                 const Tuple * tuple0 = NULL;
-                if(i < tuples->size()){
-                    tuple0 = factory.getTupleFromInternalID(tuples->at(i));
-                }
-                else {
-                    tuple0 = factory.getTupleFromInternalID(tuplesU->at(i-tuples->size()));
-                    undefTuple0 = true;
-                }
+                tuple0 = factory.getTupleFromInternalID(tuples->at(i));
                 if(tuple0!= NULL){
                     int X = (*tuple0)[0];
                     int Y = (*tuple0)[1];
-                    bool undefTuple1 = undefTuple0;
                     const std::vector<int>* tuples;
                     tuples = &parc_0_.getValuesVec({Y});
-                    const std::vector<int>* tuplesU = &uarc_0_.getValuesVec({Y});
-                    for(unsigned i = 0; i < tuples->size() + tuplesU->size(); i++){
+                    for(unsigned i = 0; i < tuples->size(); i++){
                         const Tuple * tuple1 = NULL;
-                        if(i < tuples->size()){
-                            tuple1 = factory.getTupleFromInternalID(tuples->at(i));
-                        }
-                        else {
-                            tuple1 = factory.getTupleFromInternalID(tuplesU->at(i-tuples->size()));
-                            undefTuple1 = true;
-                        }
+                        tuple1 = factory.getTupleFromInternalID(tuples->at(i));
                         if(tuple1!= NULL){
                             int Z = (*tuple1)[1];
                             //Rule is firing 
@@ -148,21 +95,8 @@ void Executor::executeProgram(){
                             if(t->isUnknown()){
                                 printTuple(t);
                                 generatedStack.push_back(t->getId());
-                                if(undefTuple1){
-                                    insertResult = t->setStatus(TruthStatus::Undef);
-                                    insertUndef(insertResult);
-                                }
-                                else{
-                                    insertResult = t->setStatus(TruthStatus::True);
-                                    insertTrue(insertResult);
-                                }
-                            }
-                            else if(t->isUndef()){
-                                if(!undefTuple1){
-                                    factory.removeFromCollisionsList(t->getId());
-                                    insertResult = t->setStatus(TruthStatus::True);
-                                    insertTrue(insertResult);
-                                }
+                                insertResult = t->setStatus(TruthStatus::True);
+                                insertTrue(insertResult);
                             }
                         }//close par
                     }//close par
@@ -173,28 +107,15 @@ void Executor::executeProgram(){
             const Tuple* recursiveTuple = factory.getTupleFromInternalID(generatedStack.back());
             generatedStack.pop_back();
             unsigned literalName = recursiveTuple->getPredicateName();
-            bool recursiveTupleUndef = recursiveTuple->isUndef();
             if(literalName == _reach){
                 {
-                    bool undefTuple0= false;
                     int Y = (*recursiveTuple)[1];
                     int X = (*recursiveTuple)[0];
-                    if(recursiveTupleUndef){
-                        undefTuple0 = true;
-                    }
-                    bool undefTuple1 = undefTuple0;
                     const std::vector<int>* tuples;
                     tuples = &parc_0_.getValuesVec({Y});
-                    const std::vector<int>* tuplesU = &uarc_0_.getValuesVec({Y});
-                    for(unsigned i = 0; i < tuples->size() + tuplesU->size(); i++){
+                    for(unsigned i = 0; i < tuples->size(); i++){
                         const Tuple * tuple1 = NULL;
-                        if(i < tuples->size()){
-                            tuple1 = factory.getTupleFromInternalID(tuples->at(i));
-                        }
-                        else {
-                            tuple1 = factory.getTupleFromInternalID(tuplesU->at(i-tuples->size()));
-                            undefTuple1 = true;
-                        }
+                        tuple1 = factory.getTupleFromInternalID(tuples->at(i));
                         if(tuple1!= NULL){
                             int Z = (*tuple1)[1];
                             //Rule is firing 
@@ -204,21 +125,8 @@ void Executor::executeProgram(){
                             if(t->isUnknown()){
                                 printTuple(t);
                                 generatedStack.push_back(t->getId());
-                                if(undefTuple1){
-                                    insertResult = t->setStatus(TruthStatus::Undef);
-                                    insertUndef(insertResult);
-                                }
-                                else{
-                                    insertResult = t->setStatus(TruthStatus::True);
-                                    insertTrue(insertResult);
-                                }
-                            }
-                            else if(t->isUndef()){
-                                if(!undefTuple1){
-                                    factory.removeFromCollisionsList(t->getId());
-                                    insertResult = t->setStatus(TruthStatus::True);
-                                    insertTrue(insertResult);
-                                }
+                                insertResult = t->setStatus(TruthStatus::True);
+                                insertTrue(insertResult);
                             }
                         }//close par
                     }//close par
@@ -233,14 +141,8 @@ void Executor::executeProgram(){
         for(unsigned i = 0; i< tuplesToRemove->size(); ++i){
             factory.destroyTuple(tuplesToRemove->at(i));
         }
-        tuplesToRemove = &uarc_.getValuesVec({});
-        for(unsigned i = 0; i< tuplesToRemove->size(); ++i){
-            factory.destroyTuple(tuplesToRemove->at(i));
-        }
         parc_.clear();
         parc_0_.clear();
-        uarc_.clear();
-        uarc_0_.clear();
     }
     //Removing tuples of predicates that have been completely defined
     {
@@ -249,12 +151,7 @@ void Executor::executeProgram(){
         for(unsigned i = 0; i< tuplesToRemove->size(); ++i){
             factory.destroyTuple(tuplesToRemove->at(i));
         }
-        tuplesToRemove = &ureach_.getValuesVec({});
-        for(unsigned i = 0; i< tuplesToRemove->size(); ++i){
-            factory.destroyTuple(tuplesToRemove->at(i));
-        }
         preach_.clear();
-        ureach_.clear();
     }
     auto finish = std::chrono::high_resolution_clock::now();
     //std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count()/1000000<<"ms";

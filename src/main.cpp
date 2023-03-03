@@ -15,7 +15,8 @@
 #include "DataStructures/TupleFactory.h"
 #include "DataStructures/TupleLight.h"
 #include "DataStructures/ConstantsManager.h"
-#include "ASP2CPP/CompilationManager.h"
+#include "ASP2CPP/CompilationManagerASP.h"
+#include "ASP2CPP/CompilationManagerDatalog.h"
 #include "ASP2CPP/Executor.h"
 #include <filesystem>
 
@@ -135,14 +136,23 @@ int main(int argc, char *argv[]){
 		}
 		std::cout<<"Compiling program..."<<std::endl;
 		program->setLanguageDatalog(datalogEncoding);
-		//generating compiled program
-		CompilationManager compManager = CompilationManager(builder);
+		
+		CompilationManagerBase* compManager;
+		if(program->isDatalog()){
+			//generating compiled program
+			compManager = new CompilationManagerDatalog(builder);
+		}
+		else{
+			compManager = new CompilationManagerASP(builder);
+		}
+
 		
 		std::ofstream outfile("src/ASP2CPP/Executor.cpp");
-		compManager.setOutStream(&outfile);
-		compManager.generateProgram(program);
+		compManager->setOutStream(&outfile);
+		compManager->generateProgram(program);
 		outfile.close();
 		builder->clearMemory();
+		delete compManager;
 		delete program;
 		delete builder;
 	}

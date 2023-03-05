@@ -57,10 +57,11 @@ class TupleFactory{
 
     public:
         void destroyTuple(int id){
-            if(internalIDToTuple[id] != nullptr){
-                delete internalIDToTuple[id];
-                internalIDToTuple[id] = nullptr;
-            }
+            //std::cout << "Deleting " << id << std::endl;
+            //if(internalIDToTuple[id] != nullptr){
+            delete internalIDToTuple[id];
+            internalIDToTuple[id] = nullptr;
+            //}
         }
         static TupleLight bufferTuple;
         void setBufferedTupleStorage(int* vectorData,int size,int predName){

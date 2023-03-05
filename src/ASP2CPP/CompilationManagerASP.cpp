@@ -176,6 +176,7 @@ void CompilationManagerASP::generateProgram(Program* program){
 
 
     *out << indentation++ << "void Executor::executeProgram(){\n";
+    *out << indentation << "const Tuple dummyTuple = Tuple();\n";
     //addFacts();
     *out << indentation << "auto start = std::chrono::high_resolution_clock::now();\n";
 
@@ -399,14 +400,14 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
                 closingParenthesis++;
             }
             else{//negative
-                *out << indentation << "const Tuple negativeTuple = Tuple({";
-                printLiteralTuple(lit, boundVariables);
-                *out << "}, _" << lit->getIdentifier() << ", true);\n";
+                // *out << indentation << "const Tuple negativeTuple = Tuple({";
+                // printLiteralTuple(lit, boundVariables);
+                // *out << "}, _" << lit->getIdentifier() << ", true);\n";
                 *out << indentation << "const Tuple* tuple" << i << " = factory.find(" << "{";
                 printLiteralTuple(lit, boundVariables);
                 *out << "}, _" << lit->getIdentifier()<<");\n";
                 *out << indentation++ << "if(tuple" << i << " == NULL){\n";
-                *out << indentation << "tuple" << i <<" = &negativeTuple;\n";
+                *out << indentation << "tuple" << i <<" = &dummyTuple;\n";
                 //ONLY IF WE HAVE NEGATIVE RECURSIVE DEPENDECY ON THIS ATOM
                 //ONLY FOR UNSTRATIFIED PROGRAMS
                 if(lit->isNegative() && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end()){
@@ -737,14 +738,14 @@ void CompilationManagerASP::compileChoiceRule(ChoiceRule* rule, std::vector<std:
             }
             else{//negative
             //CHECK
-                *out << indentation << "const Tuple negativeTuple = Tuple({";
-                printLiteralTuple(lit, boundVariables);
-                *out << "}, _" << lit->getIdentifier() << ", true);\n";
+                // *out << indentation << "const Tuple negativeTuple = Tuple({";
+                // printLiteralTuple(lit, boundVariables);
+                // *out << "}, _" << lit->getIdentifier() << ", true);\n";
                 *out << indentation << "const Tuple* tuple" << i << " = factory.find(" << "{";
                 printLiteralTuple(lit, boundVariables);
                 *out << "}, _" << lit->getIdentifier()<<");\n";
                 *out << indentation++ << "if(tuple" << i << " == NULL){\n";
-                *out << indentation << "tuple" << i <<" = &negativeTuple;\n";
+                *out << indentation << "tuple" << i <<" = &dummyTuple;\n";
                 *out << --indentation <<"}\n";
                 *out << indentation++ << "else{\n";
                 *out << indentation << "if(tuple" << i << "->isTrue())    tuple" << i << "= NULL;\n";
@@ -905,14 +906,14 @@ void CompilationManagerASP::compileChoiceElement(const std::pair<Literal*, Body*
             closingParenthesis++;
         }
         else{//negative
-                *out << indentation << "const Tuple negativeTuple = Tuple({";
-                printLiteralTuple(lit, boundVariables);
-                *out << "}, _" << lit->getIdentifier() << ", true);\n";
+                // *out << indentation << "const Tuple negativeTuple = Tuple({";
+                // printLiteralTuple(lit, boundVariables);
+                // *out << "}, _" << lit->getIdentifier() << ", true);\n";
                 *out << indentation << "const Tuple* tuple" << i << " = factory.find(" << "{";
                 printLiteralTuple(lit, boundVariables);
                 *out << "}, _" << lit->getIdentifier()<<");\n";
                 *out << indentation++ << "if(tuple" << i << " == NULL){\n";
-                *out << indentation << "tuple" << i <<" = &negativeTuple;\n";
+                *out << indentation << "tuple" << i <<" = &dummyTuple;\n";
                 *out << --indentation <<"}\n";
                 *out << indentation++ << "else{\n";
                 *out << indentation << "if(tuple" << i << "->isTrue())    tuple" << i << "= NULL;\n";

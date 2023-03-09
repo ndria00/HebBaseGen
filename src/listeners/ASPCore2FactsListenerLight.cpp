@@ -9,7 +9,14 @@ ASPCore2FactsListenerLight::ASPCore2FactsListenerLight(Executor* executor){
 
 void ASPCore2FactsListenerLight::exitFact(ASPCore2FactsParser::FactContext * /*ctx*/){
     //add last atom as true
-    executor->OnLiteralTrueUndef(executor->factory.addNewInternalTuple(terms, atomName), atomInsideRule > 1);
+    if(atomName != NO_NAME){
+        if(atomName != NOT_ENCODING_ATOM){
+            executor->OnLiteralTrueUndef(executor->factory.addNewInternalTuple(terms, atomName), atomInsideRule > 1);
+        }
+        else{
+            printNonEncodingAtom();
+        }
+    }
     atomName = NO_NAME;
     terms.clear();
     atomInsideRule = 0;
@@ -21,11 +28,16 @@ void ASPCore2FactsListenerLight::enterAtom(ASPCore2FactsParser::AtomContext * /*
     atomInsideRule++;
     //add the previous atom as undef atom because the rule is disjunctive
     if(atomName != NO_NAME){
-        executor->OnLiteralTrueUndef(executor->factory.addNewInternalTuple(terms, atomName), atomInsideRule > 1);
-        //clear data of the last atom
-        atomName = NO_NAME;
-        terms.clear();
+        if(atomName != NOT_ENCODING_ATOM){    
+            executor->OnLiteralTrueUndef(executor->factory.addNewInternalTuple(terms, atomName), atomInsideRule > 1);
+        }
+        else{
+            printNonEncodingAtom();
+        }
     }
+    //clear data of the last atom
+    atomName = NO_NAME;
+    terms.clear();
 }
 
 void ASPCore2FactsListenerLight::enterTerm(ASPCore2FactsParser::TermContext * term){
@@ -43,5 +55,16 @@ void ASPCore2FactsListenerLight::enterIdentifier(ASPCore2FactsParser::Identifier
             atomName = NOT_ENCODING_ATOM;
             nonEncodingAtomName = identifier->getStart()->getText();
         }
+    }
+}
+
+void ASPCore2FactsListenerLight::printNonEncodingAtom(){
+    std::cout << nonEncodingAtomName;
+    if(terms.size() > 0){
+        std::cout<<"(";
+        for(int i = 0; i < terms.size()-1; ++i){
+            std::cout << ConstantsManager::getInstance().unmapConstant(terms[i])<<",";
+        }
+        std::cout << ConstantsManager::getInstance().unmapConstant(terms.at(terms.size()-1)) << ")\n";
     }
 }

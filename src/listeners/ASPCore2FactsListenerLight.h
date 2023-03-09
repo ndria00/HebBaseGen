@@ -31,13 +31,15 @@ class ASPCore2FactsListenerLight : public ASPCore2FactsBaseListener{
     void enterIdentifier(ASPCore2FactsParser::IdentifierContext * /*ctx*/) override;
 
     private:
-        Executor* executor;
-        bool disjunctiveFact;
-        int atomName;
-        int atomInsideRule;
-        std::vector<int> terms;
-        std::unordered_map<int, std::pair<int, int>> intervalIndexAndRanges;
-        std::string nonEncodingAtomName;
+      Executor* executor;
+      bool disjunctiveFact;
+      int atomName;
+      int atomInsideRule;
+      std::vector<int> terms;
+      std::unordered_map<int, std::pair<int, int>> intervalIndexAndRanges;
+      std::string nonEncodingAtomName;
+
+      void printNonEncodingAtom();
 };
 
 #endif /*ASPCORE2FACTSLISTENERLIGHT_H*/

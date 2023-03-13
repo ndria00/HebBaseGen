@@ -1,9 +1,9 @@
 #include "CompilationManagerBase.h"
+#include "PreCompilerASP.h"
 #include "../DataStructures/TupleFactory.h"
 #include <unordered_map>
 
-CompilationManagerBase::CompilationManagerBase(Builder* builder){
-    this->builder = builder;
+CompilationManagerBase::CompilationManagerBase(){
     indentation = Indentation(0);
     declaredMaps = std::set<std::string>();
 }
@@ -51,7 +51,6 @@ void CompilationManagerBase::printLiteralTuple(const Literal* lit, const std::un
 void CompilationManagerBase::findExitRules(std::vector<unsigned>& recursiveComponent, Program* program, std::vector<unsigned>& exitRules, std::vector<std::string>& recursiveDep){
     std::vector<RuleBase*> componentRules;
     program->getRulesByID(recursiveComponent, componentRules);
-
     bool isExitRule;
     for(unsigned i = 0; i < componentRules.size(); ++i){
         isExitRule = true;
@@ -108,4 +107,8 @@ void CompilationManagerBase::getRulesFromPredicateIds(Program * program, std::ve
                 rules.push_back(r->getID());
         }
     }
+}
+
+void CompilationManagerBase::setPreCompiler(PreCompilerASP* preCompiler){
+    this->preCompiler = preCompiler;
 }

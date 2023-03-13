@@ -1,9 +1,8 @@
 #include "CompilationManagerDatalog.h"
 #include "../DataStructures/TupleFactory.h"
+#include "PreCompilerASP.h"
 #include <unordered_map>
 
-CompilationManagerDatalog::CompilationManagerDatalog(Builder* builder) : CompilationManagerBase(builder){
-}
 
 void CompilationManagerDatalog::generateProgram(Program* program){
     *out << indentation << "#include <chrono>\n";
@@ -56,9 +55,9 @@ void CompilationManagerDatalog::generateProgram(Program* program){
         }
         std::vector<unsigned> rulesForComponent;
         getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
-        std::vector<unsigned> exitRules;
+        //std::vector<unsigned> exitRules;
         std::vector<std::string> recursiveDep;
-        findExitRules(rulesForComponent, program, exitRules, recursiveDep);
+        //findExitRules(rulesForComponent, program, exitRules, recursiveDep);
         for(unsigned r = 0; r < rulesForComponent.size(); ++r){
             //for each ordering possible given from recursiveDep declare maps
             for(unsigned l = 0;  l < recursiveDep.size(); ++l){
@@ -134,10 +133,10 @@ void CompilationManagerDatalog::generateProgram(Program* program){
     }
 
     *out << indentation++ << "void Executor::OnLiteralTrueUndef(Tuple* t, bool disjunctiveFact){\n";
-    *out << indentation++ << "if(!disjunctiveFact){\n";
+    //*out << indentation++ << "if(!disjunctiveFact){\n";
     *out << indentation << "const auto& insertResult = t->setStatus(TruthStatus::True);\n";
     *out << indentation << "insertTrue(insertResult);\n";
-    *out << --indentation << "}\n";
+    //*out << --indentation << "}\n";
     //TRHOW EXCEPTION BECAUSE NO UNDEF TUPLES ARE ADMITTED
     *out << indentation << "printTuple(t);\n";
     *out << --indentation << "}\n";
@@ -191,6 +190,8 @@ void CompilationManagerDatalog::generateProgram(Program* program){
                 toDelete.insert(pred);
             }
         }
+
+        
         deleteCompletelyDefinedPredicates(toDelete, program);
         for(auto pred: toDelete){
             remainingPredicatesToRemove.erase(pred);

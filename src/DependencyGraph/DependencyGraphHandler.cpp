@@ -45,7 +45,7 @@ void DependencyGraphHandler::createGraph(Program* program, std::unordered_map<un
 			if(lit->isIDBPredicate() /*&& !lit->isNegative()*/){
 				for(Literal* litHead : r->getHead()->getDisjunction()){
 					//if(predicateID[lit->getIdentifier()] != predicateID[litHead->getIdentifier()]){
-						depGraph.addEdge(predicateNodeMapping[lit->getID()], predicateNodeMapping[litHead->getID()]);
+						depGraph.addEdge(predicateNodeMapping[lit->getID()], predicateNodeMapping[litHead->getID()], !lit->isNegative());
 						//std::cout<<"added edge from " << lit->getID();
 						//lit->print();
 						//std::cout<<" to " << litHead->getID();
@@ -62,7 +62,7 @@ void DependencyGraphHandler::createGraph(Program* program, std::unordered_map<un
 			if(lit->isIDBPredicate() /*&& !lit->isNegative()*/){
 				for(auto& choiceElem: r->getChoiceHead()){
 					//if(predicateID[lit->getIdentifier()] != predicateID[litHead->getIdentifier()]){
-						depGraph.addEdge(predicateNodeMapping[lit->getID()], predicateNodeMapping[choiceElem.first->getID()]);
+						depGraph.addEdge(predicateNodeMapping[lit->getID()], predicateNodeMapping[choiceElem.first->getID()], !lit->isNegative());
 						//std::cout<<"added edge from " << lit->getID();
 						//lit->print();
 						//std::cout<<" to " << litHead->getID();
@@ -80,7 +80,7 @@ void DependencyGraphHandler::createGraph(Program* program, std::unordered_map<un
 			for(Literal* lit : choiceElem.second->getConjunction()){
 				if(lit->isIDBPredicate() /*&& !lit->isNegative()*/){
 					//if(predicateID[lit->getIdentifier()] != predicateID[litHead->getIdentifier()]){
-						depGraph.addEdge(predicateNodeMapping[lit->getID()], predicateNodeMapping[choiceElem.first->getID()]);
+						depGraph.addEdge(predicateNodeMapping[lit->getID()], predicateNodeMapping[choiceElem.first->getID()], !lit->isNegative());
 						//std::cout<<"added edge from " << lit->getID();
 						//lit->print();
 						//std::cout<<" to " << litHead->getID();
@@ -99,8 +99,12 @@ std::vector<std::vector<unsigned>> DependencyGraphHandler::getProgramLayers(){
     return depGraph.SCC();
 }
 
+const std::vector<std::list<std::pair<unsigned, bool>>> DependencyGraphHandler::getLabels(){
+	return depGraph.getLabels();
+}
+
 void DependencyGraphHandler::printProgramLayers(std::unordered_map<unsigned, unsigned>& predicateNodeMapping){
-    std::vector<std::vector<unsigned>> layers = depGraph.SCC();
+	std::vector<std::vector<unsigned>> layers = depGraph.SCC();
     for(unsigned i = 0; i < layers.size(); ++i){
 		std::cout<<"Layer number "<<i<<" of size "<<layers[i].size()<< ": ";
 		for(unsigned j = 0; j < layers[i].size(); ++j){
@@ -108,4 +112,12 @@ void DependencyGraphHandler::printProgramLayers(std::unordered_map<unsigned, uns
 		} 
 		std::cout<<std::endl;
 	}
+}
+
+unsigned DependencyGraphHandler::getNumberOfSCC()const{
+	return depGraph.getNumberOfScc();
+}
+
+bool DependencyGraphHandler::graphHasNegativeEdgeBetweenPredicates(unsigned n, unsigned m){
+	return depGraph.hasNegativeEdgeBetweenPredicates(n, m);
 }

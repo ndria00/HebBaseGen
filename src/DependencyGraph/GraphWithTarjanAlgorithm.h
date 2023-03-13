@@ -40,33 +40,38 @@
 #include <string>
 #define NIL -1
  
-struct Vertex
-{
-    int id;
-    std::string name;
-    std::vector <unsigned int> rules;
-    Vertex():id(-1),name("Invalid vertex"){};
-    Vertex(int _id, std::string name_):id(_id),name(name_){};
-    void addRule (int ruleID){
-        rules.push_back(ruleID);
-    }
-};
+// struct Vertex
+// {
+//     int id;
+//     std::string name;
+//     std::vector <unsigned int> rules;
+//     Vertex():id(-1),name("Invalid vertex"){};
+//     Vertex(int _id, std::string name_):id(_id),name(name_){};
+//     void addRule (int ruleID){
+//         rules.push_back(ruleID);
+//     }
+// };
 
 // A class that represents an directed graph
 class GraphWithTarjanAlgorithm
 {
     std::vector< std::list<unsigned>  > adj;  
- 
+    std::vector<std::list<std::pair<unsigned, bool>>> labels;
+    unsigned numberOfSCC;
+
     // A Recursive DFS based function used by SCC()
     void SCCUtil(unsigned u, unsigned disc[], unsigned low[],
                  std::stack<unsigned>& st, bool stackMember[], std::vector< std::vector<unsigned> >& scc);
 public:
     GraphWithTarjanAlgorithm(){}
-    void addEdge(unsigned int v, unsigned int w);   // function to add an edge to graph
+    void addEdge(unsigned int v, unsigned int w, bool label);   // function to add an edge to graph
     void addNode(unsigned int v);   // function to add a node to graph
     const std::vector< std::vector <unsigned> > SCC() ;    // prints strongly connected components
     unsigned getNodeSize(){return adj.size();}
     std::list<unsigned> getAdjForNode(unsigned node){return adj[node];}
+    const std::vector<std::list<std::pair<unsigned, bool>>> getLabels();
+    unsigned getNumberOfScc()const;
+    bool hasNegativeEdgeBetweenPredicates(unsigned, unsigned);
 };
 
 

@@ -20,6 +20,9 @@ class DependencyGraphHandler{
         DependencyGraphHandler(const DependencyGraphHandler&) = delete;
         bool operator=(const DependencyGraphHandler&) = delete;
         void printProgramLayers(std::unordered_map<unsigned, unsigned>&);
+        const std::vector<std::list<std::pair<unsigned, bool>>> getLabels();
+        unsigned getNumberOfSCC()const;
+        bool graphHasNegativeEdgeBetweenPredicates(unsigned, unsigned);
     protected:    
         DependencyGraphHandler();
 };

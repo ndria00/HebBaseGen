@@ -1,9 +1,8 @@
 #include "CompilationManagerASP.h"
 #include "../DataStructures/TupleFactory.h"
+#include "PreCompilerASP.h"
 #include <unordered_map>
 
-CompilationManagerASP::CompilationManagerASP(Builder* builder) : CompilationManagerBase(builder){
-}
 
 void CompilationManagerASP::generateProgram(Program* program){
     *out << indentation << "#include <chrono>\n";
@@ -56,9 +55,9 @@ void CompilationManagerASP::generateProgram(Program* program){
         }
         std::vector<unsigned> rulesForComponent;
         getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
-        std::vector<unsigned> exitRules;
+        //std::vector<unsigned> exitRules;
         std::vector<std::string> recursiveDep;
-        findExitRules(rulesForComponent, program, exitRules, recursiveDep);
+        //findExitRules(rulesForComponent, program, exitRules, recursiveDep);
         for(unsigned r = 0; r < rulesForComponent.size(); ++r){
             //for each ordering possible given from recursiveDep declare maps
             for(unsigned l = 0;  l < recursiveDep.size(); ++l){
@@ -82,8 +81,6 @@ void CompilationManagerASP::generateProgram(Program* program){
         declareDataStructures(rule);
     }
 
-    //init function
-    //*out << indentation << "void printGeneratedFromRule(vector<std::pair<std::string, vector<std::pair<std::string, int>>>>& );\n\n";
     
     //print function
     *out << indentation++ << "void printTuple(const Tuple* t){\n";
@@ -124,12 +121,7 @@ void CompilationManagerASP::generateProgram(Program* program){
                 std::string printElse = predIndex>0 ? "else " : "";
                 *out << indentation++ << printElse << "if(insertResult.first->getPredicateName() == _"<<predicateToMaps.first<<"){\n";
                     for(auto mapName : predicateToMaps.second){
-                        if(program->isDatalog()){
-                            *out << indentation <<mapName << ".insert2VecNoColl(*insertResult.first);\n";
-                        }
-                        else{
-                            *out << indentation <<mapName << ".insert2Vec(*insertResult.first);\n";
-                        }
+                        *out << indentation <<mapName << ".insert2Vec(*insertResult.first);\n";
                         
                     }
                 *out << --indentation << "}\n";

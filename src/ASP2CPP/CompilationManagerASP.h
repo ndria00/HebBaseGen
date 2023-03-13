@@ -5,7 +5,6 @@
 class CompilationManagerASP : public CompilationManagerBase{
 
     public:
-        CompilationManagerASP(Builder*);
         void generateProgram(Program*) override;
         void declareAuxMap(const std::string&, std::vector<unsigned>, const std::string&) override;
         void declareDataStructures(RuleBase* ) override;

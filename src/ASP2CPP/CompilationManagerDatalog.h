@@ -5,7 +5,6 @@
 class CompilationManagerDatalog : public CompilationManagerBase{
 
     public:
-        CompilationManagerDatalog(Builder*);
         void generateProgram(Program*) override;
         void declareAuxMap(const std::string&, std::vector<unsigned>, const std::string&) override;
         void declareDataStructures(RuleBase* ) override;

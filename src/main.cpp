@@ -15,8 +15,8 @@
 #include "DataStructures/TupleFactory.h"
 #include "DataStructures/TupleLight.h"
 #include "DataStructures/ConstantsManager.h"
-#include "ASP2CPP/CompilationManagerASP.h"
-#include "ASP2CPP/CompilationManagerDatalog.h"
+#include "ASP2CPP/CompilationManagerBase.h"
+#include "ASP2CPP/PreCompilerASP.h"
 #include "ASP2CPP/Executor.h"
 #include <filesystem>
 
@@ -135,24 +135,26 @@ int main(int argc, char *argv[]){
 			return 0;
 		}
 		std::cout<<"Compiling program..."<<std::endl;
-		program->setLanguageDatalog(datalogEncoding);
+		//program->setLanguageDatalog(datalogEncoding);
 		
-		CompilationManagerBase* compManager;
-		if(program->isDatalog()){
-			//generating compiled program
-			compManager = new CompilationManagerDatalog(builder);
-		}
-		else{
-			compManager = new CompilationManagerASP(builder);
-		}
-
+		
+		PreCompilerASP* preCompiler = new PreCompilerASP(program);
+		CompilationManagerBase* compManager = preCompiler->getCompilationManager();
+		// if(program->isDatalog()){
+		// 	//generating compiled program
+		// 	compManager = new CompilationManagerDatalog(builder);
+		// }
+		// else{
+		// 	compManager = new CompilationManagerASP(builder);
+		// }
+		compManager->setPreCompiler(preCompiler);
 		
 		std::ofstream outfile("src/ASP2CPP/Executor.cpp");
 		compManager->setOutStream(&outfile);
 		compManager->generateProgram(program);
 		outfile.close();
 		builder->clearMemory();
-		delete compManager;
+		delete preCompiler;
 		delete program;
 		delete builder;
 	}

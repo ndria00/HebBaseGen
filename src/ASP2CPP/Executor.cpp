@@ -107,6 +107,27 @@ void Executor::executeProgram(){
             unsigned literalName = recursiveTuple->getPredicateName();
             if(literalName == _reach){
                 {
+                    int Y = (*recursiveTuple)[1];
+                    int X = (*recursiveTuple)[0];
+                    const std::vector<int>* tuples;
+                    tuples = &parc_0_.getValuesVec({Y});
+                    for(unsigned i = 0; i < tuples->size(); i++){
+                        const Tuple * tuple1 = NULL;
+                        tuple1 = factory.getTupleFromInternalID(tuples->at(i));
+                        if(tuple1!= NULL){
+                            int Z = (*tuple1)[1];
+                            //Rule is firing 
+                            Tuple* t;
+                            std::pair<const TupleLight *, bool> insertResult;
+                            t = factory.addNewInternalTuple({X,Z}, _reach);
+                            if(t->isUnknown()){
+                                printTuple(t);
+                                generatedStack.push_back(t->getId());
+                                insertResult = t->setStatus(TruthStatus::True);
+                                insertTrue(insertResult);
+                            }
+                        }//close par
+                    }//close par
                 }//close par
             }
         }

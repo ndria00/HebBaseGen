@@ -55,9 +55,9 @@ void CompilationManagerDatalog::generateProgram(Program* program){
         }
         std::vector<unsigned> rulesForComponent;
         getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
-        //std::vector<unsigned> exitRules;
+        std::vector<unsigned> exitRules;
         std::vector<std::string> recursiveDep;
-        //findExitRules(rulesForComponent, program, exitRules, recursiveDep);
+        findExitRules(rulesForComponent, program, exitRules, recursiveDep);
         for(unsigned r = 0; r < rulesForComponent.size(); ++r){
             //for each ordering possible given from recursiveDep declare maps
             for(unsigned l = 0;  l < recursiveDep.size(); ++l){

@@ -35,41 +35,12 @@ void CompilationManagerDatalog::generateProgram(Program* program){
     }
     
 
-    //DEP GRAPH
-    //Dependency graph computation
-    std::unordered_map<unsigned, unsigned> predicateNodeMapping;
-	DependencyGraphHandler::getInstance().createGraph(program, predicateNodeMapping);
+    std::unordered_map<unsigned, unsigned> predicateNodeMapping = preCompiler->getPredicateNodeMapping();
     //statifications
     //Each layer contains the ids of its IDB predicates
     //In order to find the rules that are part of each layer a complete search of rules needs to be done  
 	std::vector<std::vector<unsigned>> layers = DependencyGraphHandler::getInstance().getProgramLayers();
-	DependencyGraphHandler::getInstance().printProgramLayers(predicateNodeMapping);
-    for(int i = layers.size()-1; i >= 0 ; --i){
-        std::vector<unsigned> effectiveLiteralsIDs;
-        for(unsigned j = 0; j < layers[i].size(); ++j){
-            for(auto& it : predicateNodeMapping){
-                if(it.second == layers[i][j]){
-                    effectiveLiteralsIDs.push_back(it.first);
-                }
-            }
-        }
-        std::vector<unsigned> rulesForComponent;
-        getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
-        std::vector<unsigned> exitRules;
-        std::vector<std::string> recursiveDep;
-        findExitRules(rulesForComponent, program, exitRules, recursiveDep);
-        for(unsigned r = 0; r < rulesForComponent.size(); ++r){
-            //for each ordering possible given from recursiveDep declare maps
-            for(unsigned l = 0;  l < recursiveDep.size(); ++l){
-                RuleBase* rule = program->getRuleByID(rulesForComponent[r]);
-                for(int lit = 0; lit < rule->getBody()->getConjunction().size(); ++lit){
-                    if(recursiveDep[l] == rule->getBody()->getConjunction().at(lit)->getIdentifier()){
-                        rule->sortLiteralsInBody(lit);
-                    }
-                }
-            }
-        }
-    }
+    preCompiler->findAllInterestingBodyReorderings();
 
     //declare maps for each starter
     for(Rule* rule : program->getRules()){
@@ -165,7 +136,7 @@ void CompilationManagerDatalog::generateProgram(Program* program){
         }
         //TODO IMPROVE
         std::vector<unsigned> rulesForComponent;
-        getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
+        preCompiler->getRulesFromPredicateIds(effectiveLiteralsIDs, rulesForComponent);
         compileRecursiveComponent(program, rulesForComponent);
         rulesForComponent.clear();
         //getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
@@ -961,7 +932,7 @@ void CompilationManagerDatalog::compileRecursiveComponent(Program* program, std:
 
     std::vector<unsigned> exitRules;
     std::vector<std::string> recursiveDep;
-    findExitRules(recursiveComponent, program, exitRules, recursiveDep);
+    preCompiler->findExitRules(recursiveComponent, exitRules, recursiveDep);
     //std::cout << "found " << exitRules.size() <<" exit rule\n";
 
     

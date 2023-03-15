@@ -21,6 +21,8 @@ class PreCompilerASP{
         void getRulesFromPredicateIds(std::vector<unsigned>&, std::vector<unsigned>&);
         unsigned getLayersNumber();
         void getEffectiveLiteralsIDForLayer(unsigned, std::vector<unsigned>&);
+        void findExitRules(std::vector<unsigned>&, std::vector<unsigned>&, std::vector<std::string>&);
+        std::unordered_map<unsigned, unsigned> getPredicateNodeMapping();
         ~PreCompilerASP();
 
 };

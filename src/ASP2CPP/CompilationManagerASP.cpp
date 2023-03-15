@@ -37,39 +37,12 @@ void CompilationManagerASP::generateProgram(Program* program){
 
     //DEP GRAPH
     //Dependency graph computation
-    std::unordered_map<unsigned, unsigned> predicateNodeMapping;
-	DependencyGraphHandler::getInstance().createGraph(program, predicateNodeMapping);
+    std::unordered_map<unsigned, unsigned> predicateNodeMapping = preCompiler->getPredicateNodeMapping();
     //statifications
     //Each layer contains the ids of its IDB predicates
     //In order to find the rules that are part of each layer a complete search of rules needs to be done  
 	std::vector<std::vector<unsigned>> layers = DependencyGraphHandler::getInstance().getProgramLayers();
-	DependencyGraphHandler::getInstance().printProgramLayers(predicateNodeMapping);
-    for(int i = layers.size()-1; i >= 0 ; --i){
-        std::vector<unsigned> effectiveLiteralsIDs;
-        for(unsigned j = 0; j < layers[i].size(); ++j){
-            for(auto& it : predicateNodeMapping){
-                if(it.second == layers[i][j]){
-                    effectiveLiteralsIDs.push_back(it.first);
-                }
-            }
-        }
-        std::vector<unsigned> rulesForComponent;
-        getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
-        std::vector<unsigned> exitRules;
-        std::vector<std::string> recursiveDep;
-        findExitRules(rulesForComponent, program, exitRules, recursiveDep);
-        for(unsigned r = 0; r < rulesForComponent.size(); ++r){
-            //for each ordering possible given from recursiveDep declare maps
-            for(unsigned l = 0;  l < recursiveDep.size(); ++l){
-                RuleBase* rule = program->getRuleByID(rulesForComponent[r]);
-                for(int lit = 0; lit < rule->getBody()->getConjunction().size(); ++lit){
-                    if(recursiveDep[l] == rule->getBody()->getConjunction().at(lit)->getIdentifier()){
-                        rule->sortLiteralsInBody(lit);
-                    }
-                }
-            }
-        }
-    }
+    preCompiler->findAllInterestingBodyReorderings();
 
     //declare maps for each starter
     for(Rule* rule : program->getRules()){
@@ -194,7 +167,7 @@ void CompilationManagerASP::generateProgram(Program* program){
         }
         //TODO IMPROVE
         std::vector<unsigned> rulesForComponent;
-        getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
+        preCompiler->getRulesFromPredicateIds(effectiveLiteralsIDs, rulesForComponent);
         compileRecursiveComponent(program, rulesForComponent);
         rulesForComponent.clear();
         //getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
@@ -581,86 +554,15 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
                     *out << --indentation << "}\n";
                 }
                 *out << --indentation << "}\n";
-
-                // if(insertAsUndef)
-                //     *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
-                // else
-                //     *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
-                // // if this tuple was already inside the factory with different thruth satus
-                // // then it should be removed from its collisionslist and added as
-                // if(!insertAsUndef){
-                //     *out << indentation++ << "if(insertResult.second && tupleWasUndef){\n";
-                //     *out << indentation << "factory.removeFromCollisionsList(t->getId())";
-                //     *out << indentation << "insertTrue(insertResult);\n";
-                //     *out << --indentation << "}\n";
-                // }
-
-                // if(insertAsUndef)
-                //     *out << indentation << "insertUndef(insertResult);\n";
-                // else
-                //     *out << indentation << "insertTrue(insertResult);\n";
-                    
-                // if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end())
-                //     *out << indentation << "generatedStack.push_back(t->getId());\n";
-                //*out << indentation << "literalsAndVariables.push_back(std::make_pair(\"" << lit->getIdentifier() << "\", variableNameToID_" << index << "));\n";
-                //*out << --indentation << "}\n";
-                //*out << indentation << "terms.clear();\n";
-                //*out << indentation << "variableNameToID.clear();\n";
-
                 index++;
             }
 
-            // *out << indentation << "//negative literals saving\n";
-            // if(negativeBodySize > 0){
-            //     for(Literal* lit : body->getConjunction()){
-            //         if(lit->isNegative()){
-            //             unsigned j = 0;
-            //             std::string listOfTerms = "{";
-            //             for(TermBase* t : lit->getTerms()){
-            //                 //*out << indentation << "ConstantsManager::getInstance().mapConstant()";
-            //                 if(j != lit->getTerms().size() -1){
-            //                     listOfTerms += t->getRepresentation();
-            //                     listOfTerms += ",";
-            //                 }
-            //                 else{
-            //                     listOfTerms += t->getRepresentation();
-            //                     listOfTerms += "}";
-            //                 }
-            //                 //*out << indentation << "variableNameToID_" << index << ".push_back(std::make_pair(\"" << t->getRepresentation() << "\", " << t->getRepresentation() << "));\n";
-            //                 j++;
-            //             }
-            //             // *out << indentation << "alreadyInFactory = false;\n";
-            //             // *out << indentation++ << "if(factory.find(" << listOfTerms <<", _"<< lit->getIdentifier() << ") != NULL){\n";
-            //             // *out << indentation << "alreadyInFactory = true;\n";
-            //             // *out << --indentation << "}\n";
-
-            //             //*out << indentation++ << "if(!alreadyInFactory){\n";
-            //             *out << indentation << "t = factory.addNewInternalTuple(" << listOfTerms << ", _" << lit->getIdentifier() << ");\n";
-            //             *out << indentation++ << "if(t->isUnknown()){\n";
-            //             if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end())
-            //                 *out << indentation << "generatedStack.push_back(t->getId());\n";
-            //             *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
-            //             *out << indentation << "insertUndef(insertResult);\n";
-            //             *out << --indentation << "}\n";
-            //         }
-            //     }
-
-
-            //     //*out << --indentation << "}\n";
-            //     //*out << indentation << "terms.clear();\n";
-            // }
-            //*out << indentation << "undefTuple = false;\n";
         }
         
     }
 
     for (int i = closingParenthesis; i > 0; --i) {
         *out << --indentation << "}//close par\n";
-        // if(i < negativeBodySize){
-        //     *out << indentation++ << "else{\n";
-        //     *out << indentation << "udefLitsToSave.pop_back();\n";
-        //     *out << --indentation << "}\n"; 
-        // }
     }
 }
 
@@ -1196,7 +1098,7 @@ void CompilationManagerASP::compileRecursiveComponent(Program* program, std::vec
 
     std::vector<unsigned> exitRules;
     std::vector<std::string> recursiveDep;
-    findExitRules(recursiveComponent, program, exitRules, recursiveDep);
+    preCompiler->findExitRules(recursiveComponent, exitRules, recursiveDep);
     //std::cout << "found " << exitRules.size() <<" exit rule\n";
 
     

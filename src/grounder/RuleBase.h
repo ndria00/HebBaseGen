@@ -2,7 +2,7 @@
 #define RULEBASE_H
 #include "Head.h"
 #include "Body.h"
-
+#include <unordered_map>
 class RuleBase{
     private:
         bool alreadyCompiled;

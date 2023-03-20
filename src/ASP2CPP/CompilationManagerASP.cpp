@@ -130,12 +130,12 @@ void CompilationManagerASP::generateProgram(Program* program){
     *out << indentation++ << "if(!disjunctiveFact){\n";
     *out << indentation << "const auto& insertResult = t->setStatus(TruthStatus::True);\n";
     *out << indentation << "insertTrue(insertResult);\n";
+    *out << indentation << "printTuple(t);\n";
     *out << --indentation << "}\n";
     *out << indentation++ << "else{\n";
     *out << indentation << "const auto& insertResult = t->setStatus(TruthStatus::Undef);\n";
     *out << indentation << "insertUndef(insertResult);\n";
     *out << --indentation << "}\n";
-    *out << indentation << "printTuple(t);\n";
     *out << --indentation << "}\n";
 
 
@@ -233,16 +233,13 @@ void CompilationManagerASP::deleteCompletelyDefinedPredicates(std::unordered_set
         *out << indentation << "const std::vector<int>* tuplesToRemove;\n";
         *out << indentation << "tuplesToRemove = &p" << predicateNameString << "_.getValuesVec({});\n";
         *out << indentation++ << "for(unsigned i = 0; i< tuplesToRemove->size(); ++i){\n";
-        //*out << indentation << "factory.removeFromCollisionsList(tuplesToRemove->at(i));\n";
         *out << indentation << "factory.destroyTuple(tuplesToRemove->at(i));\n";
         *out << --indentation <<"}\n";
-        //*out << indentation << "p" << program->getPredicateByID(pred) << "_.clear();\n";
         *out << indentation << "tuplesToRemove = &u" << predicateNameString << "_.getValuesVec({});\n";
         *out << indentation++ << "for(unsigned i = 0; i< tuplesToRemove->size(); ++i){\n";
-        //*out << indentation << "factory.removeFromCollisionsList(tuplesToRemove->at(i));\n";
+        *out << indentation << "printTuple(t);\n";
         *out << indentation << "factory.destroyTuple(tuplesToRemove->at(i));\n";
         *out << --indentation <<"}\n";
-        //*out << indentation << "u" << program->getPredicateByID(pred) << "_.clear();\n";
         for(std::string mapName : this->predicatesPositiveMaps[predicateNameString]){
             *out << indentation << mapName << ".clear();\n";   
         }
@@ -523,7 +520,6 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
                 //*out << indentation++ << "if(!alreadyInFactory){\n";
                 *out << indentation << "t = factory.addNewInternalTuple(" << listOfTerms << ", _" << lit->getIdentifier() << ");\n";
                 *out << indentation++ << "if(t->isUnknown()){\n";
-                *out << indentation << "printTuple(t);\n";
                 if(!compileAsExitRule && recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end()){
                     *out << indentation << "generatedStack.push_back(t->getId());\n"; 
                 }    
@@ -539,6 +535,7 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
                     *out << indentation++ << "else{\n";
                     *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
                     *out << indentation << "insertTrue(insertResult);\n";
+                    *out << indentation << "printTuple(t);\n";
                     *out << --indentation<<"}\n";
                 }
                 *out << --indentation << "}\n";
@@ -551,6 +548,8 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
                     *out << indentation << "factory.removeFromCollisionsList(t->getId());\n";
                     *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
                     *out << indentation << "insertTrue(insertResult);\n";
+                    *out << indentation << "generatedStack.push_back(t->getId());\n";
+                    *out << indentation << "printTuple(t);\n";
                     *out << --indentation << "}\n";
                 }
                 *out << --indentation << "}\n";
@@ -937,7 +936,6 @@ void CompilationManagerASP::compileChoiceElement(const std::pair<Literal*, Body*
             listOfTerms += "}";
             *out << indentation << "t = factory.addNewInternalTuple(" << listOfTerms << ", _" << lit->getIdentifier() << ");\n";
             *out << indentation++ <<"if(t->isUnknown()){\n";
-            *out << indentation << "printTuple(t);\n";
             // if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end()){
             //     *out << indentation << "generatedStack.push_back(t->getId());\n"; 
             // }    
@@ -948,6 +946,7 @@ void CompilationManagerASP::compileChoiceElement(const std::pair<Literal*, Body*
             else{
                 *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
                 *out << indentation << "insertTrue(insertResult);\n";
+                *out << indentation << "printTuple(t);\n";
             }
             *out << --indentation << "}\n";
             *out << indentation++ << "else if(t->isUndef()){\n";
@@ -958,6 +957,8 @@ void CompilationManagerASP::compileChoiceElement(const std::pair<Literal*, Body*
                 *out << indentation << "factory.removeFromCollisionsList(t->getId());\n";
                 *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
                 *out << indentation << "insertTrue(insertResult);\n";
+                *out << indentation << "generatedStack.push_back(t->getId());\n";
+                *out << indentation << "printTuple(t);\n";
             }
             *out << --indentation << "}\n";
             index++;

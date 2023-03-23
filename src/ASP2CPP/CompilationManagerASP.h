@@ -13,6 +13,6 @@ class CompilationManagerASP : public CompilationManagerBase{
         void compileChoiceRule(ChoiceRule*, std::vector<std::string>&, int, bool) override;
         void compileChoiceElement(const std::pair<Literal*, Body*>&, bool) override;
         void compileRecursiveComponent(Program*, std::vector<unsigned>&) override;
-        void deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>&, Program*) override;
+        void deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>&, Program*, bool) override;
 };
 #endif /*COMPILATIONMANAGERASP*/

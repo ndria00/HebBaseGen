@@ -142,6 +142,7 @@ void CompilationManagerASP::generateProgram(Program* program){
 
     *out << indentation++ << "void Executor::executeProgram(){\n";
     *out << indentation << "const Tuple dummyTuple = Tuple();\n";
+    *out << indentation << "std::cout<<\"True{\\n\";\n";
     //addFacts();
     *out << indentation << "auto start = std::chrono::high_resolution_clock::now();\n";
 
@@ -192,7 +193,7 @@ void CompilationManagerASP::generateProgram(Program* program){
                 toDelete.insert(pred);
             }
         }
-        deleteCompletelyDefinedPredicates(toDelete, program);
+        deleteCompletelyDefinedPredicates(toDelete, program, i == layers.size()-1);
         for(auto pred: toDelete){
             remainingPredicatesToRemove.erase(pred);
         }
@@ -224,8 +225,9 @@ void CompilationManagerASP::generateProgram(Program* program){
     //deleteCompletelyDefinedPredicates(remainingPredicatesToRemove, program);
 }
 
-void CompilationManagerASP::deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>& toRemove, Program* program){
+void CompilationManagerASP::deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>& toRemove, Program* program, bool lastComponent){
     std::cout <<"deleting: ";
+    *out << indentation <<"std::cout<<\"}\\nUndef{\\n\";\n";
     for(auto pred : toRemove){
         std::string predicateNameString = program->getPredicateByID(pred);
         *out << indentation << "//Removing tuples of predicates that have been completely defined\n";
@@ -237,7 +239,7 @@ void CompilationManagerASP::deleteCompletelyDefinedPredicates(std::unordered_set
         *out << --indentation <<"}\n";
         *out << indentation << "tuplesToRemove = &u" << predicateNameString << "_.getValuesVec({});\n";
         *out << indentation++ << "for(unsigned i = 0; i< tuplesToRemove->size(); ++i){\n";
-        *out << indentation << "printTuple(t);\n";
+        *out << indentation << "printTuple(factory.getTupleFromInternalID(tuplesToRemove->at(i)));\n";
         *out << indentation << "factory.destroyTuple(tuplesToRemove->at(i));\n";
         *out << --indentation <<"}\n";
         for(std::string mapName : this->predicatesPositiveMaps[predicateNameString]){
@@ -251,6 +253,10 @@ void CompilationManagerASP::deleteCompletelyDefinedPredicates(std::unordered_set
         std::cout << pred << ", ";
     }
     std::cout<<std::endl;
+    *out << indentation <<"std::cout<<\"}\";\n";
+    if(!lastComponent){
+        *out << indentation <<"std::cout<<\"True{\\n\";\n";
+    }
 
 }
 
@@ -548,7 +554,8 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
                     *out << indentation << "factory.removeFromCollisionsList(t->getId());\n";
                     *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
                     *out << indentation << "insertTrue(insertResult);\n";
-                    *out << indentation << "generatedStack.push_back(t->getId());\n";
+                    if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end())
+                        *out << indentation << "generatedStack.push_back(t->getId());\n";
                     *out << indentation << "printTuple(t);\n";
                     *out << --indentation << "}\n";
                 }
@@ -957,7 +964,7 @@ void CompilationManagerASP::compileChoiceElement(const std::pair<Literal*, Body*
                 *out << indentation << "factory.removeFromCollisionsList(t->getId());\n";
                 *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
                 *out << indentation << "insertTrue(insertResult);\n";
-                *out << indentation << "generatedStack.push_back(t->getId());\n";
+                //*out << indentation << "generatedStack.push_back(t->getId());\n";
                 *out << indentation << "printTuple(t);\n";
             }
             *out << --indentation << "}\n";

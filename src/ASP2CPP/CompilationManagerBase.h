@@ -28,7 +28,7 @@ class CompilationManagerBase{
         virtual void compileChoiceElement(const std::pair<Literal*, Body*>&, bool) = 0;
         virtual void compileRecursiveComponent(Program*, std::vector<unsigned>&) = 0;
         void getRulesFromPredicateIds(Program*, std::vector<unsigned>&, std::vector<unsigned>&);
-        virtual void deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>&, Program*) = 0;
+        virtual void deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>&, Program*, bool) = 0;
         void setOutStream(std::ostream*);
         void setPreCompiler(PreCompilerASP*);
 };

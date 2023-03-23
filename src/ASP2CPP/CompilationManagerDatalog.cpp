@@ -163,7 +163,7 @@ void CompilationManagerDatalog::generateProgram(Program* program){
         }
 
         
-        deleteCompletelyDefinedPredicates(toDelete, program);
+        deleteCompletelyDefinedPredicates(toDelete, program, true);
         for(auto pred: toDelete){
             remainingPredicatesToRemove.erase(pred);
         }
@@ -175,7 +175,7 @@ void CompilationManagerDatalog::generateProgram(Program* program){
     *out << --indentation<<"}\n";
 }
 
-void CompilationManagerDatalog::deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>& toRemove, Program* program){
+void CompilationManagerDatalog::deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>& toRemove, Program* program, bool){
     std::cout <<"deleting: ";
     for(auto pred : toRemove){
         std::string predicateNameString = program->getPredicateByID(pred);

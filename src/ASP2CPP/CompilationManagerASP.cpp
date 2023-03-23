@@ -227,7 +227,7 @@ void CompilationManagerASP::generateProgram(Program* program){
 
 void CompilationManagerASP::deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>& toRemove, Program* program, bool lastComponent){
     std::cout <<"deleting: ";
-    *out << indentation <<"std::cout<<\"}\\nUndef{\\n\";\n";
+    *out << indentation <<"std::cout<<\"\\n}\\nUndef{\\n\";\n";
     for(auto pred : toRemove){
         std::string predicateNameString = program->getPredicateByID(pred);
         *out << indentation << "//Removing tuples of predicates that have been completely defined\n";
@@ -253,9 +253,9 @@ void CompilationManagerASP::deleteCompletelyDefinedPredicates(std::unordered_set
         std::cout << pred << ", ";
     }
     std::cout<<std::endl;
-    *out << indentation <<"std::cout<<\"}\";\n";
+    *out << indentation <<"std::cout<<\"\\n}\\n\";\n";
     if(!lastComponent){
-        *out << indentation <<"std::cout<<\"True{\\n\";\n";
+        *out << indentation <<"std::cout<<\"\\nTrue{\\n\";\n";
     }
 
 }

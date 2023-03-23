@@ -40,7 +40,11 @@ for $problem_folder(@encodings){
         %checked = {};
         $path = $instances_path."/".$problem_folder."/".$instance;
         chomp($path);
-        @results_idlv = qx(./$idlv_path$idlv_name $path) || die "Cannot find or execute idlv";
+        #append instance and encoding to temp file
+        qx(cat $encodings_path/$problem_folder/$problem_folder.asp > temp.asp);
+        qx(cat $path >> temp.asp);
+        @results_idlv = qx(./$idlv_path$idlv_name --no-projection temp.asp) || die "Cannot find or execute idlv";
+        qx(rm temp.asp);
         qx(make -j8 >/dev/null 2>&1);
         @results_gen = split(/\n/, qx(./$generator_path/$generator_name $generation_option $path 2>/dev/null) || die "Cannot find or execute generator");
         print("calling ./$generator_path/$generator_name $generation_option $path\n");
@@ -61,6 +65,7 @@ for $problem_folder(@encodings){
                 #fix
                 if($match ne "" && $match ne " "){
                     #if the atom has not been checked
+                    #print("Searching for $match in gen output\n");
                     if(!exists $checked{$match}){
                         $found = 0;
                         chomp(@matches);

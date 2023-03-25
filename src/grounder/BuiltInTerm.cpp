@@ -69,6 +69,15 @@ void BuiltInTerm::removeSafeVariablesInBuiltIn(std::unordered_set<std::string>& 
 std::pair<std::string, bool> BuiltInTerm::canBind(std::unordered_set<std::string>& boundVariables)const{
     std::pair<std::string, bool> firstBound = leftExpr->getUnboundedVar(boundVariables);
     std::pair<std::string, bool> secondBound = rightExpr->getUnboundedVar(boundVariables);
+    
+    //return false when there is need for some arithmetic that has not been already implemented
+    if(leftExpr->isBound(boundVariables) && !rightExpr->isSimpleFactor()){
+        return std::make_pair("", false);
+    }
+    if(rightExpr->isBound(boundVariables) && !leftExpr->isSimpleFactor()){
+        return std::make_pair("", false);
+    }
+
     if(firstBound.second && secondBound.second)
         return firstBound;
     if(firstBound.second && !secondBound.second){

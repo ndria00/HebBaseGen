@@ -25,9 +25,26 @@ enum PrintMode{SILENT = 0, VERBOSE = 1};
 
 int main(int argc, char *argv[]){
 	ExecutionMode MODE = COMPILER;
-	PrintMode printMode= SILENT;
+	PrintMode printMode = SILENT;
+	bool usedArgs[argc] = {0};
+	//never use the executable ar option
+	usedArgs[0] = true;
+
 	if(argc > 1){
-		std::string option1 = argv[1];
+		std::string option1 = "";
+		for(unsigned i = 0; i < argc; ++i){
+			std::string option = argv[i];
+			if(option == "compile"){
+				option1 = argv[i];
+				usedArgs[i] = true;
+				break;
+			}
+			if(option == "generate"){
+				option1 = argv[i];
+				usedArgs[i] = true;
+				break;
+			}
+		}
 		if(option1 == "compile"){
 			MODE = COMPILER;
 		}
@@ -35,7 +52,7 @@ int main(int argc, char *argv[]){
 			MODE = GENERATOR;
 		}
 		else{
-			std::cout<<"Option not supported... terminating\n";
+			std::cout<<"Option not supported(specify one between compile and generate)... terminating\n";
 			return 0;
 		}
 	}
@@ -45,23 +62,20 @@ int main(int argc, char *argv[]){
 	bool datalogEncoding = true;
 	if(MODE == COMPILER){
 		if(argc < 2){
-			myFile.open("../src/resources/input.txt");
+			std::cout << "Opening default encoding at @project_root/src/resources/input.txt\n";
+			myFile.open("/src/resources/input.txt");
 		}		
 		else{
-			std::string option2 = argv[2];
-			std::string option3 = "";
-			if(argc > 3){
-				option3 = argv[3];
-			}
-			if(option2 == "asp"){
-				datalogEncoding = false;
-			}
+			//get as file path the first non-used option
 			std::string fileName = "";
-			if(option3 != ""){
-				fileName = option3;
+			for(unsigned i = 0; i < argc; ++i){
+				if(usedArgs[i] == false){
+					fileName = argv[i];
+					break;
+				}
 			}
-			else{
-				fileName = "../src/resources/input.txt";
+			if(fileName == ""){
+				fileName = "/src/resources/input.txt";
 			}
 			if(!std::filesystem::exists(fileName)){
 				std::cout << "Input file does not exist\n";
@@ -76,18 +90,26 @@ int main(int argc, char *argv[]){
 			std::cout<<"reading facts and generating base..."<<std::endl;
 		if(argc <= 2){
 			if(printMode == VERBOSE)
-				std::cout << "Opening default encoding\n";
-			myFile.open("../src/resources/facts.txt");
+				std::cout << "Opening default instance at @project_root/src/resources/facts.txt\n";
+			myFile.open("/src/resources/facts.txt");
 		}
 		else{
-				if(printMode == VERBOSE)
-					std::cout << "Not Opening default encoding\n";
-				if(!std::filesystem::exists(argv[2])){
-					std::cout << "Input file does not exist\n";
-					return 0;
+			//get as file path the first non-used option
+			std::string fileName = "";
+			for(unsigned i = 0; i < argc; ++i){
+				if(usedArgs[i] == false){
+					fileName = argv[i];
+					break;
 				}
-				else
-					myFile.open(argv[2]);
+			}
+			if(printMode == VERBOSE)
+				std::cout << "Not Opening default encoding\n";
+			if(!std::filesystem::exists(fileName)){
+				std::cout << "Input file does not exist\n";
+				return 0;
+			}
+			else
+				myFile.open(fileName);
 		}
 	}
 
@@ -166,6 +188,7 @@ int main(int argc, char *argv[]){
 			std::string line;
 			std::string toParse = "";
 			unsigned lineCount = 0;
+			std::cout<< "facts{\n";
 			while(getline(myFile, line)){
 				//TODO check if there is a way to avoid the creation of new objects
 				//note: stackoverflow says that recreating has essentially no impact
@@ -179,7 +202,6 @@ int main(int argc, char *argv[]){
 				parser.addParseListener(listener);
 				//listener->setTokenStream(&tokens);
 				parser.instance();
-
 				//lexer.setInputStream(&input1);
 				//tokens.setTokenSource(&lexer);
 				//parser.setTokenStream(&tokens);
@@ -189,6 +211,7 @@ int main(int argc, char *argv[]){
 				//antlr4::tree::ParseTreeWalker::DEFAULT.walk(listener, tree);
 				//tree->children.clear(); 
 			}
+			std::cout<<"}\n";
 		}	
 
 

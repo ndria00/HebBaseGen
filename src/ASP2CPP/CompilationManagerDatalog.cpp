@@ -965,22 +965,22 @@ void CompilationManagerDatalog::compileRecursiveComponent(Program* program, std:
             std::vector<unsigned>::iterator it = std::find(recursiveComponent.begin(), recursiveComponent.end(), exitRules[i]);
             recursiveComponent.erase(it);
         }
-        //component is totally recursive
-        if(exitRules.size() == 0){
-            //add all tuples in factory that are true or undef so that the component can generate
-            //without need to do a preliminar grounding
-            *out << indentation++ << "{//adding already existing tuple for predicates involved in recursion\n";
-            *out << indentation << "const std::vector<int>* actualTuples;\n";
-            for(unsigned i = 0; i < recursiveDep.size(); ++i){
+        // //component is totally recursive
+        // if(exitRules.size() == 0){
+        //     //add all tuples in factory that are true or undef so that the component can generate
+        //     //without need to do a preliminar grounding
+        //     *out << indentation++ << "{//adding already existing tuple for predicates involved in recursion\n";
+        //     *out << indentation << "const std::vector<int>* actualTuples;\n";
+        //     for(unsigned i = 0; i < recursiveDep.size(); ++i){
                 
-                *out << indentation << "actualTuples = &p" << recursiveDep[i] << "_.getValuesVec({});\n";
-                *out << indentation << "for(int i = 0; i < actualTuples->size(); ++i) generatedStack.push_back((factory.getTupleFromInternalID(actualTuples->at(i)))->getId());\n";
+        //         *out << indentation << "actualTuples = &p" << recursiveDep[i] << "_.getValuesVec({});\n";
+        //         *out << indentation << "for(int i = 0; i < actualTuples->size(); ++i) generatedStack.push_back((factory.getTupleFromInternalID(actualTuples->at(i)))->getId());\n";
             
-                *out << indentation << "actualTuples = &u" << recursiveDep[i] << "_.getValuesVec({});\n";
-                *out << indentation << "for(int i = 0; i < actualTuples->size(); ++i) generatedStack.push_back((factory.getTupleFromInternalID(actualTuples->at(i)))->getId());\n";
-            }
-            *out << --indentation << "}\n";
-        }
+        //         *out << indentation << "actualTuples = &u" << recursiveDep[i] << "_.getValuesVec({});\n";
+        //         *out << indentation << "for(int i = 0; i < actualTuples->size(); ++i) generatedStack.push_back((factory.getTupleFromInternalID(actualTuples->at(i)))->getId());\n";
+        //     }
+        //     *out << --indentation << "}\n";
+        // }
         for(unsigned i = 0; i < recursiveComponent.size(); ++i){
             RuleBase* rule = program->getRuleByID(recursiveComponent[i]);
             if(rule->isChoiceRule() && !rule->isAlreadyCompiled()){

@@ -1032,3 +1032,7 @@ void CompilationManagerDatalog::compileRecursiveComponent(Program* program, std:
     }
     *out<< --indentation << "}\n";
 }
+
+void CompilationManagerDatalog::setIncrementalRemotion(bool incrementalRemotion){
+    this->incrementalRemotion = incrementalRemotion;
+}

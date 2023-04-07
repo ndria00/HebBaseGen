@@ -14,5 +14,8 @@ class CompilationManagerASP : public CompilationManagerBase{
         void compileChoiceElement(const std::pair<Literal*, Body*>&, bool) override;
         void compileRecursiveComponent(Program*, std::vector<unsigned>&) override;
         void deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>&, Program*, bool) override;
+        void compileRulePropagation(Rule*, std::vector<std::string>&, int, bool);
+        void compileRecursiveComponentPropagation(Program*, std::vector<unsigned>&);
+        void setIncrementalRemotion(bool) override;
 };
 #endif /*COMPILATIONMANAGERASP*/

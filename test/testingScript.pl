@@ -3,18 +3,18 @@
 $encodings_path = "test/encodings";
 $instances_path = "test/instances";
 $output_path = "output";
-$idlv_name = "idlv";
-$idlv_path = "test/";
+$dlv_name = "dlv2-linux";
+$dlv_path = "test/";
+$dlv_options = "--wellfounded --no-projection";
 $generator_path = "output";
 $generator_name = "main";
 $generation_option = "generate";
 $compilation_option = "compile";
 $source_folder_from_curr = ".";
-$language = "asp";
 
 @encodings= split(/\s+/, qx(ls $encodings_path) || die "Cannot read encodings");
 
-if(scalar(@ARGV) > 0){
+if(scalar(@ARGV) >= 0){
     if(shift == "clean"){
         qx(make clean 2>&1);
         print("Clean done\n");
@@ -30,7 +30,7 @@ for $problem_folder(@encodings){
     #make
     qx(make -j8 >/dev/null 2>&1);
     #compile
-    qx(./$generator_path/$generator_name $compilation_option $language $encodings_path/$problem_folder/$problem_folder.asp 2>/dev/null) || die "cannot compile program";
+    qx(./$generator_path/$generator_name $compilation_option  $encodings_path/$problem_folder/$problem_folder.asp 2>/dev/null) || die "cannot compile program";
     
     #for every instance of a specific problem --> test
     for $instance(@instances){
@@ -43,7 +43,7 @@ for $problem_folder(@encodings){
         #append instance and encoding to temp file
         qx(cat $encodings_path/$problem_folder/$problem_folder.asp > temp.asp);
         qx(cat $path >> temp.asp);
-        @results_idlv = qx(./$idlv_path$idlv_name --no-projection temp.asp) || die "Cannot find or execute idlv";
+        @results_idlv = qx(./$dlv_path$dlv_name $dlv_options temp.asp) || die "Cannot find or execute idlv";
         qx(rm temp.asp);
         qx(make -j8 >/dev/null 2>&1);
         @results_gen = split(/\n/, qx(./$generator_path/$generator_name $generation_option $path 2>/dev/null) || die "Cannot find or execute generator");

@@ -14,5 +14,6 @@ class CompilationManagerDatalog : public CompilationManagerBase{
         void compileChoiceElement(const std::pair<Literal*, Body*>&, bool) override;
         void compileRecursiveComponent(Program*, std::vector<unsigned>&) override;
         void deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>&, Program*, bool) override;
+        void setIncrementalRemotion(bool) override;
 };
 #endif /*COMPILATIONMANAGERBASE*/

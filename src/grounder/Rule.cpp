@@ -112,10 +112,14 @@ void Rule::sortLiteralsInBody(int starter =-1){
     std::vector<unsigned> orderedConjunction;
     std::unordered_set<unsigned> addedLiterals;
     std::unordered_set<std::string> boundVariables;
-    if(starter != -1){
+    if(starter != -1 && starter != -2){
         addedLiterals.insert(starter);
         orderedConjunction.push_back(starter);
         body->getConjunction().at(starter)->addVariablesToSet(boundVariables);
+    }
+    else if(starter == -2){//sort according to the literal in the head of the rule
+        //no disjunction is allowed
+        head->getDisjunction().at(0)->addVariablesToSet(boundVariables);
     }
     Literal* boundLiteral;
     Literal* positiveLiteral;

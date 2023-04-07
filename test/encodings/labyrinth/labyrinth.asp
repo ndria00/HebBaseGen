@@ -68,5 +68,3 @@ reach(X,Y,T) :- reach(XX,YY,T), dneighbor(D,XX,YY,X,Y), conn(XX,YY,D,T), conn(X,
 %%  Goal must be reached
 
 %:- neg_goal(S), max_steps(S).
-
-%% Project output

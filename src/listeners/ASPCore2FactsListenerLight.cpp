@@ -5,6 +5,7 @@ ASPCore2FactsListenerLight::ASPCore2FactsListenerLight(Executor* executor){
     this->terms = vector<int>();
     this->intervalIndexAndRanges =  std::unordered_map<int, std::pair<int, int>>();
     atomName = NO_NAME;
+    atomInsideRule = 0;
 }
 
 void ASPCore2FactsListenerLight::exitFact(ASPCore2FactsParser::FactContext * /*ctx*/){

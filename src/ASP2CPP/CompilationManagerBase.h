@@ -14,9 +14,11 @@ class CompilationManagerBase{
         std::unordered_map<std::string, std::set<std::string> > predicatesPositiveMaps;
         std::unordered_map<std::string, std::set<std::string> > predicatesUndefMaps;
         PreCompilerASP* preCompiler;
+        bool incrementalRemotion;
         void printLiteralTuple(const Literal*);
         void printLiteralTuple(const Literal* , const std::unordered_set<std::string> &);
         void findExitRules(std::vector<unsigned>& ,Program* program,  std::vector<unsigned>&, std::vector<std::string>& );
+        
     public:
         CompilationManagerBase();
         virtual void generateProgram(Program*) = 0;
@@ -31,6 +33,7 @@ class CompilationManagerBase{
         virtual void deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>&, Program*, bool) = 0;
         void setOutStream(std::ostream*);
         void setPreCompiler(PreCompilerASP*);
+        virtual void setIncrementalRemotion(bool) = 0;
 };
 
 #endif

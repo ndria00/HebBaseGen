@@ -14,10 +14,13 @@ PreCompilerASP::PreCompilerASP(Program* program){
     DependencyGraphHandler::getInstance().printProgramLayers(predicateNodeMapping);
     //computePredicatesToRemove();
     //check if the program is asp or datalog and create the appropriate compilation manager
-    if(programContainsRecusionThroughNegation())
+    if(programContainsRecusionThroughNegation()){
         compManager = new CompilationManagerASP();
-    else
+        compManager->setIncrementalRemotion(false);
+    }
+    else{
         compManager = new CompilationManagerDatalog();
+    }
 }
 
 PreCompilerASP::~PreCompilerASP(){

@@ -27,6 +27,7 @@ class RuleBase{
         virtual bool containsLiteralInBody(std::string&)const = 0;
         virtual bool containsLiteralInHead(unsigned) const = 0;
         virtual bool containsLiteralInHead(Literal*) const = 0;
+        virtual bool containsLiteralInHead(std::string&)const = 0;
         virtual void getAllLiterals(std::unordered_set<unsigned>&)const = 0;
         virtual void sortLiteralsInBody(int) = 0;
         virtual void setHead(Head*) = 0;

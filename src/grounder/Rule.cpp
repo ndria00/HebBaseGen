@@ -89,6 +89,14 @@ bool Rule::containsLiteralInHead(unsigned id)const{
     return false;
 }
 
+bool Rule::containsLiteralInHead(std::string& id)const{
+    for(Literal* lit : head->getDisjunction()){
+        if(lit->getIdentifier() == id)
+            return true; 
+    }
+    return false;
+}
+
 bool Rule::containsLiteralInBody(std::string& id)const{
     for(Literal* lit : body->getConjunction()){
         if(lit->getIdentifier() == id)
@@ -125,7 +133,6 @@ void Rule::sortLiteralsInBody(int starter =-1){
     Literal* positiveLiteral;
     unsigned jBound;
     unsigned jPos;
-    unsigned currentIndex = 0;
     while(orderedConjunction.size() < body->getConjunction().size()){
         boundLiteral = nullptr;
         positiveLiteral = nullptr;
@@ -190,7 +197,6 @@ void Rule::sortLiteralsInBody(int starter =-1){
             lit->addVariablesToSet(boundVariables);
             //std::cout<<"adding negative lit\n";
         }
-        currentIndex++;
     }
     //if(starter != -1)
     starterToBodyIndexes[starter] = orderedConjunction;

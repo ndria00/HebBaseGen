@@ -43,7 +43,7 @@ for $problem_folder(@encodings){
         #append instance and encoding to temp file
         qx(cat $encodings_path/$problem_folder/$problem_folder.asp > temp.asp);
         qx(cat $path >> temp.asp);
-        @results_idlv = qx(./$dlv_path$dlv_name $dlv_options temp.asp) || die "Cannot find or execute idlv";
+        @results_idlv = qx(./$dlv_path$dlv_name $dlv_options temp.asp) || die "Cannot find or execute dlv";
         qx(rm temp.asp);
         qx(make -j8 >/dev/null 2>&1);
         @results_gen = split(/\n/, qx(./$generator_path/$generator_name $generation_option $path 2>/dev/null) || die "Cannot find or execute generator");

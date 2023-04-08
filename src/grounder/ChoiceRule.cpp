@@ -67,6 +67,14 @@ bool ChoiceRule::containsLiteralInHead(Literal* l1)const{
     return false;
 }
 
+bool ChoiceRule::containsLiteralInHead(std::string& id)const{
+    for(auto& choiceElem : choiceHead){
+        if(id == choiceElem.first->getIdentifier())
+            return true;
+    }
+    return false;
+}
+
 bool ChoiceRule::containsLiteralInBody(std::string& id)const{
     for(Literal* lit : body->getConjunction()){
         if(lit->getIdentifier() == id)

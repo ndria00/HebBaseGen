@@ -28,6 +28,7 @@ class Rule : public RuleBase{
         void setSafetyStatus(bool);
         bool containsLiteralInHead(Literal*)const override;
         bool containsLiteralInHead(unsigned)const override;
+        bool containsLiteralInHead(std::string&)const override;
         bool containsLiteralInBody(std::string&)const override;
         void getAllLiterals(std::unordered_set<unsigned>&)const override;
         void sortLiteralsInBody(int)override;

@@ -35,60 +35,165 @@ for $problem_folder(@encodings){
     #for every instance of a specific problem --> test
     for $instance(@instances){
         #call idlv and store results in this array   
-        @results_idlv = ();
-        %hb_gen_atoms = {};
+        @results_dlv_true = ();
+        @results_dlv_undef = ();
+        $results_dlv = "";
+        %dlv_atoms = {};
         %checked = {};
         $path = $instances_path."/".$problem_folder."/".$instance;
         chomp($path);
         #append instance and encoding to temp file
         qx(cat $encodings_path/$problem_folder/$problem_folder.asp > temp.asp);
         qx(cat $path >> temp.asp);
-        @results_idlv = qx(./$dlv_path$dlv_name $dlv_options temp.asp) || die "Cannot find or execute dlv";
+        $results_dlv = qx(./$dlv_path$dlv_name $dlv_options temp.asp) || die "Cannot find or execute dlv";
         qx(rm temp.asp);
         qx(make -j8 >/dev/null 2>&1);
-        @results_gen = split(/\n/, qx(./$generator_path/$generator_name $generation_option $path 2>/dev/null) || die "Cannot find or execute generator");
         print("calling ./$generator_path/$generator_name $generation_option $path\n");
-        %hb_gen_atoms = ();
-        for(@results_gen){
-            $hb_gen_atoms{$_} += 1;
-        }
-        for(@results_i){
-            push(@results_idlv, split(/\n/));
-        }
+        $results_gen = "";
+        $results_gen = qx(./$generator_path/$generator_name $generation_option $path 2>/dev/null) || die "Cannot find or execute generator";
 
-        for $idlv_atom(@results_idlv){
-            chomp($idlv_atom);
-            @matches=();
-            @matches = $idlv_atom =~ /([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\.]?)|([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\|]?)/g;
-            #whenever an atom is found in an idlv output rule
+        
+        # fill true and udnef maps for hbgen
+        @results_gen_true = $results_dlv =~ /True: \{.*\}/g;;
+        @results_gen_undef = $results_dlv =~ /Undefined: \{.*\}/g;
+        %hb_gen_atoms_true = {};
+        %hb_gen_atoms_undef = {};
+        for $true_block_gen(@results_gen_true){
+            @matches = ();
+            @matches = $true_block_gen =~ /([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\.]?)|([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\|]?)/g;
             for $match(@matches){
-                #fix
                 if($match ne "" && $match ne " "){
-                    #if the atom has not been checked
-                    #print("Searching for $match in gen output\n");
-                    if(!exists $checked{$match}){
-                        $found = 0;
-                        chomp(@matches);
-                        if("." eq substr($match, -1) || "." eq substr($match, -1)){
-                            chop($match); 
-                        }
-                        #check that the atom exists in the data structure that contains
-                        #outputs from HBGen 
-                        if(exists $hb_gen_atoms{$match}){
-                            $found = 1;
-                        }
-                        #when an atom is not found an error has occurred
-                        #print in which instance the problem wwas found, on what match and die
-                        if($found == 0){
-                            print("Test failed on-$match- for instannce $instance of problem $problem_folder\n");
-                            die "Test FAILED\n";
-                        }
+                    if("." eq substr($match, -1) || "." eq substr($match, -1)){
+                        chop($match); 
                     }
-                    $checked{$match} = 1;
+                    $hb_gen_atoms_true{$match} += 1;
+                #print("Added $match to true\n");
                 }
             }
-            print("Test for $problem_folder on instance $instance PASSED \n");
         }
+        for $undef_block_gen(@results_gen_undef){
+            @matches = ();
+            @matches = $undef_block_gen =~ /([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\.]?)|([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\|]?)/g;
+            for $match(@matches){
+                if($match ne "" && $match ne " "){
+                    if("." eq substr($match, -1) || "." eq substr($match, -1)){
+                        chop($match); 
+                    }
+                    $hb_gen_atoms_undef{$match} += 1;
+                    #print("Added $match to undef\n");
+                }
+            }
+        }
+
+        #CHECK GEN OUT \in DLV OUT
+
+        #fill true and undef maps for dlv
+        @results_dlv_true = $results_dlv =~ /True: \{.*\}/g;
+        @results_dlv_undef = $results_dlv =~ /Undefined: \{.*\}/g;
+        %dlv_atoms_true = {};
+        %dlv_atoms_undef = {};
+        for $true_block_dlv(@results_dlv_true){
+            @matches = ();
+            @matches = $true_block_dlv =~ /([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\.]?)|([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\|]?)/g;
+            chomp(@matches);
+            for $match(@matches){
+                if($match ne "" && $match ne " "){
+                    if("." eq substr($match, -1) || "." eq substr($match, -1)){
+                        chop($match); 
+                    }
+                    $dlv_atoms_true {$match} += 1;
+                    #check that the atom exists in the data structure that contains
+                    #outputs from HBGen 
+                    if(!exists $hb_gen_atoms_true{$match}){
+                        #when an atom is not found an error has occurred
+                        #print in which instance the problem wwas found, on what match and die
+                        print("Test failed on-$match- for instannce $instance of problem $problem_folder (the atom was expected to be within the true ones, but it isn't)\n");
+                        die "Test FAILED\n";
+                    }
+                }
+            }
+        }
+
+        for $undef_block_dlv(@results_dlv_undef){
+            @matches = ();
+            @matches = $undef_block_dlv =~ /([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\.]?)|([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\|]?)/g;
+            chomp(@matches);
+            for $match(@matches){
+                if($match ne "" && $match ne " "){
+                    if("." eq substr($match, -1) || "." eq substr($match, -1)){
+                        chop($match); 
+                    }
+                    $dlv_atoms_undef {$match} += 1;
+                    #check that the atom exists in the data structure that contains
+                    #outputs from HBGen 
+                    if(!exists $hb_gen_atoms_undef{$match}){
+                        #when an atom is not found an error has occurred
+                        #print in which instance the problem wwas found, on what match and die
+                        print("Test failed on-$match- for instannce $instance of problem $problem_folder (the atom was expected to be within the undef ones, but it isn't)\n");
+                        die "Test FAILED\n";
+                    }
+                }
+            }
+        }
+
+        #CHECK DLV OUT \in GEN OUT
+        for $gen_true_atom(@hb_gen_atoms_true){
+            #check that the atom exists in the data structure that contains
+            #outputs from dlv 
+            if(!exists $dlv_atoms_true{$match}){
+                #when an atom is not found an error has occurred
+                #print in which instance the problem wwas found, on what match and die
+                print("Test failed on-$match- for instannce $instance of problem $problem_folder (the atom was expected to be within the undef ones, but it isn't)\n");
+                die "Test FAILED\n";
+            }
+
+        }
+        for $gen_undef_atom(@hb_gen_atoms_undef){
+            #check that the atom exists in the data structure that contains
+            #outputs from dlv 
+            if(!exists $dlv_atoms_undef{$match}){
+                #when an atom is not found an error has occurred
+                #print in which instance the problem wwas found, on what match and die
+                print("Test failed on-$match- for instannce $instance of problem $problem_folder (the atom was expected to be within the undef ones, but it isn't)\n");
+                die "Test FAILED\n";
+            }
+
+        }
+
+        print("Test for $problem_folder on instance $instance PASSED \n");
+        # for $idlv_atom(@results_dlv){
+        #     chomp($idlv_atom);
+        #     @matches=();
+        #     @matches = $idlv_atom =~ /([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\.]?)|([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\|]?)/g;
+        #     #whenever an atom is found in an idlv output rule
+        #     for $match(@matches){
+        #         #fix
+        #         if($match ne "" && $match ne " "){
+        #             #if the atom has not been checked
+        #             #print("Searching for $match in gen output\n");
+        #             if(!exists $checked{$match}){
+        #                 $found = 0;
+        #                 chomp(@matches);
+        #                 if("." eq substr($match, -1) || "." eq substr($match, -1)){
+        #                     chop($match); 
+        #                 }
+        #                 #check that the atom exists in the data structure that contains
+        #                 #outputs from HBGen 
+        #                 if(exists $hb_gen_atoms{$match}){
+        #                     $found = 1;
+        #                 }
+        #                 #when an atom is not found an error has occurred
+        #                 #print in which instance the problem wwas found, on what match and die
+        #                 if($found == 0){
+        #                     print("Test failed on-$match- for instannce $instance of problem $problem_folder\n");
+        #                     die "Test FAILED\n";
+        #                 }
+        #             }
+        #             $checked{$match} = 1;
+        #         }
+        #     }
+        #     print("Test for $problem_folder on instance $instance PASSED \n");
+        # }
     }
 }
 print("All tests PASSED!\n");

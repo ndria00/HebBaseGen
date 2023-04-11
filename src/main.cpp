@@ -188,7 +188,8 @@ int main(int argc, char *argv[]){
 			std::string line;
 			std::string toParse = "";
 			unsigned lineCount = 0;
-			std::cout<< "facts{\n";
+			//std::cout<< "facts{\n";
+			std::cout <<"True: {\n";
 			while(getline(myFile, line)){
 				//TODO check if there is a way to avoid the creation of new objects
 				//note: stackoverflow says that recreating has essentially no impact
@@ -211,7 +212,7 @@ int main(int argc, char *argv[]){
 				//antlr4::tree::ParseTreeWalker::DEFAULT.walk(listener, tree);
 				//tree->children.clear(); 
 			}
-			std::cout<<"}\n";
+			//std::cout<<"}\n";
 		}	
 
 

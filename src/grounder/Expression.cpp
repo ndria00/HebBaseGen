@@ -137,7 +137,7 @@ std::pair<std::string, bool> Expression::getUnboundedVar(std::unordered_set<std:
         if(secondUbounded.second)
             return secondUbounded;
     }
-    return std::make_pair("", false);
+    return std::make_pair("", true);
 }
 
 

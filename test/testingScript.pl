@@ -38,8 +38,6 @@ for $problem_folder(@encodings){
         @results_dlv_true = ();
         @results_dlv_undef = ();
         $results_dlv = "";
-        %dlv_atoms = {};
-        %checked = {};
         $path = $instances_path."/".$problem_folder."/".$instance;
         chomp($path);
         #append instance and encoding to temp file
@@ -54,10 +52,10 @@ for $problem_folder(@encodings){
 
         
         # fill true and udnef maps for hbgen
-        @results_gen_true = $results_dlv =~ /True: \{.*\}/g;;
+        @results_gen_true = $results_dlv =~ /True: \{.*\}/g;
         @results_gen_undef = $results_dlv =~ /Undefined: \{.*\}/g;
-        %hb_gen_atoms_true = {};
-        %hb_gen_atoms_undef = {};
+        %hb_gen_atoms_true;
+        %hb_gen_atoms_undef ;
         for $true_block_gen(@results_gen_true){
             @matches = ();
             @matches = $true_block_gen =~ /([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\.]?)|([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\|]?)/g;
@@ -90,8 +88,8 @@ for $problem_folder(@encodings){
         #fill true and undef maps for dlv
         @results_dlv_true = $results_dlv =~ /True: \{.*\}/g;
         @results_dlv_undef = $results_dlv =~ /Undefined: \{.*\}/g;
-        %dlv_atoms_true = {};
-        %dlv_atoms_undef = {};
+        %dlv_atoms_true;
+        %dlv_atoms_undef;
         for $true_block_dlv(@results_dlv_true){
             @matches = ();
             @matches = $true_block_dlv =~ /([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\.]?)|([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\|]?)/g;
@@ -101,7 +99,8 @@ for $problem_folder(@encodings){
                     if("." eq substr($match, -1) || "." eq substr($match, -1)){
                         chop($match); 
                     }
-                    $dlv_atoms_true {$match} += 1;
+                    #print("Added $match to true\n");
+                    $dlv_atoms_true{$match} += 1;
                     #check that the atom exists in the data structure that contains
                     #outputs from HBGen 
                     if(!exists $hb_gen_atoms_true{$match}){
@@ -123,7 +122,8 @@ for $problem_folder(@encodings){
                     if("." eq substr($match, -1) || "." eq substr($match, -1)){
                         chop($match); 
                     }
-                    $dlv_atoms_undef {$match} += 1;
+                    #print("Added $match to undef\n");
+                    $dlv_atoms_undef{$match} += 1;
                     #check that the atom exists in the data structure that contains
                     #outputs from HBGen 
                     if(!exists $hb_gen_atoms_undef{$match}){
@@ -137,10 +137,11 @@ for $problem_folder(@encodings){
         }
 
         #CHECK DLV OUT \in GEN OUT
-        for $gen_true_atom(@hb_gen_atoms_true){
+        for $gen_true_atom(keys(%hb_gen_atoms_true)){
             #check that the atom exists in the data structure that contains
-            #outputs from dlv 
-            if(!exists $dlv_atoms_true{$match}){
+            #outputs from dlv
+            #print("Check True\n"); 
+            if(!exists $dlv_atoms_true{$gen_true_atom}){
                 #when an atom is not found an error has occurred
                 #print in which instance the problem wwas found, on what match and die
                 print("Test failed on-$match- for instannce $instance of problem $problem_folder (the atom was expected to be within the undef ones, but it isn't)\n");
@@ -148,10 +149,11 @@ for $problem_folder(@encodings){
             }
 
         }
-        for $gen_undef_atom(@hb_gen_atoms_undef){
+        for $gen_undef_atom(keys(%hb_gen_atoms_undef)){
             #check that the atom exists in the data structure that contains
             #outputs from dlv 
-            if(!exists $dlv_atoms_undef{$match}){
+            #print("Check Undef\n"); 
+            if(!exists $dlv_atoms_undef{$gen_undef_atom}){
                 #when an atom is not found an error has occurred
                 #print in which instance the problem wwas found, on what match and die
                 print("Test failed on-$match- for instannce $instance of problem $problem_folder (the atom was expected to be within the undef ones, but it isn't)\n");
@@ -160,7 +162,14 @@ for $problem_folder(@encodings){
 
         }
 
+        $dlv_tuples_num = keys(%dlv_atoms_true) + keys(%dlv_atoms_undef);
+        $gen_tuples_num = keys(%hb_gen_atoms_true) + keys(%hb_gen_atoms_undef); 
+        printf("#tuples from dlv: $dlv_tuples_num #tuples from hb_gen $gen_tuples_num\n");
         print("Test for $problem_folder on instance $instance PASSED \n");
+        undef %hb_gen_atoms_true;
+        undef %hb_gen_atoms_undef;
+        undef %dlv_atoms_true;
+        undef %dlv_atoms_undef;
         # for $idlv_atom(@results_dlv){
         #     chomp($idlv_atom);
         #     @matches=();

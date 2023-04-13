@@ -151,6 +151,7 @@ void Executor::executeProgram(){
         }
         preach_.clear();
     }
+    std::cout <<"}\n";
     auto finish = std::chrono::high_resolution_clock::now();
     //std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count()/1000000<<"ms";
 }

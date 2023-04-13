@@ -170,6 +170,7 @@ void CompilationManagerDatalog::generateProgram(Program* program){
         //std::cout <<"Completed component\n";
     }
     //*out << indentation << "printGeneratedBase();\n";
+    *out << indentation << "std::cout <<\"}\\n\";\n";
     *out << indentation << "auto finish = std::chrono::high_resolution_clock::now();\n";
     *out << indentation << "//std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count()/1000000<<\"ms\";\n";
     *out << --indentation<<"}\n";

@@ -80,6 +80,9 @@ bool SimpleFactor::isBound(std::unordered_set<std::string>& boundVariables)const
 }
 
 std::pair<std::string, bool> SimpleFactor::getUnboundedVar(std::unordered_set<std::string>& boundVariables)const{
+    //constant
+    if(!this->isVariable())
+        return std::make_pair("", true);
     if(boundVariables.count(this->getValue()) > 0)
         return std::make_pair("", true);
     else

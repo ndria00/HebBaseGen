@@ -18,6 +18,7 @@
 #include "ASP2CPP/CompilationManagerBase.h"
 #include "ASP2CPP/PreCompilerASP.h"
 #include "ASP2CPP/Executor.h"
+#include "listeners/ASPFactParserRegex.h"
 #include <filesystem>
 
 enum ExecutionMode{COMPILER = 0, GENERATOR = 1};
@@ -182,35 +183,20 @@ int main(int argc, char *argv[]){
 	}
 	else if(MODE == GENERATOR){
 		Executor* executor = new Executor();
+		//executor->init();
+		//ASPCore2FactsListenerLight* listener = new ASPCore2FactsListenerLight(executor);
+		//Executor* executor = new Executor();
 		executor->init();
-		ASPCore2FactsListenerLight* listener = new ASPCore2FactsListenerLight(executor);
+		ASPFactParserRegex* factParser = new ASPFactParserRegex(executor);
 		if(myFile.is_open()){
 			std::string line;
 			std::string toParse = "";
 			unsigned lineCount = 0;
 			//std::cout<< "facts{\n";
 			std::cout <<"True: {\n";
-			while(getline(myFile, line)){
-				//TODO check if there is a way to avoid the creation of new objects
-				//note: stackoverflow says that recreating has essentially no impact
-				//on performances because most data is held in static fields
 
-				antlr4::ANTLRInputStream input(line);
-				ASPCore2FactsLexer lexer(&input);
-				antlr4::CommonTokenStream tokens(&lexer);
-				ASPCore2FactsParser parser(&tokens);
-				parser.setBuildParseTree(false);
-				parser.addParseListener(listener);
-				//listener->setTokenStream(&tokens);
-				parser.instance();
-				//lexer.setInputStream(&input1);
-				//tokens.setTokenSource(&lexer);
-				//parser.setTokenStream(&tokens);
-				//factParser->parseFact(line);
-				
-				//antlr4::tree::ParseTree *tree = parser.program();
-				//antlr4::tree::ParseTreeWalker::DEFAULT.walk(listener, tree);
-				//tree->children.clear(); 
+			while(getline(myFile, line)){
+				factParser->parseFact(line);
 			}
 			//std::cout<<"}\n";
 		}	
@@ -220,7 +206,7 @@ int main(int argc, char *argv[]){
 		//std::cout<<"Generating base...\n";
 		executor->executeProgram();
 		std::cout<<std::endl;
-		delete listener;
+		//delete listener;
 		delete executor;
 	}
 }

@@ -206,7 +206,7 @@ int main(int argc, char *argv[]){
 		//std::cout<<"Generating base...\n";
 		executor->executeProgram();
 		std::cout<<std::endl;
-		//delete listener;
+		delete factParser;
 		delete executor;
 	}
 }

@@ -50,6 +50,7 @@ void Executor::executeProgram(){
     {
         std::vector<int> generatedStack;
         {
+            std::vector<std::pair<const TupleLight *, bool>> insertResults;
             const std::vector<int>* tuples;
             tuples = &parc_.getValuesVec({});
             for(unsigned i = 0; i < tuples->size(); i++){
@@ -60,17 +61,17 @@ void Executor::executeProgram(){
                     int Y = (*tuple0)[1];
                     //Rule is firing 
                     Tuple* t;
-                    std::pair<const TupleLight *, bool> insertResult;
                     t = factory.addNewInternalTuple({X,Y}, _reach);
                     if(t->isUnknown()){
                         printTuple(t);
-                        insertResult = t->setStatus(TruthStatus::True);
-                        insertTrue(insertResult);
+                        insertResults.push_back(t->setStatus(TruthStatus::True));
                     }
                 }//close par
             }//close par
+            for(unsigned i = 0; i< insertResults.size(); ++i) insertTrue(insertResults[i]);
         }//close par
         {
+            std::vector<std::pair<const TupleLight *, bool>> insertResults;
             const std::vector<int>* tuples;
             tuples = &preach_.getValuesVec({});
             for(unsigned i = 0; i < tuples->size(); i++){
@@ -88,18 +89,17 @@ void Executor::executeProgram(){
                             int Z = (*tuple1)[1];
                             //Rule is firing 
                             Tuple* t;
-                            std::pair<const TupleLight *, bool> insertResult;
                             t = factory.addNewInternalTuple({X,Z}, _reach);
                             if(t->isUnknown()){
                                 printTuple(t);
                                 generatedStack.push_back(t->getId());
-                                insertResult = t->setStatus(TruthStatus::True);
-                                insertTrue(insertResult);
+                                insertResults.push_back(t->setStatus(TruthStatus::True));
                             }
                         }//close par
                     }//close par
                 }//close par
             }//close par
+            for(unsigned i = 0; i< insertResults.size(); ++i) insertTrue(insertResults[i]);
         }//close par
         while(! generatedStack.empty()){
             const Tuple* recursiveTuple = factory.getTupleFromInternalID(generatedStack.back());
@@ -107,6 +107,7 @@ void Executor::executeProgram(){
             unsigned literalName = recursiveTuple->getPredicateName();
             if(literalName == _reach){
                 {
+                    std::vector<std::pair<const TupleLight *, bool>> insertResults;
                     int Y = (*recursiveTuple)[1];
                     int X = (*recursiveTuple)[0];
                     const std::vector<int>* tuples;
@@ -118,16 +119,15 @@ void Executor::executeProgram(){
                             int Z = (*tuple1)[1];
                             //Rule is firing 
                             Tuple* t;
-                            std::pair<const TupleLight *, bool> insertResult;
                             t = factory.addNewInternalTuple({X,Z}, _reach);
                             if(t->isUnknown()){
                                 printTuple(t);
                                 generatedStack.push_back(t->getId());
-                                insertResult = t->setStatus(TruthStatus::True);
-                                insertTrue(insertResult);
+                                insertResults.push_back(t->setStatus(TruthStatus::True));
                             }
                         }//close par
                     }//close par
+                    for(unsigned i = 0; i< insertResults.size(); ++i) insertTrue(insertResults[i]);
                 }//close par
             }
         }

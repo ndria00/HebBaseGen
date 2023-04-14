@@ -224,6 +224,7 @@ void CompilationManagerDatalog::compileRule(Rule* rule, std::vector<std::string>
     std::unordered_set<std::string> boundVariables;
     unsigned closingParenthesis = 0;
     *out << indentation++ << "{\n";
+    *out << indentation << "std::vector<std::pair<const TupleLight *, bool>> insertResults;\n";
     std::unordered_map<std::string, unsigned> variablesNameToTupleIndexes;
     closingParenthesis++;
     for(unsigned i = 0; i < rule->getOrderedBodyByStarter(starter).size(); ++i){
@@ -388,7 +389,7 @@ void CompilationManagerDatalog::compileRule(Rule* rule, std::vector<std::string>
 
             //*out << indentation << "vector<std::pair<std::string, vector<std::pair<std::string, int>>>> literalsAndVariables;\n";
             *out << indentation << "Tuple* t;\n";
-            *out << indentation << "std::pair<const TupleLight *, bool> insertResult;\n";
+            //*out << indentation << "std::pair<const TupleLight *, bool> insertResult;\n";
             //*out << indentation << "bool alreadyInFactory = false;\n";
             unsigned index = 0;
             for(Literal* lit : rule->getHead()->getDisjunction()){
@@ -427,8 +428,9 @@ void CompilationManagerDatalog::compileRule(Rule* rule, std::vector<std::string>
                 if(!compileAsExitRule && recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end()){
                     *out << indentation << "generatedStack.push_back(t->getId());\n"; 
                 }    
-                *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
-                *out << indentation << "insertTrue(insertResult);\n";
+                //*out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
+                //*out << indentation << "insertTrue(insertResult);\n";
+                *out << indentation << "insertResults.push_back(t->setStatus(TruthStatus::True));\n";
                 *out << --indentation << "}\n";
 
                 index++;
@@ -437,6 +439,9 @@ void CompilationManagerDatalog::compileRule(Rule* rule, std::vector<std::string>
     }
 
     for (int i = closingParenthesis; i > 0; --i) {
+        if(i == 1){
+           *out << indentation << "for(unsigned i = 0; i< insertResults.size(); ++i) insertTrue(insertResults[i]);\n";
+        }
         *out << --indentation << "}//close par\n";
     }
 }

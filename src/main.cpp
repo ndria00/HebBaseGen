@@ -183,15 +183,10 @@ int main(int argc, char *argv[]){
 	}
 	else if(MODE == GENERATOR){
 		Executor* executor = new Executor();
-		//executor->init();
-		//ASPCore2FactsListenerLight* listener = new ASPCore2FactsListenerLight(executor);
-		//Executor* executor = new Executor();
 		executor->init();
 		ASPFactParserRegex* factParser = new ASPFactParserRegex(executor);
 		if(myFile.is_open()){
 			std::string line;
-			std::string toParse = "";
-			unsigned lineCount = 0;
 			//std::cout<< "facts{\n";
 			std::cout <<"True: {\n";
 

@@ -44,8 +44,8 @@ for $problem_folder(@encodings){
         qx(cat $encodings_path/$problem_folder/$problem_folder.asp > temp.asp);
         qx(cat $path >> temp.asp);
         $input = qx(cat temp.asp);
-        print("DLV INPUT: $input");
-        print("\n");
+        #print("DLV INPUT: $input");
+        #print("\n");
         $results_dlv = "";
         $results_dlv = qx(./$dlv_path$dlv_name $dlv_options temp.asp) || die "Cannot find or execute dlv";
         qx(rm temp.asp);

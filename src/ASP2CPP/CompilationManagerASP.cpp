@@ -188,6 +188,11 @@ void CompilationManagerASP::generateProgram(Program* program){
         //TODO IMPROVE
         std::vector<unsigned> rulesForComponent;
         preCompiler->getRulesFromPredicateIds(effectiveLiteralsIDs, rulesForComponent);
+        // std::cout <<"Compiling rules: ";
+        // for(unsigned i = 0; i < rulesForComponent.size(); ++i){
+        //     std::cout << rulesForComponent[i]<<" ";
+        // }
+        // std::cout << std::endl;
         compileRecursiveComponent(program, rulesForComponent);
         rulesForComponent.clear();
         //getRulesFromPredicateIds(program, effectiveLiteralsIDs, rulesForComponent);
@@ -575,26 +580,27 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
                 }
                 *out << --indentation << "}\n";
                 *out << indentation++ << "else if(t->isUndef()){\n";
-                // if(insertAsUndef){
-                //     *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
-                // }
-                // else{
-                *out << indentation++ << "if(!" << "undefTuple" << i << "){\n";
-                //*out << indentation << "factory.removeFromCollisionsList(t->getId());\n";
-                if(!compileAsExitRule && recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end())
-                    *out << indentation << "propagationStack->erase(std::make_pair(t->getId(), " << rule->getID() << "));\n";
+                if(insertAsUndef){
+                    *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
+                    *out << indentation << "insertResults.push_back(std::make_pair(insertResult, 0));\n";
+                }
+                else{
+                    *out << indentation++ << "if(!" << "undefTuple" << i << "){\n";
+                    //*out << indentation << "factory.removeFromCollisionsList(t->getId());\n";
+                    if(!compileAsExitRule && recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end())
+                        *out << indentation << "propagationStack->erase(std::make_pair(t->getId(), " << rule->getID() << "));\n";
 
-                *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
-                //*out << indentation << "insertTrue(insertResult);\n";
-                *out << indentation << "insertResults.push_back(std::make_pair(insertResult, 2));\n";
-                if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end())
-                    *out << indentation << "generatedStack.push_back(t->getId());\n";
-                if(lit->getArity() == 0)
-                    *out << indentation << "printTuple(t, false);\n";
-                else
-                    *out << indentation << "printTuple(t);\n";
-                *out << --indentation << "}\n";
-                //}
+                    *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
+                    //*out << indentation << "insertTrue(insertResult);\n";
+                    *out << indentation << "insertResults.push_back(std::make_pair(insertResult, 2));\n";
+                    if(recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end())
+                        *out << indentation << "generatedStack.push_back(t->getId());\n";
+                    if(lit->getArity() == 0)
+                        *out << indentation << "printTuple(t, false);\n";
+                    else
+                        *out << indentation << "printTuple(t);\n";
+                    *out << --indentation << "}\n";
+                }
                 *out << --indentation << "}\n";
                 index++;
             }
@@ -610,7 +616,7 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
             *out << indentation << "else if(insertResults[i].second == 0) insertUndef(insertResults[i].first);\n";
             *out << indentation++ << "else if(insertResults[i].second == 2){\n";
             *out << indentation << "factory.removeFromCollisionsList(insertResults[i].first.first->getId());\n";
-            *out << indentation++ << "insertTrue(insertResults[i].first);\n";
+            *out << indentation << "insertTrue(insertResults[i].first);\n";
             *out << --indentation <<"}\n";
             *out << --indentation <<"}\n";
            
@@ -625,6 +631,19 @@ void CompilationManagerASP::compileRecursiveComponentPropagation(Program* progra
     std::vector<unsigned> exitRules;
     std::vector<std::string> recursiveDep;
     preCompiler->findExitRules(recursiveComponent, exitRules, recursiveDep);
+    std::cout <<"recursive dep for propagation: ";
+    for(int i = 0; i< recursiveDep.size(); ++i){
+        std::cout << recursiveDep[i]<< " ";
+    }
+    std::cout<<::std::endl;
+
+    std::cout <<"recursive dep for propagation rules: ";
+    for(int i = 0; i< recursiveComponent.size(); ++i){
+        std::cout << recursiveComponent[i]<< " ";
+    }
+    std::cout<<::std::endl;
+
+
     *out << indentation << "std::unordered_set<std::pair<int, int>, hashFunction>* nextPropagationStack = new std::unordered_set<std::pair<int, int>, hashFunction>();\n";
     *out << indentation << "std::unordered_set<std::pair<int, int>, hashFunction>* temp;\n";
     *out << indentation << "int ruleId;\n";
@@ -636,30 +655,63 @@ void CompilationManagerASP::compileRecursiveComponentPropagation(Program* progra
     *out << indentation << "Tuple* headTuple = factory.getTupleFromInternalID(tupleRule.first);\n";
     *out << indentation << "ruleId = tupleRule.second;\n";
     //*out << indentation << "unsigned literalName = headTuple->getPredicateName();\n";
-    if(recursiveDep.size() >= 1){
-        *out << indentation++ << "if(ruleId == " << recursiveComponent[0]<< "){\n";
+    // if(recursiveDep.size() >= 1){
+    //     *out << indentation++ << "if(ruleId == " << recursiveComponent[0]<< "){\n";
 
-         RuleBase* ruleBase = program->getRuleByID(recursiveComponent[0]);
-        if(ruleBase->isClassicRule())
-            compileRulePropagation(static_cast<Rule*>(ruleBase), recursiveDep, -2, false);
-        else{
-            //ERROR
-            std::cout <<"ERROR\n";
+    //      RuleBase* ruleBase = program->getRuleByID(recursiveComponent[0]);
+    //     if(ruleBase->isClassicRule())
+    //         compileRulePropagation(static_cast<Rule*>(ruleBase), recursiveDep, -2, false);
+    //     else{
+    //         //ERROR
+    //         std::cout <<"ERROR\n";
+    //     }
+    //     //compileRulePropagation(program->getRuleByID(recursiveComponent[0]), recursiveDep, -2, true);
+    //     *out << --indentation << "}\n";
+    // }
+    int indexIf, indexComp;
+    bool compiledFirst = false;
+    for(unsigned indexIf = 0; indexIf < recursiveDep.size() && !compiledFirst; ++indexIf){
+        for(unsigned indexComp = 0; indexComp< recursiveComponent.size() && !compiledFirst; ++indexComp){
+            RuleBase* ruleBase = program->getRuleByID(recursiveComponent[indexComp]);
+            if(ruleBase->containsLiteralInHead(recursiveDep[indexIf])){
+                *out << indentation++ << "if(ruleId == " << recursiveComponent[indexComp]<< "){\n";
+                
+                if(ruleBase->isClassicRule()){
+                    compileRulePropagation(static_cast<Rule*>(ruleBase), recursiveDep, -2, false);
+                    compiledFirst = true;
+                }
+                else{
+                    //ERROR
+                    std::cout <<"ERROR\n";
+                }
+                *out << --indentation << "}\n";
+            }
         }
-        //compileRulePropagation(program->getRuleByID(recursiveComponent[0]), recursiveDep, -2, true);
-        *out << --indentation << "}\n";
     }
- 
-    for(unsigned i = 1; i < recursiveDep.size(); ++i){
-        *out << indentation++ << "else if(ruleId == " << recursiveComponent[i]<< "){\n";
-        RuleBase* ruleBase = program->getRuleByID(recursiveComponent[i]);
-        if(ruleBase->isClassicRule())
-            compileRulePropagation(static_cast<Rule*>(ruleBase), recursiveDep, -2, false);
-        else{
-            //ERROR
-            std::cout <<"ERROR\n";
+
+    for(unsigned i = indexIf; i < recursiveDep.size(); ++i){
+        int j;
+        if(indexIf == i && indexIf != -1){
+            j = indexComp;
+            indexIf = -1;
         }
-        *out << --indentation << "}\n";
+        else
+            j = 0;
+        for(j; j< recursiveComponent.size(); ++j){
+            RuleBase* ruleBase = program->getRuleByID(recursiveComponent[j]);
+            if(ruleBase->containsLiteralInHead(recursiveDep[i])){
+                *out << indentation++ << "else if(ruleId == " << recursiveComponent[j]<< "){\n";
+                
+                if(ruleBase->isClassicRule())
+                    compileRulePropagation(static_cast<Rule*>(ruleBase), recursiveDep, -2, false);
+                else{
+                    //ERROR
+                    std::cout <<"ERROR\n";
+                }
+                *out << --indentation << "}\n";
+            }
+        }
+        indexComp = 0;
     }
     //swap and clear old stack
     *out << --indentation <<"}\n";
@@ -681,7 +733,7 @@ void CompilationManagerASP::compileRulePropagation(Rule* rule, std::vector<std::
     std::unordered_set<std::string> boundVariables;
     unsigned closingParenthesis = 0;
     *out << indentation++ << "{\n";
-    *out << indentation << "std::vector< std::pair<std::pair<const TupleLight *, bool>, bool>> insertResults;\n";
+    *out << indentation << "std::vector< std::pair<std::pair<const TupleLight *, bool>, int>> insertResults;\n";
     //say that this rule cannot support the literal in the head
     *out << indentation << "bool maySupport = false;\n";
     //declare all variables in the head of the rule because the are made bound by the tuple in the head
@@ -884,18 +936,14 @@ void CompilationManagerASP::compileRulePropagation(Rule* rule, std::vector<std::
 
     for (int i = closingParenthesis; i > 0; --i) {
         if(i == 1){
-
-        if(i == 1){
             *out << indentation++ << "for(unsigned i = 0; i< insertResults.size(); ++i){\n";
             *out << indentation << "if(insertResults[i].second == 1) insertTrue(insertResults[i].first);\n";
             *out << indentation << "else if(insertResults[i].second == 0) insertUndef(insertResults[i].first);\n";
             *out << indentation++ << "else if(insertResults[i].second == 2){\n";
             *out << indentation << "factory.removeFromCollisionsList(insertResults[i].first.first->getId());\n";
-            *out << indentation++ << "insertTrue(insertResults[i].first);\n";
+            *out << indentation << "insertTrue(insertResults[i].first);\n";
             *out << --indentation <<"}\n";
             *out << --indentation <<"}\n";
-           
-        }
 
             *out << indentation++ <<"if(!maySupport){\n";
             *out << indentation << "tupleSupports[headTuple->getId()].erase(" << rule->getID() << ");\n";

@@ -27,6 +27,7 @@ void DependencyGraphHandler::createGraph(Program* program, std::unordered_map<un
 	for(auto& it: program->getIDBPredicates()){
 		depGraph.addNode(literalsID);
 		predicateNodeMapping[it.second] = literalsID;
+		//std::cout<<"Added node " << it.second << "for predicate " << it.first <<std::endl;
 		++literalsID;
 
 	}
@@ -46,11 +47,11 @@ void DependencyGraphHandler::createGraph(Program* program, std::unordered_map<un
 				for(Literal* litHead : r->getHead()->getDisjunction()){
 					//if(predicateID[lit->getIdentifier()] != predicateID[litHead->getIdentifier()]){
 						depGraph.addEdge(predicateNodeMapping[lit->getID()], predicateNodeMapping[litHead->getID()], !lit->isNegative());
-						//std::cout<<"added edge from " << lit->getID();
-						//lit->print();
-						//std::cout<<" to " << litHead->getID();
-						//litHead->print();
-						//std::cout<<std::endl;
+						// std::cout<<"added edge from " << lit->getID() <<" ";
+						// lit->print();
+						// std::cout<<" to " << litHead->getID() << " ";
+						// litHead->print();
+						// std::cout<<std::endl;
 					//}
 				}
 			}
@@ -105,10 +106,14 @@ const std::vector<std::list<std::pair<unsigned, bool>>> DependencyGraphHandler::
 
 void DependencyGraphHandler::printProgramLayers(Program* program, std::unordered_map<unsigned, unsigned>& predicateNodeMapping){
 	std::vector<std::vector<unsigned>> layers = depGraph.SCC();
-    for(unsigned i = 0; i < layers.size(); ++i){
+    for(int i = layers.size()-1 ; i >=0; --i){
 		std::cout<<"Layer number "<<i<<" of size "<<layers[i].size()<< ": ";
 		for(unsigned j = 0; j < layers[i].size(); ++j){
-			std::cout<<program->getPredicateByID(layers[i][j])<<" ";
+			for(auto& it : predicateNodeMapping){
+                if(it.second == layers[i][j]){
+                    std::cout << program->getPredicateByID(it.first) << " ";
+                }
+            }
 		} 
 		std::cout<<std::endl;
 	}

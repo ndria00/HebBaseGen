@@ -2,3 +2,8 @@ output/
 .vscode
 src/resources
 *.o
+30-stable_marriage-0-0.asp
+40-stable_marriage-0-0.asp
+41-stable_marriage-0-0.asp
+42-stable_marriage-0-0.asp
+43-stable_marriage-0-0.asp

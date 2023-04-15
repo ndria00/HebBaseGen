@@ -148,7 +148,7 @@ void Rule::sortLiteralsInBody(int starter =-1){
                         }
                 }
                 else{
-                    if(bindingResult.second){
+                    if(bindingResult.second && bindingResult.first != ""){
                         body->getBuiltInTerms().at(j)->getBuiltInVariables(boundVariables);
                         builtInTermAdded.insert(j);
                     }

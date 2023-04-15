@@ -69,10 +69,15 @@ std::string& Program::getPredicateByID(unsigned id){
     return inversePredicateMap[id];
 }
 
-bool Program::addPredicateWithID(const std::string& predName, unsigned id){
+int Program::getPredicateArityById(int id){
+    return predicateArityMap[id];
+}
+
+bool Program::addPredicateWithID(const std::string& predName, unsigned id, unsigned arity){
     if(predicateID.count(predName) == 0){
         predicateID[predName] = id;
         inversePredicateMap[id] = predName;
+        predicateArityMap[id] = arity;
         return true;
     }
     return false;

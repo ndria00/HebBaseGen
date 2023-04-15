@@ -127,17 +127,22 @@ bool Expression::isBound(std::unordered_set<std::string>& boundVariables)const{
 std::pair<std::string, bool> Expression::getUnboundedVar(std::unordered_set<std::string>& boundVariables)const{
     if(first == nullptr && second == nullptr)
         return std::make_pair("", false);
+    bool firstBound = false;
     if(first != nullptr){
         std::pair<std::string, bool> firstUbounded = first->getUnboundedVar(boundVariables); 
         if(firstUbounded.second)
+            firstBound = true;
+        if(firstUbounded.second && second == nullptr)
             return firstUbounded;
     }
     if(second != nullptr){
         std::pair<std::string, bool> secondUbounded = second->getUnboundedVar(boundVariables);
-        if(secondUbounded.second)
+        if(secondUbounded.second && firstBound){
+            secondUbounded.first = first->getUnboundedVar(boundVariables).first;
             return secondUbounded;
+        }
     }
-    return std::make_pair("", true);
+    return std::make_pair("", false);
 }
 
 

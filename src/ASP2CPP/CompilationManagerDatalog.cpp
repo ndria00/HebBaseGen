@@ -65,7 +65,13 @@ void CompilationManagerDatalog::generateProgram(Program* program){
     *out << --indentation << "}\n";
     *out << indentation << "std::cout << \")\"<<std::endl;\n";
     *out << --indentation << "}\n";
-    
+
+    //print function for arity zero
+    *out << indentation++ << "void printTuple(const Tuple* t, bool dummy){\n";
+    *out << indentation << "std::cout << Executor::predicateIds[t->getPredicateName()];\n";
+    *out << indentation << "std::cout <<std::endl;\n";
+    *out << --indentation << "}\n";
+
     *out << indentation++ << "void Executor::init(){\n";
     std::vector<std::pair<std::string, unsigned>>predIDPair;
     for(auto lit : program->getPredicatesID()){
@@ -109,7 +115,9 @@ void CompilationManagerDatalog::generateProgram(Program* program){
     *out << indentation << "insertTrue(insertResult);\n";
     //*out << --indentation << "}\n";
     //TRHOW EXCEPTION BECAUSE NO UNDEF TUPLES ARE ADMITTED
-    *out << indentation << "printTuple(t);\n";
+    *out << indentation<< "if(t->size() == 0) ";
+    *out << indentation << "printTuple(t, false);\n";
+    *out << indentation << "else printTuple(t);\n";
     *out << --indentation << "}\n";
 
 
@@ -424,7 +432,9 @@ void CompilationManagerDatalog::compileRule(Rule* rule, std::vector<std::string>
 
                 *out << indentation << "t = factory.addNewInternalTuple(" << listOfTerms << ", _" << lit->getIdentifier() << ");\n";
                 *out << indentation++ << "if(t->isUnknown()){\n";
-                *out << indentation << "printTuple(t);\n";
+                if(lit->getArity() == 0)
+                    *out << indentation << "printTuple(t, false);\n";
+                else*out << indentation << "printTuple(t);\n";
                 if(!compileAsExitRule && recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end()){
                     *out << indentation << "generatedStack.push_back(t->getId());\n"; 
                 }    

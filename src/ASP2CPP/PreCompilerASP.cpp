@@ -11,7 +11,7 @@ PreCompilerASP::PreCompilerASP(Program* program){
     //Each layer contains the ids of its IDB predicates
     //In order to find the rules that are part of each layer a complete search of rules needs to be done  
 	layers = DependencyGraphHandler::getInstance().getProgramLayers();
-    DependencyGraphHandler::getInstance().printProgramLayers(predicateNodeMapping);
+    DependencyGraphHandler::getInstance().printProgramLayers(program, predicateNodeMapping);
     //computePredicatesToRemove();
     //check if the program is asp or datalog and create the appropriate compilation manager
     if(programContainsRecusionThroughNegation()){
@@ -95,7 +95,7 @@ unsigned PreCompilerASP::getLayersNumber(){
 
 void PreCompilerASP::findAllInterestingBodyReorderings(){
 
-	DependencyGraphHandler::getInstance().printProgramLayers(predicateNodeMapping);
+	DependencyGraphHandler::getInstance().printProgramLayers(program, predicateNodeMapping);
     for(int i = layers.size()-1; i >= 0 ; --i){
         std::vector<unsigned> effectiveLiteralsIDs;
         for(unsigned j = 0; j < layers[i].size(); ++j){

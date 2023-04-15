@@ -1,7 +1,3 @@
-%%%%%%%%%%%%%%%%%
-% Preprocessing %
-%%%%%%%%%%%%%%%%%
-
 diff(V,V)  :- edge(V,V), obs_elabel(V,V,m), not obs_elabel(V,V, p).
 diff(U,V)  :- edge(U,V), obs_elabel(U,V,m), not obs_elabel(U,V, p), obs_vlabel(U,S), obs_vlabel(V,S).
 diff(U,V)  :- edge(U,V), obs_elabel(U,V, p), not obs_elabel(U,V,m), obs_vlabel(U,S), obs_vlabel(V,T), S != T.
@@ -16,12 +12,8 @@ nlast(W,V)    :- ntedge(W,U,V).
 first(U,V)    :- vertex(V), not input(V), not trivial(V), edge(U,V), not nfirst(U,V).
 last(U,V)     :- vertex(V), not input(V), not trivial(V), edge(U,V), not nlast(U,V).
 
-
-%%%%%%%%%%%%%
-% Generator %
-%%%%%%%%%%%%%
-
-active(V) | inactive(V) :- vertex(V), not input(V).
+active(V) :- not inactive(V), vertex(V), not input(V).
+inactive(V) :- not active(V), vertex(V), not input(V).
 inactive(V)             :- vertex(V), not input(V), active(W), trivial(W), V != W.
 singleton               :- active(V), trivial(V).
 
@@ -32,17 +24,12 @@ reach(V,W) :- edge(U,V), active(V), not trivial(V), reach(U,W), vertex(W), not o
 
 aedge(V) :- vertex(V), not input(V), not trivial(V), not obs_vlabel(V,p), not obs_vlabel(V,m), active(W), edge(V,W).
 
-%:- active(V), not trivial(V), active(W), not trivial(W), not reach(V,W).
-%:- active(V), not trivial(V), not obs_vlabel(V,p), not obs_vlabel(V,m), not aedge(V).
-
-
-%%%%%%%%%%%%%%%%%%%%%%
-% Inconsistency Test %
-%%%%%%%%%%%%%%%%%%%%%%
-
-vlabel(V,p)   | vlabel(V,m)   :- active(V),    not trivial(V),               not obs_vlabel(V,p),   not obs_vlabel(V,m).
-vlabel(U,p)   | vlabel(U,m)   :- active(V),    not trivial(V), edge(U,V),    not obs_vlabel(U,p),   not obs_vlabel(U,m).
-llabel(U,V,p) | llabel(U,V,m) :- active(V),    not trivial(V), edge(U,V),    not obs_elabel(U,V,p), not obs_elabel(U,V,m).
+vlabel(V,p)   :- not vlabel(V,m), active(V),    not trivial(V),               not obs_vlabel(V,p),   not obs_vlabel(V,m).
+vlabel(V,m)   :- not vlabel(V,p), active(V),    not trivial(V),               not obs_vlabel(V,p),   not obs_vlabel(V,m).
+vlabel(U,p)   :- not vlabel(U,m), active(V),    not trivial(V), edge(U,V),    not obs_vlabel(U,p),   not obs_vlabel(U,m).
+vlabel(U,m)   :- not vlabel(U,p), active(V),    not trivial(V), edge(U,V),    not obs_vlabel(U,p),   not obs_vlabel(U,m).
+llabel(U,V,p) :- not llabel(U,V,m), active(V),    not trivial(V), edge(U,V),    not obs_elabel(U,V,p), not obs_elabel(U,V,m).
+llabel(U,V,m) :- not llabel(U,V,p), active(V),    not trivial(V), edge(U,V),    not obs_elabel(U,V,p), not obs_elabel(U,V,m).
 
 vlabel(V,S)   :- vertex(V), obs_vlabel(V,S),   not trivial(V), not input(V).
 vlabel(U,S)   :- edge(U,V), obs_vlabel(U,S),   not trivial(V), not input(V).
@@ -61,16 +48,12 @@ vlabel(V,S)   :- bot, vertex(V), sign(S),      not trivial(V), not input(V), not
 vlabel(U,S)   :- bot, edge(U,V), sign(S),      not trivial(V), not input(V), not obs_vlabel(U,p),   not obs_vlabel(U,m).
 llabel(U,V,S) :- bot, edge(U,V), sign(S),      not trivial(V), not input(V), not obs_elabel(U,V,p), not obs_elabel(U,V,m).
 
-%:- not bot.
-
-
-%%%%%%%%%%%%%%%%%%%
-% Minimality Test %
-%%%%%%%%%%%%%%%%%%%
-
-mvlabel(W,V,p)   | mvlabel(W,V,m)   :-                active(W), not trivial(V), not trivial(W), active(V), reach(V,W), reach(W,V), W != V.
-mvlabel(W,U,p)   | mvlabel(W,U,m)   :- edge(U,V),     active(W), not trivial(V), not trivial(W), active(V), reach(V,W), reach(W,V), W != V.
-mllabel(W,U,V,p) | mllabel(W,U,V,m) :- edge(U,V),     active(W), not trivial(V), not trivial(W), active(V), reach(V,W), reach(W,V), W != V.
+mvlabel(W,V,p)   :- not mvlabel(W,V,m),               active(W), not trivial(V), not trivial(W), active(V), reach(V,W), reach(W,V), W != V.
+mvlabel(W,V,m)   :- not mvlabel(W,V,p),               active(W), not trivial(V), not trivial(W), active(V), reach(V,W), reach(W,V), W != V.
+mvlabel(W,U,p)   :- not mvlabel(W,U,m), edge(U,V),     active(W), not trivial(V), not trivial(W), active(V), reach(V,W), reach(W,V), W != V.
+mvlabel(W,U,m)   :- not mvlabel(W,U,p), edge(U,V),     active(W), not trivial(V), not trivial(W), active(V), reach(V,W), reach(W,V), W != V.
+mllabel(W,U,V,p) :- not mllabel(W,U,V,m), edge(U,V),     active(W), not trivial(V), not trivial(W), active(V), reach(V,W), reach(W,V), W != V.
+mllabel(W,U,V,m) :- not mllabel(W,U,V,p), edge(U,V),     active(W), not trivial(V), not trivial(W), active(V), reach(V,W), reach(W,V), W != V.
 
 mvlabel(W,V,S)   :- obs_vlabel(V,S),                  vertex(W), not trivial(V), not trivial(W), not input(V), not input(W),        W != V.
 mvlabel(W,U,S)   :- obs_vlabel(U,S),    edge(U,V),    vertex(W), not trivial(V), not trivial(W), not input(V), not input(W),        W != V.
@@ -78,13 +61,3 @@ mllabel(W,U,V,S) :- obs_elabel(U,V,S),  edge(U,V),    vertex(W), not trivial(V),
 
 minfl(W,V,p)     :- mvlabel(W,U,S), mllabel(W,U,V,S), active(W), not trivial(V), not trivial(W), active(V), reach(V,W), reach(W,V), W != V.
 minfl(W,V,m)     :- mvlabel(W,U,S), mllabel(W,U,V,T), active(W), not trivial(V), not trivial(W), active(V), reach(V,W), reach(W,V), W != V, S != T.
-
-%:- active(V), active(W), not trivial(V), not trivial(W), W != V, mvlabel(W,V,S), not minfl(W,V,S).
-
-
-%%%%%%%%%%
-% Output %
-%%%%%%%%%%
-
-% #hide.
-% #show active(V).

@@ -10,6 +10,7 @@ class Program{
         std::unordered_map<std::string, unsigned> predicateID;
         std::unordered_map<std::string, unsigned> iDBPredicates;
         std::unordered_map<unsigned, std::string> inversePredicateMap;
+        std::unordered_map<unsigned, unsigned> predicateArityMap;
         bool datalogEncoding;
     public:
         Program();
@@ -24,7 +25,7 @@ class Program{
         void mapAllConstants()const;
         bool existsPredicate(std::string)const;
         std::string& getPredicateByID(unsigned);
-        bool addPredicateWithID(const std::string&, unsigned);
+        bool addPredicateWithID(const std::string&, unsigned, unsigned);
         std::unordered_map<std::string, unsigned>& getPredicatesID();
         void getRulesByID(std::vector<unsigned>&, std::vector<RuleBase*>&);
         unsigned getIDForPredicate(Literal* );
@@ -35,6 +36,7 @@ class Program{
         bool containsUnsupportedBuiltIn()const;
         bool isDatalog();
         void setLanguageDatalog(bool);
+        int getPredicateArityById(int);
 };
 
 #endif /*PROGRAM_H_*/

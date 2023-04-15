@@ -43,6 +43,10 @@ for $problem_folder(@encodings){
         #append instance and encoding to temp file
         qx(cat $encodings_path/$problem_folder/$problem_folder.asp > temp.asp);
         qx(cat $path >> temp.asp);
+        $input = qx(cat temp.asp);
+        print("DLV INPUT: $input");
+        print("\n");
+        $results_dlv = "";
         $results_dlv = qx(./$dlv_path$dlv_name $dlv_options temp.asp) || die "Cannot find or execute dlv";
         qx(rm temp.asp);
         qx(make -j8 >/dev/null 2>&1);
@@ -52,17 +56,18 @@ for $problem_folder(@encodings){
 
         
         # fill true and udnef maps for hbgen
-        print("Gen results $results_gen\n");
-        @results_gen_true = $results_gen =~ /True: \{.*\}/gs;
-        @results_gen_undef = $results_gen =~ /Undefined: \{.*\}/gs;
+        #print("Gen results $results_gen\n");
+        @results_gen_true = $results_gen =~ /True: \{.*?\}/gs;
+        @results_gen_undef = $results_gen =~ /Undefined: \{.*?\}/gs;
         $l1 = @results_gen_true;
         $l2 = @results_gen_undef;
-        print("Hello size true: $l1 size undef: $l2 \n");
+        #print("Hello size true: $l1 size undef: $l2 \n");
         %hb_gen_atoms_true;
         %hb_gen_atoms_undef;
         undef %hb_gen_atoms_true;
         undef %hb_gen_atoms_undef;
         for $true_block_gen(@results_gen_true){
+            #print("Hey $true_block_gen\n");
             @matches = ();
             @matches = $true_block_gen =~ /([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\.]?)|([a-z_A-Z][0-9a-zA-Z_]*\(.*?\)[\|]?)/g;
             for $match(@matches){
@@ -71,7 +76,7 @@ for $problem_folder(@encodings){
                         chop($match); 
                     }
                     $hb_gen_atoms_true{$match} += 1;
-                    print("Added $match to true\n");
+                    #print("Added -$match- to true\n");
                 }
             }
         }
@@ -84,7 +89,7 @@ for $problem_folder(@encodings){
                         chop($match); 
                     }
                     $hb_gen_atoms_undef{$match} += 1;
-                    print("Added $match to undef\n");
+                    #print("Added -$match- to undef\n");
                 }
             }
         }
@@ -92,11 +97,12 @@ for $problem_folder(@encodings){
         #CHECK GEN OUT \in DLV OUT
 
         #fill true and undef maps for dlv
-        @results_dlv_true = $results_dlv =~ /True: \{.*\}/g;
-        @results_dlv_undef = $results_dlv =~ /Undefined: \{.*\}/g;
+        #print("dlv results: $results_dlv\n");
+        @results_dlv_true = $results_dlv =~ /True: \{.*?\}/g;
+        @results_dlv_undef = $results_dlv =~ /Undefined: \{.*?\}/g;
         $l1 = @results_dlv_true;
         $l2 = @results_dlv_undef;
-        print("Hello size true dlv : $l1 size undef dlv: $l2 \n");
+        #print("Hello size true dlv : $l1 size undef dlv: $l2 \n");
         %dlv_atoms_true;
         %dlv_atoms_undef;
         undef %dlv_atoms_true;
@@ -110,14 +116,14 @@ for $problem_folder(@encodings){
                     if("." eq substr($match, -1)){
                         chop($match); 
                     }
-                    print("Added $match to true dlv\n");
+                    #print("Added -$match- to true dlv\n");
                     $dlv_atoms_true{$match} += 1;
                     #check that the atom exists in the data structure that contains
                     #outputs from HBGen 
-                    if($match ne "" && $match ne " " && !exists $hb_gen_atoms_true{$match}){
+                    if(!exists $hb_gen_atoms_true{$match}){
                         #when an atom is not found an error has occurred
                         #print in which instance the problem wwas found, on what match and die
-                        print("Test failed on-$match- for instannce $instance of problem $problem_folder (the atom was expected to be within the true ones, but it isn't)\n");
+                        print("Test failed on-$match- for instance $instance of problem $problem_folder (the atom was expected to be within the true ones, but it isn't)\n");
                         die "Test FAILED";
                     }
                 }
@@ -133,14 +139,14 @@ for $problem_folder(@encodings){
                     if("." eq substr($match, -1)){
                         chop($match); 
                     }
-                    print("Added $match to undef dlv\n");
+                    #print("Added -$match- to undef dlv\n");
                     $dlv_atoms_undef{$match} += 1;
                     #check that the atom exists in the data structure that contains
                     #outputs from HBGen 
-                    if($match ne "" && $match ne " " && !exists $hb_gen_atoms_undef{$match}){
+                    if(!exists $hb_gen_atoms_undef{$match}){
                         #when an atom is not found an error has occurred
                         #print in which instance the problem wwas found, on what match and die
-                        print("Test failed on-$match- for instannce $instance of problem $problem_folder (the atom was expected to be within the undef ones, but it isn't)\n");
+                        print("Test failed on-$match- for instance $instance of problem $problem_folder (the atom was expected to be within the undef ones, but it isn't)\n");
                         die "Test FAILED";
                     }
                 }
@@ -156,7 +162,7 @@ for $problem_folder(@encodings){
                 if(!exists $dlv_atoms_true{$gen_true_atom}){
                     #when an atom is not found an error has occurred
                     #print in which instance the problem wwas found, on what match and die
-                    print("Test failed on-$gen_true_atom- for instannce $instance of problem $problem_folder (the atom was expected to be within the true ones, but it isn't)\n");
+                    print("Test failed on-$gen_true_atom- for instance $instance of problem $problem_folder (the atom was expected to be within the true ones, but it isn't)\n");
                     die "Test FAILED";
                 }
             }

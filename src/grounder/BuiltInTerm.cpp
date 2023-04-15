@@ -81,14 +81,16 @@ std::pair<std::string, bool> BuiltInTerm::canBind(std::unordered_set<std::string
     if(firstBound.second && secondBound.second)
         return firstBound;
     if(firstBound.second && !secondBound.second){
-        secondBound.second = true;
+        if(rightExpr->isSimpleFactor())
+            secondBound.second = true;
         return secondBound;
     }
     if(!firstBound.second && secondBound.second){
-        firstBound.second = true;
+        if(leftExpr->isSimpleFactor())
+            firstBound.second = true;
         return firstBound;
     }
-    return secondBound;
+    return std::make_pair("", false);;
 }
 
 std::string BuiltInTerm::toString()const{

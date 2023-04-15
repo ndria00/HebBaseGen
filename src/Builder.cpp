@@ -51,7 +51,7 @@ void Builder::addCurrentAtom(){
 	allAtoms.push_back(currentAtom);
 	if(!program->existsPredicate(currentAtom->getIDAndArity())){
 		//predicateID[lit->getIDAndArity()] = literalsId;
-		if(program->addPredicateWithID(currentAtom->getIdentifier(), literalsId)){
+		if(program->addPredicateWithID(currentAtom->getIdentifier(), literalsId, currentAtom->getArity())){
 			++literalsId;
 		}
 		currentAtom->setID(program->getIDForPredicate(currentAtom));

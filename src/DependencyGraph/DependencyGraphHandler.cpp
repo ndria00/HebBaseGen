@@ -103,12 +103,12 @@ const std::vector<std::list<std::pair<unsigned, bool>>> DependencyGraphHandler::
 	return depGraph.getLabels();
 }
 
-void DependencyGraphHandler::printProgramLayers(std::unordered_map<unsigned, unsigned>& predicateNodeMapping){
+void DependencyGraphHandler::printProgramLayers(Program* program, std::unordered_map<unsigned, unsigned>& predicateNodeMapping){
 	std::vector<std::vector<unsigned>> layers = depGraph.SCC();
     for(unsigned i = 0; i < layers.size(); ++i){
 		std::cout<<"Layer number "<<i<<" of size "<<layers[i].size()<< ": ";
 		for(unsigned j = 0; j < layers[i].size(); ++j){
-			std::cout<<layers[i][j]<<" ";
+			std::cout<<program->getPredicateByID(layers[i][j])<<" ";
 		} 
 		std::cout<<std::endl;
 	}

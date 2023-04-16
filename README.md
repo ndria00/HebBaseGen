@@ -7,13 +7,23 @@ The typical workflow is the following:
 
 <!-- USAGE EXAMPLES -->
 ### Usage
+    Compilation of the project
+  ```sh
+  make
+  ```
   Compilation of generator
   ```sh
   ./output/main compile encoding 
   ```
+  C++ compilation of the generated code
+  ```sh
+  make
+  ```
+  Execution of generator
   ```sh
   ./output/main generate instance
   ```
+  
   
 ### Writing your own tests
 A simple perl file is contained in the test folder of the project. Such file was used to perform black-box testing of the system.

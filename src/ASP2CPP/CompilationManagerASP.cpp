@@ -950,10 +950,10 @@ void CompilationManagerASP::compileRulePropagation(Rule* rule, std::vector<std::
             *out << indentation++ << "if(tupleSupports[headTuple->getId()].size() == 0){\n";
             *out << indentation << "//removing tuple from undef\n";
             //*out << indentation << "std::cout << \"Propagation Occurred to false for tuple \";\n";
-            if(rule->getHead()->getDisjunction().at(0)->getArity() == 0)
-                *out << indentation << "printTuple(headTuple, false);\n";
-            else
-                *out << indentation << "printTuple(headTuple);\n";
+            // if(rule->getHead()->getDisjunction().at(0)->getArity() == 0)
+            //     *out << indentation << "printTuple(headTuple, false);\n";
+            // else
+            //     *out << indentation << "printTuple(headTuple);\n";
             *out << indentation << "factory.removeFromCollisionsList(headTuple->getId());\n";
             *out << indentation << "factory.destroyTuple(headTuple->getId());\n";
             *out << --indentation <<"}\n";

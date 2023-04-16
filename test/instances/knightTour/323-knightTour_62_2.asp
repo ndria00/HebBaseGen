@@ -3,3 +3,7 @@ givemove(19,26,20,24).
 givemove(58,61,56,62). 
 givemove(30,39,28,40). 
 givemove(18,50,19,48). 
+delta(1,2).
+delta(1,-2).
+delta(2,1).
+delta(2,-1).

@@ -482,7 +482,6 @@ void Executor::executeProgram(){
                                 tupleSupports[headTuple->getId()].erase(1);
                                 if(tupleSupports[headTuple->getId()].size() == 0){
                                     //removing tuple from undef
-                                    printTuple(headTuple);
                                     factory.removeFromCollisionsList(headTuple->getId());
                                     factory.destroyTuple(headTuple->getId());
                                 }
@@ -550,7 +549,6 @@ void Executor::executeProgram(){
                                 tupleSupports[headTuple->getId()].erase(1);
                                 if(tupleSupports[headTuple->getId()].size() == 0){
                                     //removing tuple from undef
-                                    printTuple(headTuple);
                                     factory.removeFromCollisionsList(headTuple->getId());
                                     factory.destroyTuple(headTuple->getId());
                                 }
@@ -618,7 +616,6 @@ void Executor::executeProgram(){
                                 tupleSupports[headTuple->getId()].erase(0);
                                 if(tupleSupports[headTuple->getId()].size() == 0){
                                     //removing tuple from undef
-                                    printTuple(headTuple);
                                     factory.removeFromCollisionsList(headTuple->getId());
                                     factory.destroyTuple(headTuple->getId());
                                 }
@@ -962,7 +959,6 @@ void Executor::executeProgram(){
                                 tupleSupports[headTuple->getId()].erase(4);
                                 if(tupleSupports[headTuple->getId()].size() == 0){
                                     //removing tuple from undef
-                                    printTuple(headTuple);
                                     factory.removeFromCollisionsList(headTuple->getId());
                                     factory.destroyTuple(headTuple->getId());
                                 }
@@ -1020,7 +1016,6 @@ void Executor::executeProgram(){
                                 tupleSupports[headTuple->getId()].erase(4);
                                 if(tupleSupports[headTuple->getId()].size() == 0){
                                     //removing tuple from undef
-                                    printTuple(headTuple);
                                     factory.removeFromCollisionsList(headTuple->getId());
                                     factory.destroyTuple(headTuple->getId());
                                 }

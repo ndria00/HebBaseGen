@@ -7,7 +7,7 @@ The typical workflow is the following:
 
 <!-- USAGE EXAMPLES -->
 ### Usage
-    Compilation of the project
+  Compilation of the project
   ```sh
   make
   ```

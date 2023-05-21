@@ -161,6 +161,9 @@ public:
         return content[i];
     }
     
+    bool isDummy()const{
+        return id == -INT_MAX;
+    }
     bool operator==(const TupleLight& right) const {
 
         if (predicateName != right.predicateName || size_ != right.size_) {

@@ -322,7 +322,7 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
     for(unsigned i = 0; i < rule->getOrderedBodyByStarter(starter).size(); ++i){
         
         if(i == 0){
-            *out << indentation << "bool undefTuple" << i << "= false;\n";
+            *out << indentation << "bool undefTuple" << i << " = false;\n";
         }
         else{
             *out << indentation << "bool undefTuple" << i << " = undefTuple" << i-1 <<";\n";
@@ -412,7 +412,7 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
             }
 
 
-            *out << indentation++ << "if(tuple" << i << "!= NULL){\n";
+            *out << indentation++ << "if(tuple" << i << " != NULL){\n";
             closingParenthesis++;
             if (!lit->isNegative() || (i == 0)){
                 std::unordered_set<std::string> declaredVariables;
@@ -556,16 +556,16 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
                     *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
                     //*out << indentation << "insertUndef(insertResult);\n";
                     *out << indentation << "insertResults.push_back(std::make_pair(insertResult, INSERT_AS_UNDEF));\n";
-                    if(!compileAsExitRule && recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end()){
+                    //if(!compileAsExitRule && recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end()){
                         //save source pointers for head tuple
                         //forall literals true in body and negative that are already in the factory, store source pointer
                         //*out << indentation << "sourcePointers.insert(std::make_pair(t->getId(), pointers));\n";
-                        *out << indentation << "propagationStack->insert(std::make_pair(t->getId(), " << rule->getID() << "));\n";
-                        *out << indentation++ << "if(tupleSupports.find(t->getId()) != tupleSupport.end()){\n";
-                        *out << indentation << "tupleSupports[t->getId()].insert(" << rule->getID() << ") ;\n";
-                        *out << --indentation << "}\n";
-                        *out << indentation << "else tupleSupports.insert({t->getId(), std::unordered_set<int>()});\n";   
-                    }
+                        //*out << indentation << "propagationStack->insert(std::make_pair(t->getId(), " << rule->getID() << "));\n";
+                        // *out << indentation++ << "if(tupleSupports.find(t->getId()) != tupleSupport.end()){\n";
+                        // *out << indentation << "tupleSupports[t->getId()].insert(" << rule->getID() << ") ;\n";
+                        // *out << --indentation << "}\n";
+                        // *out << indentation << "else tupleSupports.insert({t->getId(), std::unordered_set<int>()});\n";   
+                    //}
                 }
                 else{
                     *out << indentation++ << "if(" << "undefTuple" << i << "){\n";
@@ -578,8 +578,8 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
                         //forall literals true in body and negative that are already in the factory, store source pointer
                         *out << indentation << "bool toCheck = true;\n";
                         *out << indentation++ <<"if(sourcePointers.find(t->getId()) == sourcePointers.end()){\n";
+                        *out << indentation << "sourcePointers.insert({t->getId(), std::unordered_set<int>()});\n";
                         for(unsigned l = 0; l < rule->getOrderedBodyByStarter(starter).size(); ++l){
-                            *out << indentation << "sourcePointers.insert({t->getId(), std::unordered_set<int>()});\n";
                             if(!body->getConjunction()[rule->getOrderedBodyByStarter(starter)[l]]->isNegative()){
                                 *out << indentation << "sourcePointers.at(t->getId()).insert(tuple" << l << "->getId());\n";
                                 *out << indentation << "if(sourcePointers.find(tuple" << l <<"->getId()) != sourcePointers.end()) toCheck = false;\n";
@@ -605,9 +605,9 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
                         //the idea is to not add tuples that are dependent from another tuple that is still not checked
                         //*out << indentation << "propagationSet.insert();\n";
                         *out << --indentation << "}\n"; 
-                        *out << indentation << "propagationStack->insert(std::make_pair(t->getId(), " << rule->getID() << "));\n";
-                        *out << indentation << "if(tupleSupports.find(t->getId()) == tupleSupports.end()) tupleSupports.insert({t->getId(), std::unordered_set<int>()});\n";
-                        *out << indentation << "tupleSupports[t->getId()].insert(" << rule->getID() << ") ;\n";
+                        //*out << indentation << "propagationStack->insert(std::make_pair(t->getId(), " << rule->getID() << "));\n";
+                        // *out << indentation << "if(tupleSupports.find(t->getId()) == tupleSupports.end()) tupleSupports.insert({t->getId(), std::unordered_set<int>()});\n";
+                        // *out << indentation << "tupleSupports[t->getId()].insert(" << rule->getID() << ") ;\n";
                         // *out << --indentation << "}\n";
                         // *out << indentation++ << "else {\n";
                         // *out << indentation << "tupleSupports.insert({t->getId(), std::unordered_set<int>()});\n";
@@ -634,8 +634,8 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
                 else{
                     *out << indentation++ << "if(!" << "undefTuple" << i << "){\n";
                     //*out << indentation << "factory.removeFromCollisionsList(t->getId());\n";
-                    if(!compileAsExitRule && recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end())
-                        *out << indentation << "propagationStack->erase(std::make_pair(t->getId(), " << rule->getID() << "));\n";
+                    //if(!compileAsExitRule && recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end())
+                        //*out << indentation << "propagationStack->erase(std::make_pair(t->getId(), " << rule->getID() << "));\n";
 
                     *out << indentation << "insertResult = t->setStatus(TruthStatus::True);\n";
                     //*out << indentation << "insertTrue(insertResult);\n";
@@ -697,8 +697,8 @@ void CompilationManagerASP::compileRecursiveComponentPropagation(Program* progra
     *out << indentation++ <<"while(propagated){\n";
     *out << indentation << "propagated = false;\n"; 
     //*out << indentation++ << "while(!propagationStack->empty()){\n";
-    *out << indentation++ <<"for(int tupleRule: *propagationSet){\n";
-    *out << indentation << "Tuple* headTuple = factory.getTupleFromInternalID(tupleRule);\n";
+    *out << indentation++ <<"for(int tupleId: *propagationSet){\n";
+    *out << indentation << "Tuple* headTuple = factory.getTupleFromInternalID(tupleId);\n";
     *out << indentation << "int rulePred = headTuple->getPredicateName();\n";
     //*out << indentation << "unsigned literalName = headTuple->getPredicateName();\n";
     // if(recursiveDep.size() >= 1){
@@ -714,25 +714,44 @@ void CompilationManagerASP::compileRecursiveComponentPropagation(Program* progra
     //     //compileRulePropagation(program->getRuleByID(recursiveComponent[0]), recursiveDep, -2, true);
     //     *out << --indentation << "}\n";
     // }
-    int indexIf, indexComp;
-    bool compiledFirst = false;
+    // int indexIf, indexComp;
+    // bool compiledFirst = false;
 
     for(unsigned i = 0; i < recursiveDep.size(); ++i){
         *out << indentation++ << "if(rulePred == _"<< recursiveDep[i] <<"){\n";
-            for(unsigned j = 0; j < recursiveComponent.size(); ++j){
-                if(program->getRuleByID(recursiveComponent[j])->containsLiteralInBody(recursiveDep[i])){
-                    //compile several times basing on how many occurrencies of the predicate are present in the chosen rule
-                    for(unsigned k  = 0; k < program->getRuleByID(recursiveComponent[j])->getBody()->getConjunction().size(); ++k)
-                    if(program->getRuleByID(recursiveComponent[j])->getBody()->getConjunction()[k]->getIdentifier() == recursiveDep[i]){
-                        if(program->getRuleByID(recursiveComponent[j])->isChoiceRule()){
-                            std::cout <<"ERROR -Propagation is not supported for choice rules"<<std::endl;
-                            //compileChoiceRule(static_cast<ChoiceRule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep,k);
-                        }
-                        else if(program->getRuleByID(recursiveComponent[j])->isClassicRule())
-                            compileRulePropagation(static_cast<Rule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep, -2, false);
-                    }
+        //say that this rule cannot support the literal in the head
+        *out << indentation << "bool maySupport = false;\n";
+        for(unsigned j = 0; j < recursiveComponent.size(); ++j){
+            if(program->getRuleByID(recursiveComponent[j])->containsLiteralInHead(recursiveDep[i])){
+                //compile several times basing on how many occurrencies of the predicate are present in the chosen rule
+                //for(unsigned k  = 0; k < program->getRuleByID(recursiveComponent[j])->getBody()->getConjunction().size(); ++k)
+                //if(program->getRuleByID(recursiveComponent[j])->getBody()->getConjunction()[k]->getIdentifier() == recursiveDep[i]){
+                if(program->getRuleByID(recursiveComponent[j])->isChoiceRule()){
+                    std::cout <<"ERROR -Propagation is not supported for choice rules"<<std::endl;
+                    //compileChoiceRule(static_cast<ChoiceRule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep,k);
                 }
+                else if(program->getRuleByID(recursiveComponent[j])->isClassicRule())
+                    compileRulePropagation(static_cast<Rule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep, -2, false);
+                //}
             }
+        }
+
+        *out << indentation++ <<"if(!maySupport){\n";
+        // *out << indentation << "tupleSupports[headTuple->getId()].erase(" << rule->getID() << ");\n";
+        // *out << indentation++ << "if(tupleSupports[headTuple->getId()].size() == 0){\n";
+        *out << indentation << "//removing tuple from undef\n";
+        //*out << indentation << "std::cout << \"Propagation Occurred to false for tuple \";\n";
+        // if(rule->getHead()->getDisjunction().at(0)->getArity() == 0)
+        //     *out << indentation << "printTuple(headTuple, false);\n";
+        // else
+        //     *out << indentation << "printTuple(headTuple);\n";
+        *out << indentation << "factory.removeFromCollisionsList(headTuple->getId());\n";
+        *out << indentation << "factory.destroyTuple(headTuple->getId());\n";
+        // *out << --indentation <<"}\n";
+        *out << indentation << "propagated = true;\n";
+        // add all the tuples that could be supported by this one
+        *out << indentation << "for(int i : supportedByUndef[headTuple->getId()]){ nextPropagationSet->insert(i);}\n";
+        *out << --indentation << "}\n";
         *out << --indentation << "}\n";
 
     }
@@ -793,6 +812,7 @@ void CompilationManagerASP::compileRecursiveComponentPropagation(Program* progra
     *out << --indentation <<"}\n";  
 }
 
+//TODO: -2 as starter (meaning the predicate in the head of the rule) will no longer work properly under disjunctive rules
 void CompilationManagerASP::compileRulePropagation(Rule* rule, std::vector<std::string>& recursiveDep, int starter = -2, bool compileAsExitRule = false){
     const Body* body = rule->getBody();
     const Head* head = rule->getHead();
@@ -800,8 +820,6 @@ void CompilationManagerASP::compileRulePropagation(Rule* rule, std::vector<std::
     unsigned closingParenthesis = 0;
     *out << indentation++ << "{\n";
     *out << indentation << "std::vector< std::pair<std::pair<const TupleLight *, bool>, int>> insertResults;\n";
-    //say that this rule cannot support the literal in the head
-    *out << indentation << "bool maySupport = false;\n";
     //declare all variables in the head of the rule because the are made bound by the tuple in the head
     {
         if(head->getDisjunction().size() > 0){
@@ -813,7 +831,7 @@ void CompilationManagerASP::compileRulePropagation(Rule* rule, std::vector<std::
                     declaredVariables.insert(lit->getTermAt(t));
                 }
             }
-        lit->addVariablesToSet(boundVariables);
+            lit->addVariablesToSet(boundVariables);
         }
         
     }
@@ -821,7 +839,7 @@ void CompilationManagerASP::compileRulePropagation(Rule* rule, std::vector<std::
     closingParenthesis++;
     for(unsigned i = 0; i < rule->getOrderedBodyByStarter(starter).size(); ++i){
         if(i == 0){
-            *out << indentation << "bool undefTuple" << i << "= false;\n";
+            *out << indentation << "bool undefTuple" << i << " = false;\n";
         }
         else{
             *out << indentation << "bool undefTuple" << i << " = undefTuple" << i-1 <<";\n";
@@ -888,7 +906,7 @@ void CompilationManagerASP::compileRulePropagation(Rule* rule, std::vector<std::
         }
 
 
-        *out << indentation++ << "if(tuple" << i << "!= NULL){\n";
+        *out << indentation++ << "if(tuple" << i << " != NULL){\n";
         closingParenthesis++;
         if (!lit->isNegative() || (i == 0)){
             std::unordered_set<std::string> declaredVariables;
@@ -978,11 +996,11 @@ void CompilationManagerASP::compileRulePropagation(Rule* rule, std::vector<std::
         }
         if(i == rule->getOrderedBodyByStarter(starter).size() - 1){
             *out << indentation <<"//Rule is firing \n";
-            //say that the rule may support the tuplein the head (used as starter)
+            //say that the rule may support the tuple in the head (used as starter)
             *out << indentation << "maySupport = true;\n";
             *out << indentation << "std::pair<const TupleLight *, bool> insertResult;\n";
             *out << indentation++ << "if(" << "undefTuple" << i << "){\n";
-            *out << indentation << "nextPropagationSet->insert(headTuple->getId());\n";
+            *out << indentation << "// nextPropagationSet->insert(headTuple->getId());\n";
             *out << --indentation << "}\n";
             *out << indentation++ << "else{\n";
             //*out << indentation << "factory.removeFromCollisionsList(headTuple->getId());\n";
@@ -990,6 +1008,8 @@ void CompilationManagerASP::compileRulePropagation(Rule* rule, std::vector<std::
             //*out << indentation << "insertTrue(insertResult);\n";
             *out << indentation << "insertResults.push_back(std::make_pair(insertResult, REMOVE_FROM_UNDEF));\n";
             *out << indentation << "propagated = true;\n";
+            // add all the tuples that could be supported by this one
+            *out << indentation << "for(int i : supportedByUndef[headTuple->getId()]){ nextPropagationSet->insert(i);}\n";
             //*out << indentation << "std::cout << \"Propagation Occurred to True \";\n";
             if(rule->getHead()->getDisjunction().at(0)->getArity() == 0)
                 *out << indentation << "printTuple(headTuple, false);\n";
@@ -1011,20 +1031,6 @@ void CompilationManagerASP::compileRulePropagation(Rule* rule, std::vector<std::
             *out << --indentation <<"}\n";
             *out << --indentation <<"}\n";
 
-            *out << indentation++ <<"if(!maySupport){\n";
-            *out << indentation << "tupleSupports[headTuple->getId()].erase(" << rule->getID() << ");\n";
-            *out << indentation++ << "if(tupleSupports[headTuple->getId()].size() == 0){\n";
-            *out << indentation << "//removing tuple from undef\n";
-            //*out << indentation << "std::cout << \"Propagation Occurred to false for tuple \";\n";
-            // if(rule->getHead()->getDisjunction().at(0)->getArity() == 0)
-            //     *out << indentation << "printTuple(headTuple, false);\n";
-            // else
-            //     *out << indentation << "printTuple(headTuple);\n";
-            *out << indentation << "factory.removeFromCollisionsList(headTuple->getId());\n";
-            *out << indentation << "factory.destroyTuple(headTuple->getId());\n";
-            *out << --indentation <<"}\n";
-            *out << indentation << "propagated = true;\n";
-            *out << --indentation << "}\n";
         }
         *out << --indentation << "}//close par\n";
     }
@@ -1112,7 +1118,7 @@ void CompilationManagerASP::compileChoiceRule(ChoiceRule* rule, std::vector<std:
             }
 
 
-            *out << indentation++ << "if(tuple" << i << "!= NULL){\n";
+            *out << indentation++ << "if(tuple" << i << " != NULL){\n";
             closingParenthesis++;
             if (!lit->isNegative() || (i == 0)){
                 std::unordered_set<std::string> declaredVariables;
@@ -1275,7 +1281,7 @@ void CompilationManagerASP::compileChoiceElement(const std::pair<Literal*, Body*
         }
 
 
-        *out << indentation++ << "if(tuple" << i << "!= NULL){\n";
+        *out << indentation++ << "if(tuple" << i << " != NULL){\n";
         closingParenthesis++;
         if (!lit->isNegative() || (i == 0)){
             std::unordered_set<std::string> declaredVariables;
@@ -1555,8 +1561,8 @@ void CompilationManagerASP::compileRecursiveComponent(Program* program, std::vec
     if(!allRulesCompiledForComponent){
         if(recursiveDep.size() > 0){
             *out << indentation << "std::vector<int> generatedStack;\n";
-            *out << indentation << "std::unordered_set<std::pair<int, int>, hashFunction>* propagationStack = new std::unordered_set<std::pair<int, int>, hashFunction>();\n";
-            *out << indentation << "std::unordered_map<int, std::unordered_set<int>> tupleSupports;\n";
+            //*out << indentation << "std::unordered_set<std::pair<int, int>, hashFunction>* propagationStack = new std::unordered_set<std::pair<int, int>, hashFunction>();\n";
+            //*out << indentation << "std::unordered_map<int, std::unordered_set<int>> tupleSupports;\n";
             *out << indentation << "std::unordered_map<unsigned, std::unordered_set<int>> sourcePointers;\n";
             *out << indentation << "std::unordered_map<unsigned, std::unordered_set<int>> supportedByUndef;\n";
             *out << indentation << "std::unordered_set<int>* propagationSet = new std::unordered_set<int>();\n";

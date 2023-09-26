@@ -673,6 +673,18 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
 }
 
 void CompilationManagerASP::compileRecursiveComponentPropagation(Program* program, std::vector<unsigned>& recursiveComponent){
+    //if there are rules that have the same meaning as disjunctive rules, just don't propagate the tuples in the head of such rules
+    std::unordered_set<int> rulesThatDoNotPropagate;
+    for(unsigned i = 0; i < recursiveComponent.size(); ++i){
+        for(unsigned j = 0; j < recursiveComponent.size(); ++j){
+            if(recursiveComponent[i] != recursiveComponent[j]){
+                if(program->getRuleByID(recursiveComponent[i])->isDisjunctiveCounterpartOf(program->getRuleByID(recursiveComponent[j]))){
+                    rulesThatDoNotPropagate.insert(recursiveComponent[i]);
+                    rulesThatDoNotPropagate.insert(recursiveComponent[j]);
+                }
+            }
+        }
+    }
     *out << indentation << "//---------------------------------------Strongly connected component propagation-----------------------\n";
     *out << indentation++ << "{\n";
     std::vector<unsigned> exitRules;
@@ -733,7 +745,8 @@ void CompilationManagerASP::compileRecursiveComponentPropagation(Program* progra
                 }
                 else if(program->getRuleByID(recursiveComponent[j])->isClassicRule()){
                     *out << indentation++ << "if(!propagatedToTrue){\n";
-                    compileRulePropagation(static_cast<Rule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep, -2, false);
+                    if(std::find(rulesThatDoNotPropagate.begin(), rulesThatDoNotPropagate.end(), recursiveComponent[j]) == rulesThatDoNotPropagate.end())
+                        compileRulePropagation(static_cast<Rule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep, -2, false);
                     *out << --indentation << "}\n";
                 }
                 //}

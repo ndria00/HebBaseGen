@@ -224,6 +224,73 @@ bool Rule::isChoiceRule()const{
     return false;
 }
 
+bool Rule::isDisjunctiveCounterpartOf(RuleBase* r1){
+    
+    if(this->head->getDisjunction().size() > 1)
+        return false;
+
+    if(this->body->getConjunction().size() != r1->getBody()->getConjunction().size())
+        return false;
+   
+    bool foundNegativeCounterpart = false;
+    int indexNegativeCounterpart;
+    for(unsigned i = 0; i < r1->getBody()->getConjunction().size(); ++i){
+        // std::cout << "atoms: " << r1->getBody()->getConjunction().at(i)->getRepresentation() << " " << this->head->getDisjunction().at(0)->getRepresentation() <<"\n" ;
+        // //r1->getBody()->getConjunction().at(i)->print();
+        
+        // //this->head->getDisjunction().at(0)->print();
+        // //std::cout <<"\n";
+        std::string negatedCounterpart = "not " + this->head->getDisjunction().at(0)->getRepresentation();
+        if(r1->getBody()->getConjunction().at(i)->getRepresentation() == negatedCounterpart){
+            foundNegativeCounterpart = true;
+            indexNegativeCounterpart = i;
+            
+            break;
+        }
+    }
+
+    if(!foundNegativeCounterpart)
+        return false;
+    
+    for(unsigned i = 0; i < r1->getBody()->getConjunction().size(); ++i){
+        if(i != indexNegativeCounterpart){
+            bool found = false;
+            for(unsigned j = 0; j < this->getBody()->getConjunction().size(); ++j){
+                if(r1->getBody()->getConjunction().at(i)->getRepresentation() == this->getBody()->getConjunction().at(j)->getRepresentation())
+                    found = true;
+            }
+            if (!found){
+                return false;
+            }
+        }
+    }
+    
+    //std::cout <<"Failed after conj size\n"; 
+
+    if(this->getBody()->getBuiltInTerms().size() != r1->getBody()->getBuiltInTerms().size())
+        return false;
+    
+    
+
+
+    for(unsigned i = 0; i < r1->getBody()->getBuiltInTerms().size(); ++i){
+        bool found = false;
+        for(unsigned j = 0; j < this->getBody()->getBuiltInTerms().size(); ++j){
+            if(r1->getBody()->getBuiltInTerms().at(i)->toString() == this->getBody()->getBuiltInTerms().at(j)->toString()){
+                found = true;
+            }
+        }
+        if(!found)
+            return false;
+    }
+    std::cout <<"Returned true for: ";
+    this->print();
+    r1->getHead()->print();
+    r1->getBody()->print();
+    return true;
+}
+
+
 Rule::~Rule(){
     delete head;
     delete body;  

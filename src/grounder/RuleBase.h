@@ -37,6 +37,7 @@ class RuleBase{
         virtual void removeBuiltInAt(const std::vector<BuiltInTerm*>::const_iterator& ) = 0;
         virtual bool isClassicRule()const = 0;
         virtual bool isChoiceRule()const = 0;
+        virtual bool isDisjunctiveCounterpartOf(RuleBase*) = 0;
         virtual ~RuleBase(){}
 };
 #endif /*RULEBASE_H*/

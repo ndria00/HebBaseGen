@@ -36,6 +36,7 @@ class Rule : public RuleBase{
         void getRecursiveIndexes(std::vector<unsigned>&)const;
         bool isClassicRule()const override;
         bool isChoiceRule()const override;
+        bool isDisjunctiveCounterpartOf(RuleBase*) override;
         ~Rule();
 };
 

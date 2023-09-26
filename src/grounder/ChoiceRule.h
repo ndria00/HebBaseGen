@@ -40,6 +40,7 @@ class ChoiceRule : public RuleBase{
         bool isClassicRule()const override;
         bool isChoiceRule()const override;
         bool cointainsRecursiveInChoices()const;
+        bool isDisjunctiveCounterpartOf(RuleBase*) override;
         void print()const;
         ~ChoiceRule();
 };

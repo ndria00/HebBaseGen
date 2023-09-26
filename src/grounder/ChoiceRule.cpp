@@ -249,6 +249,10 @@ bool ChoiceRule::cointainsRecursiveInChoices()const{
     return false;
 }
 
+bool ChoiceRule::isDisjunctiveCounterpartOf(RuleBase*) {
+    return false;
+}
+
 ChoiceRule::~ChoiceRule(){
     if(body != nullptr)
         delete body;

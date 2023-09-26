@@ -94,7 +94,7 @@ std::string Literal::getRepresentation() const{
     representation += this->identifier;
     representation += "(";
     for(unsigned i = 0; i < terms.size(); ++i) {
-        //representation += terms.at(i)->getRepresentation();
+        representation += terms.at(i)->getRepresentation();
         if(i != terms.size() -1)
             representation += ", ";
     }
@@ -102,23 +102,23 @@ std::string Literal::getRepresentation() const{
     return representation;
 }
 
-bool Literal::operator==(const Literal& o)const{
-    if(identifier != o.getIdentifier()){
-        return false;
-    }
-    if(terms.size() != o.getArity()){
-        return false;
-    }
+// bool Literal::operator==(const Literal& o)const{
+//     if(identifier != o.getIdentifier()){
+//         return false;
+//     }
+//     if(terms.size() != o.getArity()){
+//         return false;
+//     }
 
-    for(TermBase *t : terms){
-        for(TermBase* t1: o.getTerms()){
-            if(!(*t == *t1)){
-                return false;
-            }
-        }
-    }
-    return true;
-}
+//     for(TermBase *t : terms){
+//         for(TermBase* t1: o.getTerms()){
+//             if(!(*t == *t1)){
+//                 return false;
+//             }
+//         }
+//     }
+//     return true;
+// }
 
 bool Literal::isGround(){
     for(TermBase* t : terms)

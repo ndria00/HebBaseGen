@@ -695,7 +695,7 @@ void CompilationManagerASP::compileRecursiveComponentPropagation(Program* progra
     *out << indentation << "std::unordered_set<int>* temp;\n";
     *out << indentation << "bool propagated = true;\n";
     *out << indentation++ <<"while(propagated){\n";
-    *out << indentation << "propagated = false;\n"; 
+    *out << indentation << "propagated = false;\n";
     //*out << indentation++ << "while(!propagationStack->empty()){\n";
     *out << indentation++ <<"for(int tupleId: *propagationSet){\n";
     *out << indentation << "Tuple* headTuple = factory.getTupleFromInternalID(tupleId);\n";
@@ -721,6 +721,7 @@ void CompilationManagerASP::compileRecursiveComponentPropagation(Program* progra
         *out << indentation++ << "if(rulePred == _"<< recursiveDep[i] <<"){\n";
         //say that this rule cannot support the literal in the head
         *out << indentation << "bool maySupport = false;\n";
+        *out << indentation << "bool propagatedToTrue = false;\n";
         for(unsigned j = 0; j < recursiveComponent.size(); ++j){
             if(program->getRuleByID(recursiveComponent[j])->containsLiteralInHead(recursiveDep[i])){
                 //compile several times basing on how many occurrencies of the predicate are present in the chosen rule
@@ -730,8 +731,11 @@ void CompilationManagerASP::compileRecursiveComponentPropagation(Program* progra
                     std::cout <<"ERROR -Propagation is not supported for choice rules"<<std::endl;
                     //compileChoiceRule(static_cast<ChoiceRule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep,k);
                 }
-                else if(program->getRuleByID(recursiveComponent[j])->isClassicRule())
+                else if(program->getRuleByID(recursiveComponent[j])->isClassicRule()){
+                    *out << indentation++ << "if(!propagatedToTrue){\n";
                     compileRulePropagation(static_cast<Rule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep, -2, false);
+                    *out << --indentation << "}\n";
+                }
                 //}
             }
         }
@@ -745,12 +749,12 @@ void CompilationManagerASP::compileRecursiveComponentPropagation(Program* progra
         //     *out << indentation << "printTuple(headTuple, false);\n";
         // else
         //     *out << indentation << "printTuple(headTuple);\n";
-        *out << indentation << "factory.removeFromCollisionsList(headTuple->getId());\n";
-        *out << indentation << "factory.destroyTuple(headTuple->getId());\n";
-        // *out << --indentation <<"}\n";
         *out << indentation << "propagated = true;\n";
         // add all the tuples that could be supported by this one
         *out << indentation << "for(int i : supportedByUndef[headTuple->getId()]){ nextPropagationSet->insert(i);}\n";
+        *out << indentation << "factory.removeFromCollisionsList(headTuple->getId());\n";
+        *out << indentation << "factory.destroyTuple(headTuple->getId());\n";
+        // *out << --indentation <<"}\n";
         *out << --indentation << "}\n";
         *out << --indentation << "}\n";
 
@@ -1005,9 +1009,10 @@ void CompilationManagerASP::compileRulePropagation(Rule* rule, std::vector<std::
             *out << indentation++ << "else{\n";
             //*out << indentation << "factory.removeFromCollisionsList(headTuple->getId());\n";
             *out << indentation << "insertResult = headTuple->setStatus(TruthStatus::True);\n";
+            *out << indentation << "propagatedToTrue = true;\n";
+            *out << indentation << "propagated = true;\n";
             //*out << indentation << "insertTrue(insertResult);\n";
             *out << indentation << "insertResults.push_back(std::make_pair(insertResult, REMOVE_FROM_UNDEF));\n";
-            *out << indentation << "propagated = true;\n";
             // add all the tuples that could be supported by this one
             *out << indentation << "for(int i : supportedByUndef[headTuple->getId()]){ nextPropagationSet->insert(i);}\n";
             //*out << indentation << "std::cout << \"Propagation Occurred to True \";\n";

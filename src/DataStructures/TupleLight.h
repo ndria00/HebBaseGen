@@ -36,13 +36,14 @@ enum TruthStatus {
 // class AggregateSetCmp;
 class TupleLight {
 public:
+    static int DUMMY_TUPLE_ID;
 
-    TupleLight() : predicateName(-1),id(-INT_MAX),size_(0),content(NULL),status(UNKNOWN),collisionsListsSize(0) {
+    TupleLight() : predicateName(-1),id(DUMMY_TUPLE_ID),size_(0),content(NULL),status(UNKNOWN),collisionsListsSize(0) {
     }
 
-    TupleLight(int predicateName, bool negated = false) : predicateName(predicateName),id(-INT_MAX),size_(0),content(NULL),status(UNKNOWN),collisionsListsSize(0) {
+    TupleLight(int predicateName, bool negated = false) : predicateName(predicateName),id(DUMMY_TUPLE_ID),size_(0),content(NULL),status(UNKNOWN),collisionsListsSize(0) {
     }
-    TupleLight(int predicateName,std::vector<int> v, bool negated = false) : predicateName(predicateName),/*std::vector<int>(v),*/ id(-INT_MAX),size_(v.size()),status(UNKNOWN),collisionsListsSize(0) {
+    TupleLight(int predicateName,std::vector<int> v, bool negated = false) : predicateName(predicateName),/*std::vector<int>(v),*/ id(DUMMY_TUPLE_ID),size_(v.size()),status(UNKNOWN),collisionsListsSize(0) {
         content = new int[v.size()];
         std::copy(v.begin(), v.end(), content);
     }
@@ -59,30 +60,30 @@ public:
     }
 
     TupleLight(const std::initializer_list<int> & l, bool negated = false) :
-    /*std::vector<int>(l),*/ size_(l.size()), predicateName(-1), id(-INT_MAX),status(UNKNOWN),collisionsListsSize(0) {
+    /*std::vector<int>(l),*/ size_(l.size()), predicateName(-1), id(DUMMY_TUPLE_ID),status(UNKNOWN),collisionsListsSize(0) {
         content = new int[l.size()];
         std::copy(l.begin(), l.end(), content);
     }
 
     TupleLight(const std::initializer_list<int> & l, int predicateName, bool negated = false) :
-    /*vector<int>(l),*/ size_(l.size()), predicateName(predicateName), id(-INT_MAX),status(UNKNOWN),collisionsListsSize(0) {
+    /*vector<int>(l),*/ size_(l.size()), predicateName(predicateName), id(DUMMY_TUPLE_ID),status(UNKNOWN),collisionsListsSize(0) {
         content = new int[l.size()];
         std::copy(l.begin(), l.end(), content);
     }
     
     TupleLight(const std::vector<int> & l, int predicateName, bool negated = false) :
-    /*vector<int>(l),*/ size_(l.size()), predicateName(predicateName), id(-INT_MAX),status(UNKNOWN),collisionsListsSize(0) {
+    /*vector<int>(l),*/ size_(l.size()), predicateName(predicateName), id(DUMMY_TUPLE_ID),status(UNKNOWN),collisionsListsSize(0) {
         content = new int[l.size()];
         std::copy(l.begin(), l.end(), content);
     }
 
     //WARNING: require l to be created on the fly new int[]{...}
     TupleLight(int* l, int size, int predicateName, bool negated = false) :
-    /*vector<int>(l),*/ size_(size), predicateName(predicateName), id(-INT_MAX),status(UNKNOWN),collisionsListsSize(0){
+    /*vector<int>(l),*/ size_(size), predicateName(predicateName), id(DUMMY_TUPLE_ID),status(UNKNOWN),collisionsListsSize(0){
         content = l;
     }
     TupleLight(const std::vector<int> & l, bool negated = false) :
-    /*vector<int>(l),*/ size_(l.size()), id(-INT_MAX),status(UNKNOWN),collisionsListsSize(0) {
+    /*vector<int>(l),*/ size_(l.size()), id(DUMMY_TUPLE_ID),status(UNKNOWN),collisionsListsSize(0) {
         content = new int[l.size()];
         std::copy(l.begin(), l.end(), content);
     }
@@ -162,7 +163,7 @@ public:
     }
     
     bool isDummy()const{
-        return id == -INT_MAX;
+        return id == DUMMY_TUPLE_ID;
     }
     bool operator==(const TupleLight& right) const {
 

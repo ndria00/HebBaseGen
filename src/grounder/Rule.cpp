@@ -283,10 +283,10 @@ bool Rule::isDisjunctiveCounterpartOf(RuleBase* r1){
         if(!found)
             return false;
     }
-    std::cout <<"Returned true for: ";
-    this->print();
-    r1->getHead()->print();
-    r1->getBody()->print();
+    // std::cout <<"Returned true for: ";
+    // this->print();
+    // r1->getHead()->print();
+    // r1->getBody()->print();
     return true;
 }
 

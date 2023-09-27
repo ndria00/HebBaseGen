@@ -160,6 +160,20 @@ void CompilationManagerASP::generateProgram(Program* program){
 
 
 
+    //generate function for saving source pointers and supports
+    *out << indentation++ << "bool Executor::saveSourcePointAndSupports(int headTuple, int bodyTuple){\n";
+    *out << indentation << "bool toCheck= true;\n";
+    *out << indentation << "if(sourcePointers.find(bodyTuple) != sourcePointers.end()) toCheck = false;\n";
+
+    *out << indentation++ << "if(bodyTuple != TupleLight::DUMMY_TUPLE_ID){\n";
+    *out << indentation << "sourcePointers.at(headTuple).insert(bodyTuple);\n";
+    *out << indentation << "if(supportedByUndef.find(bodyTuple) == supportedByUndef.end()) supportedByUndef.insert({bodyTuple, std::unordered_set<int>()});\n";
+    *out << indentation << "else supportedByUndef.at(bodyTuple).insert(headTuple);\n";    
+    *out << --indentation << "}\n";   
+
+    *out << indentation << "return toCheck;\n";
+    *out << --indentation << "}\n";
+    
     *out << indentation++ << "void Executor::executeProgram(){\n";
     *out << indentation << "const Tuple dummyTuple = Tuple();\n";
     //addFacts();
@@ -580,23 +594,22 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
                         *out << indentation++ <<"if(sourcePointers.find(t->getId()) == sourcePointers.end()){\n";
                         *out << indentation << "sourcePointers.insert({t->getId(), std::unordered_set<int>()});\n";
                         for(unsigned l = 0; l < rule->getOrderedBodyByStarter(starter).size(); ++l){
-                            if(!body->getConjunction()[rule->getOrderedBodyByStarter(starter)[l]]->isNegative()){
-                                *out << indentation << "sourcePointers.at(t->getId()).insert(tuple" << l << "->getId());\n";
-                                *out << indentation << "if(sourcePointers.find(tuple" << l <<"->getId()) != sourcePointers.end()) toCheck = false;\n";
-                                //*out << indentation << "supports.insert(tuple" << l << "->getId());\n";
-                                *out << indentation << "if(supportedByUndef.find(tuple" << l << "->getId()) == supportedByUndef.end()) supportedByUndef.insert({tuple" << l << "->getId(), std::unordered_set<int>()});\n";
-                                *out << indentation << "else supportedByUndef.at(tuple" << l << "->getId()).insert(t->getId());\n";
-                            }
-                            else{
-                                *out << indentation++ <<"if(!tuple" << l << "->isDummy()){\n";
-                                *out << indentation << "sourcePointers.at(t->getId()).insert(tuple" << l << "->getId());\n";
-                                *out << indentation << "if(sourcePointers.find(tuple" << l <<"->getId()) != sourcePointers.end()) toCheck = false;\n";
-                                *out << indentation << "if(supportedByUndef.find(tuple" << l << "->getId()) == supportedByUndef.end()) supportedByUndef.insert({tuple" << l << "->getId(), std::unordered_set<int>()});\n";
-                                *out << indentation << "else supportedByUndef.at(tuple" << l << "->getId()).insert(t->getId());\n";
-                                *out << --indentation<< "}\n";
-                            }   
-                            // *out << indentation << "if(supportedByUndef.find(tuple" << l << "->getId()) == supportedByUndef.end()) supportedByUndef.insert({tuple" << l << "->getId(), std::unordered_set<int>()});\n";
-                            // *out << indentation << "else supportedByUndef.at(tuple" << l << "->getId()).insert(t->getId());\n";                        
+                            *out << indentation << "toCheck = saveSourcePointAndSupports(t->getId(), tuple" << l << "->getId());\n";
+                            // if(!body->getConjunction()[rule->getOrderedBodyByStarter(starter)[l]]->isNegative()){
+                            //     *out << indentation << "sourcePointers.at(t->getId()).insert(tuple" << l << "->getId());\n";
+                            //     *out << indentation << "if(sourcePointers.find(tuple" << l <<"->getId()) != sourcePointers.end()) toCheck = false;\n";
+                            //     //*out << indentation << "supports.insert(tuple" << l << "->getId());\n";
+                            //     *out << indentation << "if(supportedByUndef.find(tuple" << l << "->getId()) == supportedByUndef.end()) supportedByUndef.insert({tuple" << l << "->getId(), std::unordered_set<int>()});\n";
+                            //     *out << indentation << "else supportedByUndef.at(tuple" << l << "->getId()).insert(t->getId());\n";
+                            // }
+                            // else{
+                            //     *out << indentation++ <<"if(!tuple" << l << "->isDummy()){\n";
+                            //     *out << indentation << "sourcePointers.at(t->getId()).insert(tuple" << l << "->getId());\n";
+                            //     *out << indentation << "if(sourcePointers.find(tuple" << l <<"->getId()) != sourcePointers.end()) toCheck = false;\n";
+                            //     *out << indentation << "if(supportedByUndef.find(tuple" << l << "->getId()) == supportedByUndef.end()) supportedByUndef.insert({tuple" << l << "->getId(), std::unordered_set<int>()});\n";
+                            //     *out << indentation << "else supportedByUndef.at(tuple" << l << "->getId()).insert(t->getId());\n";
+                            //     *out << --indentation<< "}\n";
+                            // }                           
                         }
                         //*out << indentation << "sourcePointers.insert(std::make_pair(t->getId(), pointers));\n";
                         *out << indentation << "if(toCheck) propagationSet->insert(t->getId());\n";
@@ -672,19 +685,7 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
     }
 }
 
-void CompilationManagerASP::compileRecursiveComponentPropagation(Program* program, std::vector<unsigned>& recursiveComponent){
-    //if there are rules that have the same meaning as disjunctive rules, just don't propagate the tuples in the head of such rules
-    std::unordered_set<int> rulesThatDoNotPropagate;
-    for(unsigned i = 0; i < recursiveComponent.size(); ++i){
-        for(unsigned j = 0; j < recursiveComponent.size(); ++j){
-            if(recursiveComponent[i] != recursiveComponent[j]){
-                if(program->getRuleByID(recursiveComponent[i])->isDisjunctiveCounterpartOf(program->getRuleByID(recursiveComponent[j]))){
-                    rulesThatDoNotPropagate.insert(recursiveComponent[i]);
-                    rulesThatDoNotPropagate.insert(recursiveComponent[j]);
-                }
-            }
-        }
-    }
+void CompilationManagerASP::compileRecursiveComponentPropagation(Program* program, std::vector<unsigned>& recursiveComponent, std::unordered_set<int>& rulesThatDoNotPropagate){
     *out << indentation << "//---------------------------------------Strongly connected component propagation-----------------------\n";
     *out << indentation++ << "{\n";
     std::vector<unsigned> exitRules;
@@ -747,6 +748,8 @@ void CompilationManagerASP::compileRecursiveComponentPropagation(Program* progra
                     *out << indentation++ << "if(!propagatedToTrue){\n";
                     if(std::find(rulesThatDoNotPropagate.begin(), rulesThatDoNotPropagate.end(), recursiveComponent[j]) == rulesThatDoNotPropagate.end())
                         compileRulePropagation(static_cast<Rule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep, -2, false);
+                    else
+                        *out << indentation << "maySupport = true;\n";
                     *out << --indentation << "}\n";
                 }
                 //}
@@ -1579,10 +1582,10 @@ void CompilationManagerASP::compileRecursiveComponent(Program* program, std::vec
     if(!allRulesCompiledForComponent){
         if(recursiveDep.size() > 0){
             *out << indentation << "std::vector<int> generatedStack;\n";
-            //*out << indentation << "std::unordered_set<std::pair<int, int>, hashFunction>* propagationStack = new std::unordered_set<std::pair<int, int>, hashFunction>();\n";
-            //*out << indentation << "std::unordered_map<int, std::unordered_set<int>> tupleSupports;\n";
-            *out << indentation << "std::unordered_map<unsigned, std::unordered_set<int>> sourcePointers;\n";
-            *out << indentation << "std::unordered_map<unsigned, std::unordered_set<int>> supportedByUndef;\n";
+            *out << indentation << "sourcePointers.clear();\n";
+            *out << indentation << "supportedByUndef.clear();\n";
+            // *out << indentation << "std::unordered_map<unsigned, std::unordered_set<int>> sourcePointers;\n";
+            // *out << indentation << "std::unordered_map<unsigned, std::unordered_set<int>> supportedByUndef;\n";
             *out << indentation << "std::unordered_set<int>* propagationSet = new std::unordered_set<int>();\n";
         }
         for(unsigned i = 0; i < exitRules.size(); ++i){
@@ -1661,9 +1664,24 @@ void CompilationManagerASP::compileRecursiveComponent(Program* program, std::vec
         }
 
 
-        if(recursiveDep.size() > 0){
+        //if there are rules that have the same meaning as disjunctive rules, just don't propagate the tuples in the head of such rules
+        std::unordered_set<int> rulesThatDoNotPropagate;
+        for(unsigned i = 0; i < recursiveComponent.size(); ++i){
+            for(unsigned j = 0; j < recursiveComponent.size(); ++j){
+                if(recursiveComponent[i] != recursiveComponent[j]){
+                    if(program->getRuleByID(recursiveComponent[i])->isDisjunctiveCounterpartOf(program->getRuleByID(recursiveComponent[j]))){
+                        rulesThatDoNotPropagate.insert(recursiveComponent[i]);
+                        rulesThatDoNotPropagate.insert(recursiveComponent[j]);
+                    }
+                }
+            }
+        }
+        //std::cout <<"Rules that do not propagate: " << rulesThatDoNotPropagate.size() << "\n";
+        if(recursiveDep.size() > 0)
             *out<< --indentation << "}\n";
-            compileRecursiveComponentPropagation(program, recursiveComponent);
+            
+        if(recursiveDep.size() > 0 && rulesThatDoNotPropagate.size() < recursiveComponent.size()){
+            compileRecursiveComponentPropagation(program, recursiveComponent, rulesThatDoNotPropagate);
         }    
     }
     if(incrementalRemotion && (exitRules.size() > 0 || recursiveDep.size() > 0))

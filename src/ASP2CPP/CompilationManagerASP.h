@@ -15,7 +15,7 @@ class CompilationManagerASP : public CompilationManagerBase{
         void compileRecursiveComponent(Program*, std::vector<unsigned>&) override;
         void deleteCompletelyDefinedPredicates(std::unordered_set<unsigned>&, Program*, bool) override;
         void compileRulePropagation(Rule*, std::vector<std::string>&, int, bool);
-        void compileRecursiveComponentPropagation(Program*, std::vector<unsigned>&);
+        void compileRecursiveComponentPropagation(Program*, std::vector<unsigned>&, std::unordered_set<int>&);
         void setIncrementalRemotion(bool) override;
 };
 #endif /*COMPILATIONMANAGERASP*/

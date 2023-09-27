@@ -17,3 +17,4 @@
  */
 #include "TupleLight.h"
 std::vector<std::pair< std::variant< std::vector<int>, IndexedSet >*,unsigned>> TupleLight::EMPTY_COLLISIONS_LIST;
+int TupleLight::DUMMY_TUPLE_ID = -INT_MAX;

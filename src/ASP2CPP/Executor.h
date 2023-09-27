@@ -6,7 +6,8 @@
 #include "ExecutorBase.h"
 class Executor : public ExecutorBase{
     private:
-
+        std::unordered_map<unsigned, std::unordered_set<int>> sourcePointers;
+        std::unordered_map<unsigned, std::unordered_set<int>> supportedByUndef;
     public:
         TupleFactory factory;
         unordered_map<std::string, int> predicateToID;
@@ -19,6 +20,7 @@ class Executor : public ExecutorBase{
         void OnLiteralTrueUndef(TupleLight* t, bool disjunctiveFact);
         void printGeneratedBase();
         void executeProgram()override;
+        bool saveSourcePointAndSupports(int, int);
         ~Executor(){};
 };
 

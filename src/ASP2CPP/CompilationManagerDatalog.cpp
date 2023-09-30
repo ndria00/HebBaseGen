@@ -225,7 +225,7 @@ void CompilationManagerDatalog::declareAuxMap(const std::string& mapVariableName
 
 
 
-void CompilationManagerDatalog::compileRule(Rule* rule, std::vector<std::string>& recursiveDep, int starter = -1, bool compileAsExitRule = false){
+void CompilationManagerDatalog::compileRule(Rule* rule, std::vector<std::string>& recursiveDep, int starter = -1, bool compileAsExitRule = false, bool saveSourcePtrAndSupports = false){
     rule->setAlreadyCompiled(true);
     const Body* body = rule->getBody();
     unsigned negativeBodySize = body->getNegativeSize();

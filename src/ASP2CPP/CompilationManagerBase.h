@@ -25,7 +25,7 @@ class CompilationManagerBase{
         virtual void declareAuxMap(const std::string&, std::vector<unsigned>, const std::string&) = 0;
         virtual void declareDataStructures(RuleBase* ) = 0;
         virtual void declareDataStructures(ChoiceRule* ) = 0;
-        virtual void compileRule(Rule*, std::vector<std::string>&, int, bool) = 0;
+        virtual void compileRule(Rule*, std::vector<std::string>&, int, bool, bool) = 0;
         virtual void compileChoiceRule(ChoiceRule*, std::vector<std::string>&, int, bool) = 0;
         virtual void compileChoiceElement(const std::pair<Literal*, Body*>&, bool) = 0;
         virtual void compileRecursiveComponent(Program*, std::vector<unsigned>&) = 0;

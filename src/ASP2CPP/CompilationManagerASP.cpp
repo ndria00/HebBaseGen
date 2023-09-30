@@ -314,7 +314,7 @@ void CompilationManagerASP::declareAuxMap(const std::string& mapVariableName, st
 
 
 
-void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& recursiveDep, int starter = -1, bool compileAsExitRule = false){
+void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& recursiveDep, int starter = -1, bool compileAsExitRule = false, bool saveSourcePtsAndSupp = true){
     // if(currentRecursiveAtom != "")
     //     *out << indentation++ << "This a compilation from starter\n";
     rule->setAlreadyCompiled(true);
@@ -586,7 +586,7 @@ void CompilationManagerASP::compileRule(Rule* rule, std::vector<std::string>& re
                     *out << indentation << "insertResult = t->setStatus(TruthStatus::Undef);\n";
                     *out << indentation << "insertResults.push_back(std::make_pair(insertResult, INSERT_AS_UNDEF));\n";
                     //*out << indentation << "insertUndef(insertResult);\n";
-                    if(!compileAsExitRule && recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end()){
+                    if(!compileAsExitRule && recursiveDep.size() > 0 && std::find(recursiveDep.begin(), recursiveDep.end(), lit->getIdentifier()) != recursiveDep.end() && saveSourcePtsAndSupp){
                         
                         //save source pointers for head tuple
                         //forall literals true in body and negative that are already in the factory, store source pointer
@@ -748,8 +748,8 @@ void CompilationManagerASP::compileRecursiveComponentPropagation(Program* progra
                     *out << indentation++ << "if(!propagatedToTrue){\n";
                     if(std::find(rulesThatDoNotPropagate.begin(), rulesThatDoNotPropagate.end(), recursiveComponent[j]) == rulesThatDoNotPropagate.end())
                         compileRulePropagation(static_cast<Rule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep, -2, false);
-                    else
-                        *out << indentation << "maySupport = true;\n";
+                    // else
+                    //     *out << indentation << "maySupport = true;\n";
                     *out << --indentation << "}\n";
                 }
                 //}
@@ -1580,6 +1580,20 @@ void CompilationManagerASP::compileRecursiveComponent(Program* program, std::vec
         } 
     }
     if(!allRulesCompiledForComponent){
+        //if there are rules that have the same meaning as disjunctive rules, just don't propagate the tuples in the head of such rules
+        std::unordered_set<int> rulesThatDoNotPropagate;
+        for(unsigned i = 0; i < recursiveComponent.size(); ++i){
+            for(unsigned j = 0; j < recursiveComponent.size(); ++j){
+                if(recursiveComponent[i] != recursiveComponent[j]){
+                    if(program->getRuleByID(recursiveComponent[i])->isDisjunctiveCounterpartOf(program->getRuleByID(recursiveComponent[j]))){
+                        rulesThatDoNotPropagate.insert(recursiveComponent[i]);
+                        rulesThatDoNotPropagate.insert(recursiveComponent[j]);
+                    }
+                }
+            }
+        }
+        //std::cout <<"Rules that do not propagate: " << rulesThatDoNotPropagate.size() << "\n";
+
         if(recursiveDep.size() > 0){
             *out << indentation << "std::vector<int> generatedStack;\n";
             *out << indentation << "sourcePointers.clear();\n";
@@ -1594,7 +1608,7 @@ void CompilationManagerASP::compileRecursiveComponent(Program* program, std::vec
                 compileChoiceRule(static_cast<ChoiceRule*>(rule), recursiveDep);
             }
             else if(rule->isClassicRule() && !rule->isAlreadyCompiled()){
-                compileRule(static_cast<Rule*>(rule), recursiveDep, -1, true);
+                compileRule(static_cast<Rule*>(rule), recursiveDep, -1, true, false);
             }
             //if(rule == nullptr)
             //   std::cout<<"Something went wrong\n";
@@ -1623,7 +1637,10 @@ void CompilationManagerASP::compileRecursiveComponent(Program* program, std::vec
                 compileChoiceRule(static_cast<ChoiceRule*>(rule), recursiveDep);
             }
             else if(rule->isClassicRule() && !rule->isAlreadyCompiled()){
-                compileRule(static_cast<Rule*>(rule), recursiveDep);
+                if(std::find(rulesThatDoNotPropagate.begin(), rulesThatDoNotPropagate.end(), rule->getID()) != rulesThatDoNotPropagate.end())
+                    compileRule(static_cast<Rule*>(rule), recursiveDep, -1, false, false);
+                else
+                    compileRule(static_cast<Rule*>(rule), recursiveDep, -1, false, true);
             }
         }
 
@@ -1645,38 +1662,34 @@ void CompilationManagerASP::compileRecursiveComponent(Program* program, std::vec
                             if(program->getRuleByID(recursiveComponent[j])->getBody()->getConjunction()[k]->getIdentifier() == recursiveDep[i]){
                                 if(program->getRuleByID(recursiveComponent[j])->isChoiceRule() && !(exitRules.size() == 0 && program->getRuleByID(recursiveComponent[j])->isAlreadyCompiled()))
                                     compileChoiceRule(static_cast<ChoiceRule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep,k);
-                                else if(program->getRuleByID(recursiveComponent[j])->isClassicRule())
-                                    compileRule(static_cast<Rule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep, k);
+                                else if(program->getRuleByID(recursiveComponent[j])->isClassicRule()){
+                                    if(std::find(rulesThatDoNotPropagate.begin(), rulesThatDoNotPropagate.end(), recursiveComponent[j]) != rulesThatDoNotPropagate.end())
+                                        compileRule(static_cast<Rule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep, k, false, false);
+                                    else
+                                        compileRule(static_cast<Rule*>(program->getRuleByID(recursiveComponent[j])), recursiveDep, k, false, true);
+                                }
                             }
                         }
                     }
                 *out << --indentation << "}\n";
             
             }
-        }else { //TODO REMOVE because this scenario is not possible
-            for(unsigned j = 0; j < recursiveComponent.size(); ++j){
-                RuleBase* ruleBase = program->getRuleByID(recursiveComponent[j]);
-                if(ruleBase->isChoiceRule() && ! ruleBase->isAlreadyCompiled())
-                    compileChoiceRule(static_cast<ChoiceRule*>(ruleBase), recursiveDep);
-                else if(ruleBase->isClassicRule() && !ruleBase->isAlreadyCompiled())
-                    compileRule(static_cast<Rule*>(ruleBase), recursiveDep);
-            }
         }
+        // else { //TODO REMOVE because this scenario is not possible
+        //     for(unsigned j = 0; j < recursiveComponent.size(); ++j){
+        //         RuleBase* ruleBase = program->getRuleByID(recursiveComponent[j]);
+        //         if(ruleBase->isChoiceRule() && ! ruleBase->isAlreadyCompiled())
+        //             compileChoiceRule(static_cast<ChoiceRule*>(ruleBase), recursiveDep);
+        //         else if(ruleBase->isClassicRule() && !ruleBase->isAlreadyCompiled()){
+        //             if(std::find(rulesThatDoNotPropagate.begin(), rulesThatDoNotPropagate.end(), ruleBase->getID()) != rulesThatDoNotPropagate.end())
+        //                 compileRule(static_cast<Rule*>(ruleBase), recursiveDep, false, false);
+        //             else
+        //                 compileRule(static_cast<Rule*>(ruleBase), recursiveDep, false, true);
+        //         }
+        //     }
+        // }
 
 
-        //if there are rules that have the same meaning as disjunctive rules, just don't propagate the tuples in the head of such rules
-        std::unordered_set<int> rulesThatDoNotPropagate;
-        for(unsigned i = 0; i < recursiveComponent.size(); ++i){
-            for(unsigned j = 0; j < recursiveComponent.size(); ++j){
-                if(recursiveComponent[i] != recursiveComponent[j]){
-                    if(program->getRuleByID(recursiveComponent[i])->isDisjunctiveCounterpartOf(program->getRuleByID(recursiveComponent[j]))){
-                        rulesThatDoNotPropagate.insert(recursiveComponent[i]);
-                        rulesThatDoNotPropagate.insert(recursiveComponent[j]);
-                    }
-                }
-            }
-        }
-        //std::cout <<"Rules that do not propagate: " << rulesThatDoNotPropagate.size() << "\n";
         if(recursiveDep.size() > 0)
             *out<< --indentation << "}\n";
             

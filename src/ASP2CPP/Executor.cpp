@@ -186,13 +186,6 @@ void Executor::executeProgram(){
                             if(undefTuple1){
                                 insertResult = t->setStatus(TruthStatus::Undef);
                                 insertResults.push_back(std::make_pair(insertResult, INSERT_AS_UNDEF));
-                                bool toCheck = true;
-                                if(sourcePointers.find(t->getId()) == sourcePointers.end()){
-                                    sourcePointers.insert({t->getId(), std::unordered_set<int>()});
-                                    toCheck = saveSourcePointAndSupports(t->getId(), tuple0->getId());
-                                    toCheck = saveSourcePointAndSupports(t->getId(), tuple1->getId());
-                                    if(toCheck) propagationSet->insert(t->getId());
-                                }
                             }
                             else{
                                 insertResult = t->setStatus(TruthStatus::True);
@@ -259,13 +252,6 @@ void Executor::executeProgram(){
                             if(undefTuple1){
                                 insertResult = t->setStatus(TruthStatus::Undef);
                                 insertResults.push_back(std::make_pair(insertResult, INSERT_AS_UNDEF));
-                                bool toCheck = true;
-                                if(sourcePointers.find(t->getId()) == sourcePointers.end()){
-                                    sourcePointers.insert({t->getId(), std::unordered_set<int>()});
-                                    toCheck = saveSourcePointAndSupports(t->getId(), tuple0->getId());
-                                    toCheck = saveSourcePointAndSupports(t->getId(), tuple1->getId());
-                                    if(toCheck) propagationSet->insert(t->getId());
-                                }
                             }
                             else{
                                 insertResult = t->setStatus(TruthStatus::True);
@@ -333,13 +319,6 @@ void Executor::executeProgram(){
                                     if(undefTuple1){
                                         insertResult = t->setStatus(TruthStatus::Undef);
                                         insertResults.push_back(std::make_pair(insertResult, INSERT_AS_UNDEF));
-                                        bool toCheck = true;
-                                        if(sourcePointers.find(t->getId()) == sourcePointers.end()){
-                                            sourcePointers.insert({t->getId(), std::unordered_set<int>()});
-                                            toCheck = saveSourcePointAndSupports(t->getId(), tuple0->getId());
-                                            toCheck = saveSourcePointAndSupports(t->getId(), tuple1->getId());
-                                            if(toCheck) propagationSet->insert(t->getId());
-                                        }
                                     }
                                     else{
                                         insertResult = t->setStatus(TruthStatus::True);
@@ -402,13 +381,6 @@ void Executor::executeProgram(){
                                     if(undefTuple1){
                                         insertResult = t->setStatus(TruthStatus::Undef);
                                         insertResults.push_back(std::make_pair(insertResult, INSERT_AS_UNDEF));
-                                        bool toCheck = true;
-                                        if(sourcePointers.find(t->getId()) == sourcePointers.end()){
-                                            sourcePointers.insert({t->getId(), std::unordered_set<int>()});
-                                            toCheck = saveSourcePointAndSupports(t->getId(), tuple0->getId());
-                                            toCheck = saveSourcePointAndSupports(t->getId(), tuple1->getId());
-                                            if(toCheck) propagationSet->insert(t->getId());
-                                        }
                                     }
                                     else{
                                         insertResult = t->setStatus(TruthStatus::True);

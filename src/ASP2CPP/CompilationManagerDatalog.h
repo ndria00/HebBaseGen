@@ -9,7 +9,7 @@ class CompilationManagerDatalog : public CompilationManagerBase{
         void declareAuxMap(const std::string&, std::vector<unsigned>, const std::string&) override;
         void declareDataStructures(RuleBase* ) override;
         void declareDataStructures(ChoiceRule* ) override;
-        void compileRule(Rule*, std::vector<std::string>&, int, bool) override;
+        void compileRule(Rule*, std::vector<std::string>&, int, bool, bool) override;
         void compileChoiceRule(ChoiceRule*, std::vector<std::string>&, int, bool) override;
         void compileChoiceElement(const std::pair<Literal*, Body*>&, bool) override;
         void compileRecursiveComponent(Program*, std::vector<unsigned>&) override;
